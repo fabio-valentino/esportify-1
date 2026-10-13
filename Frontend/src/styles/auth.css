@@ -1,0 +1,223 @@
+/* ========== Layout Login & Register ========== */
+.auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg);
+}
+
+/* Sisi kiri: logo + teks.
+   Untuk memasang gambar latar, tambahkan di .auth-left:
+   background-image: url("../assets/auth-bg.jpg"); background-size: cover; */
+.auth-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 48px;
+  background:
+    linear-gradient(to right, rgba(11, 15, 25, 0.1), var(--bg)),
+    radial-gradient(
+      circle at 20% 80%,
+      rgba(124, 58, 237, 0.25),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(59, 130, 246, 0.2),
+      transparent 50%
+    ),
+    #0b0f19;
+}
+.auth-left .logo {
+  font-size: 16px;
+}
+.auth-intro {
+  max-width: 440px;
+  margin-bottom: 80px;
+}
+.auth-intro h1 {
+  font-size: 42px;
+  line-height: 1.15;
+
+  color: var(--white);
+  margin-bottom: 16px;
+}
+.auth-intro h1 span {
+  background: linear-gradient(90deg, #a9c1ff, #d4c5ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.auth-intro p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Sisi kanan: kartu form */
+.auth-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #151a26;
+}
+.auth-title {
+  font-size: 26px;
+  color: var(--white);
+
+  line-height: 1.2;
+}
+.auth-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 24px;
+}
+
+/* ========== Kolom input ========== */
+.field {
+  margin-bottom: 16px;
+}
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.field-label-row label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.field-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
+.field-box {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+  padding: 0 14px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #1c2230;
+  color: var(--muted);
+}
+.field-box:focus-within {
+  border-color: var(--blue);
+}
+.field-box.has-error {
+  border-color: #f87171;
+}
+.field-box input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--white);
+  font-size: 13px;
+  font-family: inherit;
+}
+.field-box input::placeholder {
+  color: #4b5563;
+}
+.field-right {
+  display: flex;
+  align-items: center;
+  color: var(--green);
+}
+
+.field-toggle {
+  display: flex;
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+.field-toggle:hover {
+  color: var(--white);
+}
+.field-error,
+.field-ok {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 11px;
+}
+.field-error {
+  color: #f87171;
+}
+.field-ok {
+  color: var(--green);
+}
+
+/* ========== Tombol & teks bawah ========== */
+.auth-submit {
+  margin-top: 20px;
+  padding: 13px;
+  font-size: 14px;
+}
+.auth-submit:disabled {
+  opacity: 0.7;
+
+  cursor: not-allowed;
+}
+.auth-error {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+  font-size: 12px;
+}
+.auth-switch {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.auth-switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: #a9c1ff;
+}
+.auth-switch a:hover {
+  color: var(--white);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 900px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-left {
+    padding: 28px 24px 8px;
+    background: transparent;
+  }
+  .auth-intro {
+    margin: 28px 0 0;
+  }
+  .auth-intro h1 {
+    font-size: 30px;
+  }
+  .auth-right {
+    padding: 24px 16px 40px;
+  }
+  .auth-card {
+    padding: 24px;
+  }
+}
