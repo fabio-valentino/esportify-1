@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Role;
 
 class RegisterController extends Controller
 {
@@ -36,21 +36,15 @@ class RegisterController extends Controller
             ], 422);
         }
 
-        $roleUser = Role::where('nama_role', 'user')->first();
-
-        if (!$roleUser) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Registrasi gagal. Role user tidak ditemukan.',
-            ], 500);
-        }
+        $roleUser = Role::findByName('user', 'web');
 
         $user = User::create([
-            'id_role' => $roleUser->id_role,
             'username' => $request->username,
             'email' => $request->email,
             'password' => $request->password,
         ]);
+
+        $user->assignRole($roleUser);
 
         return response()->json([
             'success' => true,
