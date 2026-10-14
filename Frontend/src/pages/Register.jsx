@@ -7,6 +7,9 @@ import { register } from "../services/authApi";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Nama field backend -> nama field di form
+const fieldMap = { password_confirmation: "confirmPassword" };
+
 function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -20,7 +23,7 @@ function Register() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Status validasi (dipakai untuk ikon centang dan pesan)
+  // Status validasi klien (untuk ikon centang dan pesan)
   const usernameValid = form.username.trim().length >= 3;
   const emailValid = emailPattern.test(form.email);
   const passwordValid = form.password.length >= 8;
@@ -33,6 +36,7 @@ function Register() {
     setMessage("");
   };
 
+  // Validasi klien hanya untuk kenyamanan. Validasi yang berlaku tetap dari backend.
   const validate = () => {
     const result = {};
     if (!usernameValid) result.username = "Username minimal 3 karakter.";
@@ -45,6 +49,7 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
 
     const result = validate();
     if (Object.keys(result).length > 0) {
@@ -53,17 +58,25 @@ function Register() {
     }
 
     setLoading(true);
+    setMessage("");
     try {
       await register(form);
       navigate("/login");
     } catch (err) {
-      // Error validasi dari Laravel: ambil pesan pertama tiap field
+      // Error per kolom dari backend (422): ambil pesan pertama tiap field
       const fieldErrors = {};
       Object.entries(err.fields || {}).forEach(([key, value]) => {
-        fieldErrors[key] = Array.isArray(value) ? value[0] : value;
+        fieldErrors[fieldMap[key] || key] = Array.isArray(value)
+          ? value[0]
+          : value;
       });
       setErrors(fieldErrors);
-      setMessage(err.message);
+
+      if (Object.keys(fieldErrors).length > 0) {
+        setMessage("Periksa kembali data yang kamu isi.");
+      } else {
+        setMessage(err.message || "Terjadi kesalahan. Coba lagi.");
+      }
     } finally {
       setLoading(false);
     }
@@ -97,7 +110,7 @@ function Register() {
           icon="gamepad"
           name="username"
           type="text"
-          placeholder="AlexShadow"
+          placeholder="Masukkan Username Anda"
           value={form.username}
           onChange={handleChange}
           error={errors.username}
@@ -110,7 +123,7 @@ function Register() {
           icon="mail"
           name="email"
           type="email"
-          placeholder="alex@example.com"
+          placeholder="Masukkan Email Anda"
           value={form.email}
           onChange={handleChange}
           error={errors.email}
