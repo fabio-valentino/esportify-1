@@ -2,31 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Permission\Models\Role as SpatieRole;
 
-class Role extends Model
+class Role extends SpatieRole
 {
-    protected $table = 'roles';
-
-    protected $primaryKey = 'id_role';
-
-    public $incrementing = true;
-
-    protected $keyType = 'int';
-
     protected $fillable = [
-        'nama_role',
+        'name',
+        'guard_name',
         'deskripsi',
     ];
-
-    public function users(): HasMany
-    {
-        return $this->hasMany(
-            User::class,
-            'id_role',
-            'id_role'
-        );
-    }
 }
 ?>
