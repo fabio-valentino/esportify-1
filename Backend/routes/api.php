@@ -71,15 +71,23 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         // KELOLA USER
         // ======================================
 
+        // Menampilkan semua user
         Route::get('/users', [UserManagementController::class, 'index'])
             ->middleware('permission:lihat_data_user');
 
+        // Menambahkan user baru
+        Route::post('/users', [UserManagementController::class, 'store'])
+            ->middleware('permission:lihat_data_user');
+
+        // Menampilkan detail user
         Route::get('/users/{id}', [UserManagementController::class, 'show'])
             ->middleware('permission:lihat_data_user');
 
+        // Mengubah data user
         Route::patch('/users/{id}', [UserManagementController::class, 'update'])
             ->middleware('permission:ubah_data_user');
 
+        // Menghapus user
         Route::delete('/users/{id}', [UserManagementController::class, 'destroy'])
             ->middleware('permission:hapus_data_user');
 
