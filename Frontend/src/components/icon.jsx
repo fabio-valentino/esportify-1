@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   Check,
   CheckCheck,
+  ExternalLink,
   Eye,
   EyeOff,
   Gamepad2,
@@ -11,15 +12,12 @@ import {
   Mail,
 } from "lucide-react";
 
-// Semua ikon didaftarkan di sini. Untuk menambah ikon:
-// 1. import dari "lucide-react"
-// 2. tambahkan satu baris di objek icons
-// Daftar ikon: https://lucide.dev/icons
 const icons = {
   "arrow-right": ArrowRight,
   "badge-check": BadgeCheck,
   check: Check,
   "check-check": CheckCheck,
+  "external-link": ExternalLink,
   eye: Eye,
   "eye-off": EyeOff,
   gamepad: Gamepad2,
