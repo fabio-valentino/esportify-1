@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\Validator;
 class LoginController extends Controller
 {
     /**
-     * Login user menggunakan session Laravel.
+     * Login user menggunakan Laravel Sanctum Bearer Token.
      */
     public function login(Request $request)
     {
+        // Validasi input login
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
@@ -33,34 +34,37 @@ class LoginController extends Controller
 
         $credentials = $validator->validated();
 
-        if (! Auth::guard('web')->attempt($credentials)) {
+        // Cek email dan password
+        if (!Auth::guard('web')->validate($credentials)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Email atau password salah.',
             ], 401);
         }
 
-        // Perbarui ID session setelah login.
-        $request->session()->regenerate();
+        // Ambil user berdasarkan email
+        $user = \App\Models\User::where(
+            'email',
+            $credentials['email']
+        )->first();
 
-        $user = Auth::guard('web')->user();
-
-        // Tolak akun yang tidak aktif.
+        // Cek status akun
         if ($user->status !== 'aktif') {
-            Auth::guard('web')->logout();
-
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Akun Anda tidak aktif.',
             ], 403);
         }
 
-        // Simpan waktu login terakhir.
+        // Simpan waktu login terakhir
         $user->terakhir_login = now();
         $user->save();
+
+        // Hapus token lama jika ingin membatasi satu token per login
+        // (Tidak digunakan agar perangkat lain tetap bisa login)
+
+        // Buat Bearer Token Sanctum
+        $token = $user->createToken('esportify-token')->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -70,24 +74,23 @@ class LoginController extends Controller
                 'username' => $user->username,
                 'email' => $user->email,
                 'roles' => $user->getRoleNames(),
+                'token' => $token,
+                'token_type' => 'Bearer',
             ],
-        ]);
+        ], 200);
     }
 
     /**
-     * Logout dan hapus session login.
+     * Logout dengan menghapus token yang sedang digunakan.
      */
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'success' => true,
             'message' => 'Logout berhasil.',
-        ]);
+        ], 200);
     }
 }
 ?>
