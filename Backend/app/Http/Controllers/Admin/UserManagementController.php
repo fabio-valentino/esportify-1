@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
@@ -27,6 +29,52 @@ class UserManagementController extends Controller
             'message' => 'Daftar user berhasil diambil.',
             'data' => $users,
         ]);
+    }
+
+    // Membuat user baru oleh admin
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username'),
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email'),
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+            ],
+            'role' => [
+                'required',
+                'string',
+                Rule::exists('roles', 'name')->where('guard_name', 'web'),
+            ],
+        ]);
+
+        // Membuat user baru
+        $user = User::create([
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'status' => 'aktif',
+        ]);
+
+        // Memberikan role kepada user
+        $user->assignRole($validated['role']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User berhasil ditambahkan.',
+            'data' => $user->fresh()->load('roles'),
+        ], 201);
     }
 
     // Menampilkan detail user berdasarkan ID
@@ -141,4 +189,5 @@ class UserManagementController extends Controller
         ]);
     }
 }
+?>
 ?>
