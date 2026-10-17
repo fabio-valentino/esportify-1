@@ -12,3 +12,6 @@ export const USE_ADMIN_MOCK = import.meta.env.VITE_USE_ADMIN_MOCK !== "false";
 if (!USE_MOCK && !API_BASE_URL) {
   console.error("VITE_API_BASE_URL belum diisi di file .env");
 }
+
+export const SKIP_AUTH =
+  import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === "true";

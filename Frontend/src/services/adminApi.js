@@ -1,6 +1,12 @@
 import { USE_ADMIN_MOCK } from "../config/env";
 import { apiRequest, ApiError } from "./httpClient";
-import { mockUsers, mockRoles } from "./mock/adminMock";
+import {
+  mockUsers,
+  mockRoles,
+  mockAllPermissions,
+  mockPermissionRoles,
+  mockDirectPermissions,
+} from "./mock/adminMock";
 
 const copy = (data) => JSON.parse(JSON.stringify(data));
 const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -143,4 +149,87 @@ export async function setUserRole(id, role) {
     method: "POST",
     body: { role },
   });
+}
+
+// permission
+
+// Nama permission bisa berupa teks atau objek { name }
+const permName = (p) => (typeof p === "string" ? p : (p?.name ?? ""));
+
+// ASSUMPTION: bentuk response belum dikonfirmasi backend.
+// Mendukung array langsung, { data: [...] }, dan { data: { permissions: [...] } }
+const toPermList = (response) => {
+  const inner = response?.data ?? response;
+  if (Array.isArray(inner)) return inner;
+  if (Array.isArray(inner?.permissions)) return inner.permissions;
+  return [];
+};
+
+// GET /api/admin/permissions -> ["lihat_dashboard", ...]
+export async function getAllPermissions() {
+  if (USE_ADMIN_MOCK) {
+    await wait(200);
+    return [...mockAllPermissions];
+  }
+  const response = await apiRequest("/admin/permissions");
+  return toList(response).map(permName);
+}
+
+// Respons: { success, message, data: { direct, via_roles, effective } }
+// Isi tiap bagian: array objek { id, name }. Frontend memakai nama saja.
+const namesOf = (list) => (Array.isArray(list) ? list : []).map(permName);
+
+// GET /api/admin/users/{id}/permissions
+// -> { direct: [nama], viaRoles: [nama], effective: [nama] }
+export async function getUserPermissions(id) {
+  if (USE_ADMIN_MOCK) {
+    await wait(150);
+    const user = mockUsers.find((u) => u.id === id);
+    const viaRoles =
+      mockPermissionRoles.find((r) => r.name === user?.role)?.permissions ?? [];
+    const direct = mockDirectPermissions[id] ?? [];
+    return copy({
+      direct,
+      viaRoles,
+      effective: [...new Set([...viaRoles, ...direct])],
+    });
+  }
+  const response = await apiRequest(`/admin/users/${id}/permissions`);
+  const data = response?.data ?? {};
+  return {
+    direct: namesOf(data.direct),
+    viaRoles: namesOf(data.via_roles),
+    effective: namesOf(data.effective),
+  };
+}
+
+// POST /api/admin/users/{id}/permissions
+// Backend memakai syncPermissions: daftar ini MENGGANTIKAN seluruh izin langsung user.
+// ASSUMPTION: body { permissions: [nama] } belum dikonfirmasi backend.
+export async function setUserPermissions(id, permissions) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    mockDirectPermissions[id] = [...permissions];
+    return true;
+  }
+  return apiRequest(`/admin/users/${id}/permissions`, {
+    method: "POST",
+    body: { permissions },
+  });
+}
+
+// POST /api/admin/permissions
+// ASSUMPTION: body { name } belum dikonfirmasi backend.
+export async function createPermission(name) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    if (mockAllPermissions.includes(name)) {
+      throw new ApiError("Data tidak valid.", 422, {
+        name: ["Permission sudah ada."],
+      });
+    }
+    mockAllPermissions.push(name);
+    return true;
+  }
+  return apiRequest("/admin/permissions", { method: "POST", body: { name } });
 }

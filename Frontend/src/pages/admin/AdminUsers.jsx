@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Icon from "../../components/Icon";
+import Icon from "../../components/icon";
 import Pagination from "../../components/admin/Pagination";
 import AddUserModal from "../../components/admin/AddUserModal";
 import { useAuth } from "../../context/AuthContext";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthShell from "../components/auth/AuthShell";
 import FormField from "../components/auth/FormField";
-import Icon from "../components/Icon";
+import Icon from "../components/icon";
 import { register } from "../services/authApi";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

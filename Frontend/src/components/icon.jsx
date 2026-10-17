@@ -23,6 +23,8 @@ import {
   Users,
   Plus,
   X,
+  Pencil,
+  KeyRound,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -53,6 +55,8 @@ const icons = {
   users: Users,
   plus: Plus,
   x: X,
+  edit: Pencil,
+  key: KeyRound,
 };
 
 function Icon({ name, size = 16 }) {

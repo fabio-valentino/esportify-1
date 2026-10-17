@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import AuthShell from "../components/auth/AuthShell";
 import FormField from "../components/auth/FormField";
-import Icon from "../components/Icon";
+import Icon from "../components/icon";
 import { useAuth } from "../context/AuthContext";
 
 function Login() {

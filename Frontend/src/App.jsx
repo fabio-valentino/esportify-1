@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import UserHome from "./pages/UserHome";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPermissions from "./pages/admin/AdminPermissions";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             {/* Sementara hanya fitur Users */}
             <Route index element={<Navigate to="/admin/users" replace />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="permissions" element={<AdminPermissions />} />
           </Route>
         </Route>
       </Routes>

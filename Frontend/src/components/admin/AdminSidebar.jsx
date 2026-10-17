@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import Icon from "../Icon";
+import Icon from "../icon";
 
 const navClass = ({ isActive }) =>
   isActive ? "admin-nav-item active" : "admin-nav-item";
 
 // Fitur berikutnya (Dashboard, Permissions) tinggal menambah item di sini
-const userMenuItems = [{ label: "Users", to: "/admin/users", icon: "user" }];
+const userMenuItems = [
+  { label: "Users", to: "/admin/users", icon: "user" },
+  { label: "Permissions", to: "/admin/permissions", icon: "key" },
+];
 
 function AdminSidebar({ open, onNavigate }) {
   const [menuOpen, setMenuOpen] = useState(true);

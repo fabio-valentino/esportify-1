@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import Icon from "../components/Icon";
+import Icon from "../components/icon";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/ESPORTIFY-Logo.png";
