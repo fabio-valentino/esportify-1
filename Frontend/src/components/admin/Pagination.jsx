@@ -1,4 +1,4 @@
-import Icon from "../Icon";
+import Icon from "../icon";
 
 function Pagination({ page, totalItems, pageSize, onChange }) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));

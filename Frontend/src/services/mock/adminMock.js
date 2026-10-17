@@ -74,3 +74,26 @@ export const mockUsers = [
     status: "aktif",
   },
 ];
+
+// Nama permission mengikuti route backend
+export const mockAllPermissions = [
+  "lihat_dashboard",
+  "lihat_data_user",
+  "ubah_data_user",
+  "hapus_data_user",
+  "kelola_role",
+  "kelola_permission",
+  "atur_permission_role",
+  "atur_role_user",
+  "atur_permission_user",
+  "kelola_turnamen",
+];
+
+// Dipakai untuk menghitung izin dari role di mode mock
+export const mockPermissionRoles = [
+  { id: 1, name: "Admin Platform", permissions: [...mockAllPermissions] },
+  { id: 2, name: "User", permissions: ["lihat_dashboard"] },
+];
+
+// Izin langsung per user (id user -> nama permission)
+export const mockDirectPermissions = { 3: ["lihat_data_user"] };

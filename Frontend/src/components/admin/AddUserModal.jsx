@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Icon from "../Icon";
+import Icon from "../icon";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -110,8 +110,8 @@ function AddUserModal({ roles, onSubmit, onClose }) {
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          {field("username", "Username", "text", "AlexShadow")}
-          {field("email", "Email", "email", "alex@example.com")}
+          {field("username", "Username", "text", "Masukkan Username")}
+          {field("email", "Email", "email", "Masukkan Email")}
           {field("password", "Password", "password", "Min. 8 karakter")}
           {field("confirmPassword", "Konfirmasi Password", "password")}
 
