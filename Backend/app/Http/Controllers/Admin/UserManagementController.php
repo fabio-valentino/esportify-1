@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
@@ -51,11 +50,13 @@ class UserManagementController extends Controller
                 'required',
                 'string',
                 'min:8',
+                'confirmed',
             ],
             'role' => [
                 'required',
                 'string',
-                Rule::exists('roles', 'name')->where('guard_name', 'web'),
+                Rule::exists('roles', 'name')
+                    ->where('guard_name', 'web'),
             ],
         ]);
 
@@ -189,5 +190,4 @@ class UserManagementController extends Controller
         ]);
     }
 }
-?>
 ?>
