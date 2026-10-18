@@ -6,12 +6,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 
+use App\Http\Controllers\Player\ProfileController;
+
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\PermissionManagementController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\UserRoleController;
+use App\Http\Controllers\Admin\UserPermissionController;
+
 
 // ==========================================
 // AUTHENTICATION
@@ -29,11 +33,16 @@ Route::post('/logout', [LoginController::class, 'logout'])
 
 
 // ==========================================
-// AUTHENTICATED USER
+// AUTHENTICATED USER & PLAYER
 // ==========================================
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    // ======================================
+    // AUTHENTICATED USER
+    // ======================================
+
+    // Menampilkan data user yang sedang login
     Route::get('/user', function (Request $request) {
         $user = $request->user();
 
@@ -47,6 +56,17 @@ Route::middleware('auth:sanctum')->group(function () {
             ],
         ]);
     });
+
+
+    // ======================================
+    // PLAYER PROFILE
+    // ======================================
+
+    // Menampilkan profil Player
+    Route::get('/profile', [ProfileController::class, 'show']);
+
+    // Memperbarui profil Player
+    Route::put('/profile', [ProfileController::class, 'update']);
 
 });
 
@@ -152,6 +172,19 @@ Route::middleware(['auth:sanctum', 'role:admin'])
 
         Route::post('/users/{id}/roles', [UserRoleController::class, 'store'])
             ->middleware('permission:atur_role_user');
+
+
+        // ======================================
+        // PENGATURAN USER & PERMISSION
+        // ======================================
+
+        // Menampilkan permission user
+        Route::get('/users/{id}/permissions', [UserPermissionController::class, 'index'])
+            ->middleware('permission:atur_permission_user');
+
+        // Mengatur direct permission user
+        Route::post('/users/{id}/permissions', [UserPermissionController::class, 'update'])
+            ->middleware('permission:atur_permission_user');
 
     });
 ?>
