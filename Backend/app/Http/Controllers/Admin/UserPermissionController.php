@@ -6,14 +6,67 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Permission;
 
 class UserPermissionController extends Controller
 {
     /**
-     * Get user's permissions.
-     *
+     * GET /api/admin/users/permissions
+     * Mengambil permission beberapa user sekaligus.
+     */
+    public function indexAll(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                'exists:users,id_user',
+            ],
+        ]);
+
+        $users = User::query()
+            ->whereIn('id_user', $validated['ids'])
+            ->with([
+                'roles.permissions',
+                'permissions',
+            ])
+            ->get();
+
+        $result = [];
+
+        foreach ($users as $user) {
+            // Permission yang diberikan langsung kepada user.
+            $direct = $user->permissions;
+
+            // Permission yang diperoleh melalui role.
+            $viaRoles = $user->roles
+                ->flatMap(fn ($role) => $role->permissions);
+
+            // Gabungan seluruh permission tanpa duplikasi.
+            $effective = $direct
+                ->merge($viaRoles)
+                ->unique('id')
+                ->sortBy('id')
+                ->values();
+
+            $result[$user->id_user] = [
+                'direct' => $this->formatPermissions($direct),
+                'via_roles' => $this->formatPermissions($viaRoles),
+                'effective' => $this->formatPermissions($effective),
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User permissions retrieved successfully.',
+            'data' => $result,
+        ]);
+    }
+
+    /**
      * GET /api/admin/users/{id}/permissions
+     * Mengambil permission satu user.
      */
     public function index(int $id)
     {
@@ -26,14 +79,8 @@ class UserPermissionController extends Controller
             ], 404);
         }
 
-        // Permission yang diberikan langsung kepada user
         $direct = $user->getDirectPermissions();
-
-        // Permission yang didapat dari role user
         $viaRoles = $user->getPermissionsViaRoles();
-
-        // Semua permission yang efektif dimiliki user
-        // (direct permission + permission dari role)
         $effective = $user->getAllPermissions();
 
         return response()->json([
@@ -48,9 +95,8 @@ class UserPermissionController extends Controller
     }
 
     /**
-     * Sync direct permissions for a user.
-     *
      * POST /api/admin/users/{id}/permissions
+     * Memperbarui permission langsung milik satu user.
      */
     public function update(Request $request, int $id)
     {
@@ -72,12 +118,9 @@ class UserPermissionController extends Controller
         ]);
 
         DB::transaction(function () use ($user, $validated) {
-            // Hanya mengatur direct permission user.
-            // Permission yang berasal dari role tidak akan dihapus.
             $user->syncPermissions($validated['permissions']);
         });
 
-        // Ambil ulang data permission setelah sinkronisasi
         $user->load('roles');
 
         $direct = $user->getDirectPermissions();
@@ -96,7 +139,7 @@ class UserPermissionController extends Controller
     }
 
     /**
-     * Format permission collection for API response.
+     * Mengubah collection permission menjadi array sederhana.
      */
     private function formatPermissions($permissions): array
     {
