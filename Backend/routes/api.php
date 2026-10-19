@@ -99,6 +99,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::post('/users', [UserManagementController::class, 'store'])
             ->middleware('permission:lihat_data_user');
 
+        // Mengambil permission beberapa user sekaligus
+        Route::get('/users/permissions', [UserPermissionController::class, 'indexAll'])
+            ->middleware('permission:atur_permission_user');
+
         // Menampilkan detail user
         Route::get('/users/{id}', [UserManagementController::class, 'show'])
             ->middleware('permission:lihat_data_user');
@@ -178,7 +182,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         // PENGATURAN USER & PERMISSION
         // ======================================
 
-        // Menampilkan permission user
+        // Menampilkan permission satu user
         Route::get('/users/{id}/permissions', [UserPermissionController::class, 'index'])
             ->middleware('permission:atur_permission_user');
 
