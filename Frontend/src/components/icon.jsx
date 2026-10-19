@@ -25,6 +25,10 @@ import {
   X,
   Pencil,
   KeyRound,
+  House,
+  Settings,
+  Camera,
+  Trophy,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -57,6 +61,10 @@ const icons = {
   x: X,
   edit: Pencil,
   key: KeyRound,
+  home: House,
+  settings: Settings,
+  camera: Camera,
+  trophy: Trophy,
 };
 
 function Icon({ name, size = 16 }) {
