@@ -12,6 +12,7 @@ export class ApiError extends Error {
 
 export async function apiRequest(path, { method = "GET", body } = {}) {
   const token = getToken();
+  const isForm = body instanceof FormData;
   let response;
 
   try {
@@ -20,9 +21,10 @@ export async function apiRequest(path, { method = "GET", body } = {}) {
       headers: {
         Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(body ? { "Content-Type": "application/json" } : {}),
+        // FormData: biarkan browser mengatur Content-Type (beserta boundary)
+        ...(body && !isForm ? { "Content-Type": "application/json" } : {}),
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? (isForm ? body : JSON.stringify(body)) : undefined,
     });
   } catch {
     throw new ApiError("Tidak dapat terhubung ke server. Coba lagi nanti.");
@@ -36,13 +38,23 @@ export async function apiRequest(path, { method = "GET", body } = {}) {
     throw new ApiError(data?.message || "Tidak terautentikasi.", 401);
   }
   if (response.status === 422) {
-    throw new ApiError(data?.message || "Data tidak valid.", 422, data?.errors || {});
+    throw new ApiError(
+      data?.message || "Data tidak valid.",
+      422,
+      data?.errors || {},
+    );
   }
   if (response.status === 429) {
-    throw new ApiError("Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.", 429);
+    throw new ApiError(
+      "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.",
+      429,
+    );
   }
   if (response.status >= 500) {
-    throw new ApiError("Terjadi kesalahan pada server. Coba lagi nanti.", response.status);
+    throw new ApiError(
+      "Terjadi kesalahan pada server. Coba lagi nanti.",
+      response.status,
+    );
   }
   throw new ApiError(data?.message || "Permintaan gagal.", response.status);
 }

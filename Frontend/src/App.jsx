@@ -7,6 +7,8 @@ import UserHome from "./pages/UserHome";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPermissions from "./pages/admin/AdminPermissions";
+import UserLayout from "./layouts/UserLayout";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -18,7 +20,10 @@ function App() {
 
         {/* Wajib login. Hak akses admin yang sebenarnya diputuskan backend (403). */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/home" element={<UserHome />} />
+          <Route element={<UserLayout />}>
+            <Route path="/home" element={<UserHome />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
 
           <Route path="/admin" element={<AdminLayout />}>
             {/* Sementara hanya fitur Users */}
