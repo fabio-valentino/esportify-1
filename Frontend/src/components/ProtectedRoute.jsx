@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { SKIP_AUTH } from "../config/env";
-
+import { isAdmin } from "../utils/role";
 
 // Pengarah tampilan saja. Keamanan data tetap dijaga backend.
 // adminOnly: halaman khusus admin. userOnly: halaman khusus user biasa.
