@@ -30,15 +30,23 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     try {
-
       await logout();
     } finally {
       setUser(null);
     }
   };
 
+  // Ambil ulang data user dari backend (dipakai setelah profil diubah)
+  const refreshUser = async () => {
+    const currentUser = await getCurrentUser();
+    setUser(currentUser);
+    return currentUser;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{ user, loading, signIn, signOut, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

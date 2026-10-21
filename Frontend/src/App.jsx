@@ -4,6 +4,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import UserHome from "./pages/UserHome";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPermissions from "./pages/admin/AdminPermissions";
+import UserLayout from "./layouts/UserLayout";
+import Profile from "./pages/Profile";
 
 function App() {
   return (

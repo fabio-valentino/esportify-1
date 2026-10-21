@@ -1,4 +1,4 @@
-import Icon from "../Icon";
+import Icon from "../icon";
 
 // Satu kolom input: label, ikon kiri, ikon/tombol kanan (opsional), pesan error
 // Props lain (name, type, value, onChange, placeholder, dll) diteruskan ke <input>
