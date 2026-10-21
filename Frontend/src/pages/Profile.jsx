@@ -219,7 +219,6 @@ function Profile() {
               onChange={handleAvatar}
             />
           </div>
-          <p className="profile-id">ID: {profile.id}</p>
           {uploading && <p className="admin-message">Mengunggah...</p>}
           {avatarMsg.text && (
             <p className={`admin-message ${avatarMsg.type}`}>
