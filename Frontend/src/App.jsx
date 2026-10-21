@@ -18,15 +18,23 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Wajib login. Hak akses admin yang sebenarnya diputuskan backend (403). */}
-        <Route element={<ProtectedRoute />}>
+        {/* Khusus user biasa: admin diarahkan ke /admin */}
+        <Route element={<ProtectedRoute userOnly />}>
           <Route element={<UserLayout />}>
             <Route path="/home" element={<UserHome />} />
+          </Route>
+        </Route>
+
+        {/* Semua yang sudah login */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<UserLayout />}>
             <Route path="/profile" element={<Profile />} />
           </Route>
+        </Route>
 
+        {/* Khusus admin. Backend tetap menolak dengan 403 kalau bukan admin. */}
+        <Route element={<ProtectedRoute adminOnly />}>
           <Route path="/admin" element={<AdminLayout />}>
-            {/* Sementara hanya fitur Users */}
             <Route index element={<Navigate to="/admin/users" replace />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="permissions" element={<AdminPermissions />} />

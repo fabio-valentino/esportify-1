@@ -2,8 +2,10 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { SKIP_AUTH } from "../config/env";
 
-// Ini hanya pengarah tampilan. Keamanan data tetap dijaga backend.
-function ProtectedRoute() {
+
+// Pengarah tampilan saja. Keamanan data tetap dijaga backend.
+// adminOnly: halaman khusus admin. userOnly: halaman khusus user biasa.
+function ProtectedRoute({ adminOnly = false, userOnly = false }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -13,6 +15,10 @@ function ProtectedRoute() {
   if (loading) return <p className="placeholder">Memuat...</p>;
   if (!user)
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+
+  const admin = isAdmin(user);
+  if (adminOnly && !admin) return <Navigate to="/home" replace />;
+  if (userOnly && admin) return <Navigate to="/admin" replace />;
 
   return <Outlet />;
 }

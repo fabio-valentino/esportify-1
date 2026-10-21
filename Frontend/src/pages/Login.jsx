@@ -4,6 +4,7 @@ import AuthShell from "../components/auth/AuthShell";
 import FormField from "../components/auth/FormField";
 import Icon from "../components/icon";
 import { useAuth } from "../context/AuthContext";
+import { homePathFor } from "../utils/role";
 
 function Login() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
 
   // Sudah login? Tidak perlu lihat halaman login
-  if (!checking && user) return <Navigate to="/home" replace />;
+  if (!checking && user) return <Navigate to={homePathFor(user)} replace />;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -37,8 +38,15 @@ function Login() {
     setLoading(true);
     setMessage("");
     try {
-      await signIn(form);
-      navigate(location.state?.from || "/home", { replace: true });
+      const currentUser = await signIn(form);
+      const from = location.state?.from;
+      // Pakai halaman asal hanya kalau sesuai dengan role-nya
+      const target =
+        from &&
+        from.startsWith("/admin") === (homePathFor(currentUser) === "/admin")
+          ? from
+          : homePathFor(currentUser);
+      navigate(target, { replace: true });
     } catch (err) {
       const fieldErrors = {};
       Object.entries(err.fields || {}).forEach(([key, value]) => {
