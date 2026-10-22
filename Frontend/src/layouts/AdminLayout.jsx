@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import Icon from "../components/icon";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/ESPORTIFY-Logo.png";
 import "../styles/admin.css";
+import Avatar from "../components/user/Avatar";
+import "../styles/user.css";
+import { getAdminProfile } from "../services/profileApi";
 
 function AdminLayout() {
   const { user, signOut } = useAuth();
@@ -16,6 +19,14 @@ function AdminLayout() {
     await signOut();
     navigate("/login", { replace: true });
   };
+
+  const [adminProfile, setAdminProfile] = useState(null);
+
+  useEffect(() => {
+    getAdminProfile()
+      .then(setAdminProfile)
+      .catch(() => {}); // cadangan: user?.username
+  }, []);
 
   return (
     <div className="admin">
@@ -39,9 +50,16 @@ function AdminLayout() {
             <Icon name="bell" size={18} />
             <span className="admin-dot"></span>
           </button>
-          <span className="admin-circle-btn" title={user?.username}>
-            <Icon name="user" size={18} />
-          </span>
+          <Link
+            to="/admin/profile"
+            title="Profil admin"
+            aria-label="Profil admin"
+          >
+            <Avatar
+              name={adminProfile?.username || user?.username || ""}
+              size={36}
+            />
+          </Link>
           <button
             className="admin-circle-btn"
             onClick={handleLogout}
@@ -59,7 +77,7 @@ function AdminLayout() {
           <div className="admin-overlay" onClick={closeSidebar}></div>
         )}
         <main className="admin-main">
-          <Outlet />
+          <Outlet context={{ adminProfile, setAdminProfile }} />
         </main>
       </div>
     </div>

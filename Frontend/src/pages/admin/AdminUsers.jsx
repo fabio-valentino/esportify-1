@@ -162,44 +162,21 @@ function AdminUsers() {
     }
   };
 
-  // Dipanggil modal. Error dari createUser dilempar ke modal untuk ditampilkan di form.
+  // Dipanggil modal. Error dilempar ke modal untuk ditampilkan di form.
   const handleCreate = async (form) => {
     await createUser(form);
 
-    // Ambil data terbaru hanya untuk menemukan user baru, tanpa menimpa edit yang belum disimpan
-    let created = null;
     try {
       const fresh = await getUsers();
-      created =
-        fresh.find((u) => u.email.toLowerCase() === form.email.toLowerCase()) ??
-        null;
+      setUsers(fresh);
+      setOriginal(fresh);
+      setMessage({ text: "User berhasil ditambahkan.", type: "success" });
     } catch {
-      created = null;
+      setMessage({
+        text: "User berhasil dibuat, tetapi daftar gagal dimuat ulang. Muat ulang halaman.",
+        type: "error",
+      });
     }
-
-    let text = "User berhasil ditambahkan.";
-    let type = "success";
-
-    if (!created) {
-      text =
-        "User berhasil dibuat, tetapi belum tampil di daftar. Muat ulang halaman.";
-      type = form.role ? "error" : "success";
-    } else {
-      if (form.role) {
-        try {
-          await setUserRole(created.id, form.role);
-          created = { ...created, role: form.role };
-        } catch (err) {
-          text = `User dibuat, tetapi role gagal diatur: ${errorText(err)}`;
-          type = "error";
-        }
-      }
-      const finalUser = created;
-      setUsers((prev) => [...prev, finalUser]);
-      setOriginal((prev) => [...prev, finalUser]);
-    }
-
-    setMessage({ text, type });
   };
 
   return (

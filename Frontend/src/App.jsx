@@ -9,6 +9,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPermissions from "./pages/admin/AdminPermissions";
 import UserLayout from "./layouts/UserLayout";
 import Profile from "./pages/Profile";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             <Route index element={<Navigate to="/admin/users" replace />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="permissions" element={<AdminPermissions />} />
+            <Route path="profile" element={<AdminProfile />} />
           </Route>
         </Route>
       </Routes>
