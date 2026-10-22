@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Player\ProfileController;
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\PermissionManagementController;
@@ -78,6 +79,17 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin')
     ->group(function () {
+
+        // ======================================
+        // ADMIN PROFILE
+        // ======================================
+
+        // Menampilkan profil Admin
+        Route::get('/profile', [AdminProfileController::class, 'show']);
+
+        // Memperbarui username dan password Admin
+        Route::put('/profile', [AdminProfileController::class, 'update']);
+
 
         // ======================================
         // DASHBOARD
