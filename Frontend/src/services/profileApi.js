@@ -16,10 +16,15 @@ const skipProfile = {
 
 // ASSUMPTION: avatar bisa URL lengkap atau path. Path relatif digabung dengan
 // alamat server. Kalau backend memakai /storage, ubah di sini saja.
+
 const toAvatarUrl = (value) => {
   if (!value) return null;
-  if (/^(https?:|data:|blob:)/.test(value)) return value;
-  return `${API_ORIGIN}/${String(value).replace(/^\//, "")}`;
+
+  if (/^(https?:|data:|blob:)/.test(value)) {
+    return value;
+  }
+
+  return `${API_ORIGIN}/storage/${String(value).replace(/^\/+/, "")}`;
 };
 
 // ASSUMPTION: nama field belum dikonfirmasi. Data player bisa ada di objek "player".
