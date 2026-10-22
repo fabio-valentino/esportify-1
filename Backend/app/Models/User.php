@@ -41,9 +41,28 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Relasi ke profil Player.
+     */
     public function player(): HasOne
     {
-        return $this->hasOne(Player::class, 'id_user', 'id_user');
+        return $this->hasOne(
+            Player::class,
+            'id_user',
+            'id_user'
+        );
+    }
+
+    /**
+     * Relasi ke profil Admin.
+     */
+    public function admin(): HasOne
+    {
+        return $this->hasOne(
+            Admin::class,
+            'id_user',
+            'id_user'
+        );
     }
 }
 ?>
