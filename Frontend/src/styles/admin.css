@@ -376,6 +376,10 @@
   font-family: inherit;
 }
 
+.admin-form-field select.has-error {
+  border-color: #f87171;
+}
+
 .admin-form-field input:focus,
 .admin-form-field select:focus {
   outline: none;

@@ -35,7 +35,7 @@ const mapProfile = (d) => {
   };
 };
 
-// GET /api/profile
+// GET /api/profile (profil player)
 export async function getProfile() {
   if (SKIP_AUTH) {
     await wait();
@@ -80,3 +80,43 @@ export async function uploadAvatar(file) {
   await apiRequest("/profile", { method: "POST", body: form });
   return null;
 }
+
+// GET /api/admin/profile
+// Respons: { data: { id_admin, id_user, username, email } }
+export async function getAdminProfile() {
+  if (SKIP_AUTH) {
+    await wait();
+    return { id: 1, username: "admin_esportify", email: "admin@esportify.com" };
+  }
+  const response = await apiRequest("/admin/profile");
+  const d = response?.data ?? response;
+  return {
+    id: d.id_admin,
+    userId: d.id_user,
+    username: d.username,
+    email: d.email,
+  };
+}
+
+// PUT /api/admin/profile
+// ASSUMPTION: body belum dikonfirmasi (kontrak terpotong). Ubah di sini saja.
+async function putAdminProfile(payload) {
+  if (SKIP_AUTH) {
+    await wait();
+    return null;
+  }
+  return apiRequest("/admin/profile", { method: "PUT", body: payload });
+}
+
+export const updateAdminUsername = (username) => putAdminProfile({ username });
+
+export const changeAdminPassword = ({
+  currentPassword,
+  password,
+  confirmPassword,
+}) =>
+  putAdminProfile({
+    current_password: currentPassword,
+    password,
+    password_confirmation: confirmPassword,
+  });

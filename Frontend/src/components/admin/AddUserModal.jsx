@@ -37,6 +37,7 @@ function AddUserModal({ roles, onSubmit, onClose }) {
       result.password = "Password minimal 8 karakter.";
     if (form.password !== form.confirmPassword)
       result.confirmPassword = "Konfirmasi password tidak sama.";
+    if (!form.role) result.role = "Role wajib dipilih.";
     return result;
   };
 
@@ -116,18 +117,19 @@ function AddUserModal({ roles, onSubmit, onClose }) {
           {field("confirmPassword", "Konfirmasi Password", "password")}
 
           <div className="admin-form-field">
-            <label htmlFor="add-role">Role (opsional)</label>
+            <label htmlFor="add-role">Role</label>
             <select
               id="add-role"
               name="role"
               value={form.role}
               onChange={handleChange}
               disabled={roles.length === 0}
+              className={errors.role ? "has-error" : ""}
             >
               <option value="">
                 {roles.length === 0
                   ? "Daftar role tidak tersedia"
-                  : "Gunakan role bawaan"}
+                  : "Pilih role"}
               </option>
               {roles.map((role) => (
                 <option key={role} value={role}>
@@ -135,6 +137,7 @@ function AddUserModal({ roles, onSubmit, onClose }) {
                 </option>
               ))}
             </select>
+            {errors.role && <p className="admin-form-error">{errors.role}</p>}
           </div>
 
           {message && <p className="admin-form-error">{message}</p>}

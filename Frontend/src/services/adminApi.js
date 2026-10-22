@@ -118,30 +118,28 @@ export async function deleteUser(id) {
   return true;
 }
 
-// POST /api/admin/users
+// POST /api/admin/users (role wajib, dikirim bersamaan sesuai backend)
 export async function createUser({
   username,
   email,
   password,
   confirmPassword,
+  role,
 }) {
   if (USE_ADMIN_MOCK) {
     await wait();
-
     if (mockUsers.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
       throw new ApiError("Data tidak valid.", 422, {
         email: ["Email sudah terdaftar."],
       });
     }
-
     mockUsers.push({
       id: Date.now(),
       username,
       email,
-      role: "User",
+      role,
       status: "aktif",
     });
-
     return true;
   }
 
@@ -152,6 +150,7 @@ export async function createUser({
       email,
       password,
       password_confirmation: confirmPassword,
+      role,
     },
   });
 }

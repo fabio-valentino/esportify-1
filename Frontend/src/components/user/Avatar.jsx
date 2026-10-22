@@ -13,7 +13,7 @@ function Avatar({ src, name = "", size = 36 }) {
       {src && !failed ? (
         <img src={src} alt={name} onError={() => setFailed(true)} />
       ) : (
-        name.charAt(0).toUpperCase() || "?"
+        name.charAt(0).toUpperCase() || "•"
       )}
     </span>
   );
