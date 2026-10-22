@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserManagementController extends Controller
 {
@@ -60,21 +61,35 @@ class UserManagementController extends Controller
             ],
         ]);
 
-        // Membuat user baru
-        $user = User::create([
-            'username' => $validated['username'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'status' => 'aktif',
-        ]);
+        // Membuat user, memberikan role, dan membuat profil
+        // dalam satu transaksi database
+        $user = DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'status' => 'aktif',
+            ]);
 
-        // Memberikan role kepada user
-        $user->assignRole($validated['role']);
+            // Memberikan role kepada user
+            $user->assignRole($validated['role']);
+
+            // Membuat profil otomatis jika role adalah player
+            if ($validated['role'] === 'player') {
+                $user->player()->create([
+                    'avatar' => null,
+                    'bio' => null,
+                    'jenis_kelamin' => null,
+                ]);
+            }
+
+            return $user;
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'User berhasil ditambahkan.',
-            'data' => $user->fresh()->load('roles'),
+            'data' => $user->fresh()->load(['roles', 'player']),
         ], 201);
     }
 
