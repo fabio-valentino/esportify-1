@@ -223,16 +223,10 @@ function AdminPermissions() {
                       <button
                         className="admin-icon-btn edit"
                         onClick={() => setEditing(user)}
-                        disabled={!p || Boolean(p.error) || isMe}
-                        title={
-                          isMe
-                            ? "Tidak bisa mengatur izin akun sendiri"
-                            : "Edit"
-                        }
+                        disabled={!p || Boolean(p.error)}
+                        title="Edit"
                         aria-label={`Edit permission ${user.username}`}
-                      >
-                        <Icon name="edit" size={18} />
-                      </button>
+                      ></button>
                     </td>
                   </tr>
                 );
