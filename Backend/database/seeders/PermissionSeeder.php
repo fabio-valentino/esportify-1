@@ -26,6 +26,18 @@ class PermissionSeeder extends Seeder
             'atur_role_user',
             'atur_permission_user',
             'kelola_turnamen',
+
+            // Permission Kelola Game
+            'lihat_data_game',
+            'tambah_data_game',
+            'ubah_data_game',
+            'hapus_data_game',
+
+            // Permission Kelola Kategori
+            'lihat_data_kategori',
+            'tambah_data_kategori',
+            'ubah_data_kategori',
+            'hapus_data_kategori',
         ];
 
         // Membuat permission jika belum tersedia
