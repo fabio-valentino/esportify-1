@@ -5,7 +5,7 @@ import Icon from "../icon";
 const navClass = ({ isActive }) =>
   isActive ? "admin-nav-item active" : "admin-nav-item";
 
-function UserSidebar({ open, onNavigate }) {
+function UserSidebar({ open, onNavigate, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -22,12 +22,15 @@ function UserSidebar({ open, onNavigate }) {
         <Icon name={menuOpen ? "chevron-up" : "chevron-down"} size={14} />
       </button>
 
-      {/* Isi submenu menunggu fitur Turnamen */}
       {menuOpen && (
         <div className="admin-submenu">
           <span className="admin-message">Belum ada menu.</span>
         </div>
       )}
+
+      <button className="admin-nav-item sidebar-logout" onClick={onLogout}>
+        <Icon name="logout" size={18} /> Keluar
+      </button>
     </aside>
   );
 }

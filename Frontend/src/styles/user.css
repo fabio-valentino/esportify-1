@@ -186,6 +186,104 @@
   object-fit: cover;
 }
 
+/* ========== Profil: kotak satu baris ========== */
+.profile-layout {
+  align-items: center;
+  gap: 24px;
+}
+.profile-right {
+  border-left: none;
+  padding-left: 0;
+}
+
+.pf {
+  margin-bottom: 14px;
+}
+.pf-label {
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.pf-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+  padding: 0 20px;
+  border: 1px solid var(--white);
+  border-radius: 10px;
+  background: #171c28;
+}
+.pf-value {
+  padding: 14px 0;
+  font-size: 18px;
+  color: var(--white);
+  overflow-wrap: anywhere;
+}
+.pf-value.empty {
+  color: var(--muted);
+}
+.pf-btn {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 500;
+}
+.pf-btn:hover {
+  color: #6aa3ff;
+}
+.pf-input {
+  flex: 1;
+  min-width: 0;
+  height: 58px;
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--white);
+  font-size: 18px;
+  font-family: inherit;
+}
+.pf-input option {
+  background: #171c28;
+}
+
+.pf-below {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.pf-below .profile-input {
+  height: 58px;
+  background: #171c28;
+}
+.pf-save {
+  align-self: flex-start;
+  padding: 10px 40px;
+  border: none;
+  border-radius: 10px;
+  background: #16a34a;
+  color: var(--white);
+  font-size: 20px;
+  font-weight: 700;
+}
+.pf-save:hover {
+  background: #15803d;
+}
+.pf-save:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pf-divider {
+  margin: 24px 0 18px;
+  border: none;
+  border-top: 1px solid #9ca3af;
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 800px) {
   .profile-layout {
