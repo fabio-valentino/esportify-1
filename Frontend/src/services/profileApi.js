@@ -10,8 +10,8 @@ const skipProfile = {
   username: "James",
   email: "james123@gmail.com",
   avatar: null,
-  bio: "",
-  gender: "",
+  bio: "Hallo Bruh!!",
+  gender: "Laki-laki",
 };
 
 // ASSUMPTION: avatar bisa URL lengkap atau path. Path relatif digabung dengan
@@ -61,6 +61,10 @@ async function putProfile(payload) {
 
 export const updateUsername = (username) => putProfile({ username });
 
+// ASSUMPTION: body dan nilai jenis kelamin belum dikonfirmasi backend
+export const updateBio = (bio) => putProfile({ bio });
+export const updateGender = (gender) => putProfile({ jenis_kelamin: gender });
+
 export const changePassword = ({
   currentPassword,
   password,
@@ -91,7 +95,12 @@ export async function uploadAvatar(file) {
 export async function getAdminProfile() {
   if (SKIP_AUTH) {
     await wait();
-    return { id: 1, username: "admin_esportify", email: "admin@esportify.com" };
+    return {
+      id: 1,
+      username: "admin_esportify",
+      email: "admin@esportify.com",
+      avatar: null,
+    };
   }
   const response = await apiRequest("/admin/profile");
   const d = response?.data ?? response;
@@ -100,7 +109,22 @@ export async function getAdminProfile() {
     userId: d.id_user,
     username: d.username,
     email: d.email,
+    // ASSUMPTION: avatar_url belum ada di kontrak admin
+    avatar: d.avatar_url ?? toAvatarUrl(d.avatar),
   };
+}
+
+// ASSUMPTION: sama seperti player (POST multipart + _method=PUT)
+export async function uploadAdminAvatar(file) {
+  if (SKIP_AUTH) {
+    await wait();
+    return URL.createObjectURL(file);
+  }
+  const form = new FormData();
+  form.append("_method", "PUT");
+  form.append("avatar", file);
+  await apiRequest("/admin/profile", { method: "POST", body: form });
+  return null; // ambil ulang lewat getAdminProfile
 }
 
 // PUT /api/admin/profile

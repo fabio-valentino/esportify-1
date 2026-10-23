@@ -50,10 +50,6 @@
   color: var(--white);
 }
 
-.admin-body {
-  display: flex;
-  min-height: calc(100vh - 64px);
-}
 .admin-main {
   flex: 1;
   min-width: 0;
@@ -69,15 +65,7 @@
 }
 
 /* ========== Sidebar ========== */
-.admin-sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  background: #171c28;
-  padding: 24px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+
 .admin-nav-item {
   display: flex;
   align-items: center;
@@ -110,6 +98,11 @@
 }
 .admin-submenu .admin-nav-item.active {
   background: #2b4a85;
+}
+
+/* Tombol Keluar di dasar sidebar */
+.sidebar-logout .icon {
+  color: #ef4444;
 }
 
 /* ========== Panel & tabel ========== */
@@ -806,6 +799,43 @@ p.admin-message {
   cursor: not-allowed;
 }
 
+/* ===== Layout: sidebar menempel, hanya konten yang scroll ===== */
+.admin-body {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 64px);
+}
+.admin-sidebar {
+  position: sticky;
+  top: 64px;
+  align-self: flex-start;
+  width: 240px;
+  flex-shrink: 0;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px 12px;
+  background: #171c28;
+}
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 28px 48px;
+}
+
+/* Tombol Keluar di dasar sidebar */
+.sidebar-logout {
+  margin-top: auto;
+  color: var(--white);
+  font-weight: 600;
+  font-size: 15px;
+}
+.sidebar-logout .icon {
+  color: #ef4444;
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
   .admin-menu-btn {
@@ -821,6 +851,7 @@ p.admin-message {
     top: 64px;
     bottom: 0;
     left: 0;
+    height: auto;
     z-index: 40;
     transform: translateX(-100%);
     transition: transform 0.2s;

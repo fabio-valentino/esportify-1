@@ -56,23 +56,20 @@ function AdminLayout() {
             aria-label="Profil admin"
           >
             <Avatar
+              src={adminProfile?.avatar}
               name={adminProfile?.username || user?.username || ""}
               size={36}
             />
           </Link>
-          <button
-            className="admin-circle-btn"
-            onClick={handleLogout}
-            aria-label="Logout"
-            title="Logout"
-          >
-            <Icon name="logout" size={18} />
-          </button>
         </div>
       </header>
 
       <div className="admin-body">
-        <AdminSidebar open={sidebarOpen} onNavigate={closeSidebar} />
+        <AdminSidebar
+          open={sidebarOpen}
+          onNavigate={closeSidebar}
+          onLogout={handleLogout}
+        />
         {sidebarOpen && (
           <div className="admin-overlay" onClick={closeSidebar}></div>
         )}

@@ -9,8 +9,7 @@ const userMenuItems = [
   { label: "Users", to: "/admin/users", icon: "user" },
   { label: "Permissions", to: "/admin/permissions", icon: "key" },
 ];
-
-function AdminSidebar({ open, onNavigate }) {
+function AdminSidebar({ open, onNavigate, onLogout }) {
   const { pathname } = useLocation();
   // Dropdown tertutup dulu, otomatis terbuka kalau halaman aktif ada di dalamnya
   const inUserMenu =
@@ -46,6 +45,10 @@ function AdminSidebar({ open, onNavigate }) {
       <NavLink to="/admin/games" className={navClass} onClick={onNavigate}>
         <Icon name="gamepad" size={16} /> Kelola Game
       </NavLink>
+
+      <button className="admin-nav-item sidebar-logout" onClick={onLogout}>
+        <Icon name="logout" size={18} /> Keluar
+      </button>
     </aside>
   );
 }

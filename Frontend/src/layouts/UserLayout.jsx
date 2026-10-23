@@ -54,13 +54,16 @@ function UserLayout() {
           <ProfileMenu
             username={profile?.username ?? user?.username ?? ""}
             avatar={profile?.avatar}
-            onLogout={handleLogout}
           />
         </div>
       </header>
 
       <div className="admin-body">
-        <UserSidebar open={sidebarOpen} onNavigate={closeSidebar} />
+        <UserSidebar
+          open={sidebarOpen}
+          onNavigate={closeSidebar}
+          onLogout={handleLogout}
+        />
         {sidebarOpen && (
           <div className="admin-overlay" onClick={closeSidebar}></div>
         )}
