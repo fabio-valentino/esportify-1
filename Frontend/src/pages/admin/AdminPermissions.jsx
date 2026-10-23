@@ -226,7 +226,9 @@ function AdminPermissions() {
                         disabled={!p || Boolean(p.error)}
                         title="Edit"
                         aria-label={`Edit permission ${user.username}`}
-                      ></button>
+                      >
+                        <Icon name="edit" size={18} />
+                      </button>
                     </td>
                   </tr>
                 );
