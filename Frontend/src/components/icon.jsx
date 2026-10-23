@@ -29,6 +29,8 @@ import {
   Settings,
   Camera,
   Trophy,
+  Upload,
+  TriangleAlert,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -65,6 +67,8 @@ const icons = {
   settings: Settings,
   camera: Camera,
   trophy: Trophy,
+  upload: Upload,
+  alert: TriangleAlert,
 };
 
 function Icon({ name, size = 16 }) {

@@ -97,3 +97,25 @@ export const mockPermissionRoles = [
 
 // Izin langsung per user (id user -> nama permission)
 export const mockDirectPermissions = { 3: ["lihat_data_user"] };
+
+// SEMENTARA: data contoh. Bukan implementasi backend.
+export const mockCategories = [
+  { id: 1, name: "MOBA" },
+  { id: 2, name: "Battle Royale" },
+  { id: 3, name: "FPS" },
+  { id: 4, name: "RPG" },
+  { id: 5, name: "Strategy" },
+  { id: 6, name: "Sports" },
+];
+
+// used: true = sudah dipakai turnamen (tidak boleh dihapus, hanya dinonaktifkan)
+export const mockGames = [
+  {
+    id: 1,
+    name: "Mobile Legends : Bang-bang",
+    avatar: null,
+    categoryIds: [1],
+    status: "aktif",
+    used: true,
+  },
+];

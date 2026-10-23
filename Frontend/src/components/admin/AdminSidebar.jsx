@@ -1,18 +1,22 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import Icon from "../icon";
 
 const navClass = ({ isActive }) =>
   isActive ? "admin-nav-item active" : "admin-nav-item";
 
-// Fitur berikutnya (Dashboard, Permissions) tinggal menambah item di sini
 const userMenuItems = [
   { label: "Users", to: "/admin/users", icon: "user" },
   { label: "Permissions", to: "/admin/permissions", icon: "key" },
 ];
 
 function AdminSidebar({ open, onNavigate }) {
-  const [menuOpen, setMenuOpen] = useState(true);
+  const { pathname } = useLocation();
+  // Dropdown tertutup dulu, otomatis terbuka kalau halaman aktif ada di dalamnya
+  const inUserMenu =
+    pathname.startsWith("/admin/users") ||
+    pathname.startsWith("/admin/permissions");
+  const [menuOpen, setMenuOpen] = useState(inUserMenu);
 
   return (
     <aside className={`admin-sidebar ${open ? "open" : ""}`}>
@@ -38,6 +42,10 @@ function AdminSidebar({ open, onNavigate }) {
           ))}
         </div>
       )}
+
+      <NavLink to="/admin/games" className={navClass} onClick={onNavigate}>
+        <Icon name="gamepad" size={16} /> Kelola Game
+      </NavLink>
     </aside>
   );
 }
