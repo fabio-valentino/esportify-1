@@ -15,3 +15,6 @@ if (!USE_MOCK && !API_BASE_URL) {
 
 export const SKIP_AUTH =
   import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === "true";
+
+// Khusus Kelola Game. Ubah ke false setelah semua endpoint game selesai.
+export const USE_GAME_MOCK = import.meta.env.VITE_USE_GAME_MOCK !== "false";

@@ -544,7 +544,7 @@ p.admin-message {
   font-size: 12px;
   color: var(--text);
 }
-.admin-form-field input {
+.admin-form-field input:not([type="checkbox"]) {
   width: 100%;
   height: 40px;
   padding: 0 12px;
@@ -566,6 +566,244 @@ p.admin-message {
   margin-top: 6px;
   font-size: 11px;
   color: var(--muted);
+}
+
+/* ========== Kelola Game ========== */
+.game-section {
+  margin-bottom: 28px;
+}
+.game-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.game-section-head h2 {
+  font-size: 20px;
+  color: var(--white);
+}
+.game-section-head p {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.admin-outline-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: none;
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-outline-btn:hover {
+  background: #1f2535;
+}
+
+.game-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #3a4558;
+  border-radius: 6px;
+}
+.game-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  color: var(--white);
+  font-size: 14px;
+}
+.game-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+.game-table td {
+  padding: 12px 16px;
+  border-top: 1px solid #3a4558;
+  vertical-align: middle;
+}
+.game-table .col-action {
+  text-align: right;
+  width: 110px;
+}
+.game-empty {
+  text-align: center;
+  color: var(--muted);
+}
+.game-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.game-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #1e3a6e;
+  color: #93bbff;
+  font-weight: 700;
+}
+.game-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.game-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #3b82f6;
+  color: #0b1f4d;
+  font-size: 12px;
+  font-weight: 600;
+}
+.game-status {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.game-status.aktif {
+  background: #00ff1a;
+  color: #052e16;
+}
+.game-status.nonaktif {
+  background: #f87171;
+  color: #7f1d1d;
+}
+
+/* Checkbox kategori di form game: kembalikan ke ukuran normal */
+.admin-form-field .admin-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.admin-form-field .admin-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  padding: 0;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+/* Form game */
+.game-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #3a4558;
+  border-radius: 8px;
+  background: none;
+  color: var(--white);
+}
+.game-upload:hover {
+  border-color: var(--blue);
+}
+.game-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.game-upload-label {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #4f46e5;
+}
+.game-cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.admin-form-field select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #1c2230;
+  color: var(--white);
+  font-size: 13px;
+  font-family: inherit;
+}
+.admin-form-field select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.admin-form-field select.has-error {
+  border-color: #f87171;
+}
+
+/* Dialog konfirmasi */
+.admin-confirm {
+  max-width: 400px;
+}
+.admin-confirm h2 {
+  font-size: 18px;
+  color: var(--white);
+  margin: 8px 0;
+}
+.admin-confirm-icon.danger {
+  color: #ef4444;
+}
+.admin-confirm-icon.warning {
+  color: #facc15;
+}
+.admin-confirm-text {
+  font-size: 12px;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-danger-btn,
+.admin-warn-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-danger-btn {
+  background: #ef4444;
+  color: var(--white);
+}
+.admin-warn-btn {
+  background: #facc15;
+  color: #1f2937;
+}
+.admin-danger-btn:disabled,
+.admin-warn-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* ========== Responsive ========== */

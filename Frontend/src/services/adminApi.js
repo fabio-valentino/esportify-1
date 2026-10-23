@@ -1,4 +1,4 @@
-import { USE_ADMIN_MOCK } from "../config/env";
+import { USE_ADMIN_MOCK, USE_GAME_MOCK, API_BASE_URL } from "../config/env";
 import { apiRequest, ApiError } from "./httpClient";
 import {
   mockUsers,
@@ -6,6 +6,8 @@ import {
   mockAllPermissions,
   mockPermissionRoles,
   mockDirectPermissions,
+  mockCategories,
+  mockGames,
 } from "./mock/adminMock";
 
 const copy = (data) => JSON.parse(JSON.stringify(data));
@@ -312,5 +314,216 @@ export async function createPermission(name) {
   return apiRequest("/admin/permissions", {
     method: "POST",
     body: { name },
+  });
+}
+
+// ==================================================
+// KELOLA GAME
+// Respons: { success, message, data }.
+// Request tambah/edit game: multipart/form-data
+//   nama_game, avatar, category_ids[], status
+// Edit multipart: POST + _method=PATCH
+// ==================================================
+const API_ORIGIN = API_BASE_URL ? new URL(API_BASE_URL).origin : "";
+
+// ASSUMPTION: avatar bisa URL lengkap atau path. Kalau backend memakai /storage,
+// ubah di sini saja.
+const toMediaUrl = (value) => {
+  if (!value) return null;
+  if (/^(https?:|data:|blob:)/.test(value)) return value;
+  return `${API_ORIGIN}/storage/${String(value).replace(/^\/?(storage\/)?/, "")}`;
+};
+
+// Backend: "Aktif" / "Nonaktif". Frontend: "aktif" / "nonaktif".
+const fromApiStatus = (s) =>
+  String(s ?? "")
+    .trim()
+    .toLowerCase() === "aktif"
+    ? "aktif"
+    : "nonaktif";
+
+const toApiStatus = (s) =>
+  String(s ?? "")
+    .trim()
+    .toLowerCase() === "aktif"
+    ? "Aktif"
+    : "Nonaktif";
+
+// ID selalu dijadikan angka supaya perbandingan di checkbox
+// (categoryIds.includes(c.id)) dan chip kategori selalu cocok.
+const toId = (value) => Number(value);
+
+const mapCategory = (c) => ({
+  id: toId(c.id_kategori ?? c.id),
+  name: c.nama_kategori ?? c.nama ?? c.name,
+});
+
+const mapGame = (g) => ({
+  id: toId(g.id_game ?? g.id),
+  name: g.nama_game ?? g.nama ?? g.name,
+  // Pakai avatar_url dari backend (URL lengkap). toMediaUrl hanya cadangan.
+  avatar: g.avatar_url ?? toMediaUrl(g.avatar),
+  categoryIds: (g.kategoris ?? g.categories ?? g.kategori ?? []).map((c) =>
+    toId(c.id_kategori ?? c.id ?? c),
+  ),
+  status: fromApiStatus(g.status),
+});
+
+// ----- Kategori -----
+export async function getCategories() {
+  if (USE_GAME_MOCK) {
+    await wait();
+    return copy(mockCategories);
+  }
+  const response = await apiRequest("/admin/categories");
+  return toList(response).map(mapCategory);
+}
+
+// ASSUMPTION: body { nama_kategori } belum dikonfirmasi
+export async function createCategory(name) {
+  if (USE_GAME_MOCK) {
+    await wait();
+    if (
+      mockCategories.some((c) => c.name.toLowerCase() === name.toLowerCase())
+    ) {
+      throw new ApiError("Data tidak valid.", 422, {
+        name: ["Kategori sudah ada."],
+      });
+    }
+    mockCategories.push({ id: Date.now(), name });
+    return true;
+  }
+  return apiRequest("/admin/categories", {
+    method: "POST",
+    body: { nama_kategori: name },
+  });
+}
+
+export async function updateCategory(id, name) {
+  if (USE_GAME_MOCK) {
+    await wait();
+    if (
+      mockCategories.some(
+        (c) => c.id !== id && c.name.toLowerCase() === name.toLowerCase(),
+      )
+    ) {
+      throw new ApiError("Data tidak valid.", 422, {
+        name: ["Kategori sudah ada."],
+      });
+    }
+    const target = mockCategories.find((c) => c.id === id);
+    if (target) target.name = name;
+    return true;
+  }
+  return apiRequest(`/admin/categories/${id}`, {
+    method: "PATCH",
+    body: { nama_kategori: name },
+  });
+}
+
+// Belum dipakai di UI (desain tidak punya tombol hapus kategori).
+// Kategori yang masih dipakai game akan ditolak backend.
+export async function deleteCategory(id) {
+  if (USE_GAME_MOCK) {
+    await wait();
+    const index = mockCategories.findIndex((c) => c.id === id);
+    if (index >= 0) mockCategories.splice(index, 1);
+    return true;
+  }
+  await apiRequest(`/admin/categories/${id}`, { method: "DELETE" });
+  return true;
+}
+
+// ----- Game -----
+export async function getGames() {
+  if (USE_GAME_MOCK) {
+    await wait();
+    return copy(mockGames);
+  }
+  const response = await apiRequest("/admin/games");
+  return toList(response).map(mapGame);
+}
+
+// Susun multipart. avatar hanya dikirim kalau admin memilih file baru.
+const buildGameForm = ({ name, avatarFile, categoryIds, status }) => {
+  const form = new FormData();
+  form.append("nama_game", name);
+  if (avatarFile) form.append("avatar", avatarFile);
+  categoryIds.forEach((id) => form.append("category_ids[]", String(id)));
+  if (status) form.append("status", toApiStatus(status));
+  return form;
+};
+
+// values: { name, avatarFile (File | null), categoryIds }
+export async function createGame(values) {
+  if (USE_GAME_MOCK) {
+    await wait();
+    mockGames.push({
+      id: Date.now(),
+      name: values.name,
+      avatar: values.avatarFile ? URL.createObjectURL(values.avatarFile) : null,
+      categoryIds: values.categoryIds,
+      status: "aktif",
+      used: false,
+    });
+    return true;
+  }
+  return apiRequest("/admin/games", {
+    method: "POST",
+    body: buildGameForm(values),
+  });
+}
+
+// values: { name, avatarFile (null = tidak diganti), categoryIds, status }
+export async function updateGame(id, values) {
+  if (USE_GAME_MOCK) {
+    await wait();
+    const target = mockGames.find((g) => g.id === id);
+    if (target) {
+      Object.assign(target, {
+        name: values.name,
+        categoryIds: values.categoryIds,
+        status: values.status,
+      });
+      if (values.avatarFile)
+        target.avatar = URL.createObjectURL(values.avatarFile);
+    }
+    return true;
+  }
+  const form = buildGameForm(values);
+  form.append("_method", "PATCH"); // Laravel tidak membaca file dari PATCH asli
+  return apiRequest(`/admin/games/${id}`, { method: "POST", body: form });
+}
+
+// Game yang dipakai turnamen dijawab HTTP 409 oleh backend
+export async function deleteGame(id) {
+  if (USE_GAME_MOCK) {
+    await wait();
+    const target = mockGames.find((g) => g.id === id);
+    if (target?.used) {
+      throw new ApiError(
+        "Game sudah digunakan turnamen dan tidak dapat dihapus.",
+        409,
+      );
+    }
+    const index = mockGames.findIndex((g) => g.id === id);
+    if (index >= 0) mockGames.splice(index, 1);
+    return true;
+  }
+  await apiRequest(`/admin/games/${id}`, { method: "DELETE" });
+  return true;
+}
+
+// ASSUMPTION: body { status: "Aktif" | "Nonaktif" }
+export async function setGameStatus(id, status) {
+  if (USE_GAME_MOCK) {
+    await wait();
+    const target = mockGames.find((g) => g.id === id);
+    if (target) target.status = status;
+    return true;
+  }
+  return apiRequest(`/admin/games/${id}/status`, {
+    method: "PATCH",
+    body: { status: toApiStatus(status) },
   });
 }

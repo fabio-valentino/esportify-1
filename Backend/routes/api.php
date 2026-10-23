@@ -17,6 +17,9 @@ use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\UserPermissionController;
 
+use App\Http\Controllers\Api\Admin\GameController;
+use App\Http\Controllers\Api\Admin\KategoriController;
+
 
 // ==========================================
 // AUTHENTICATION
@@ -202,5 +205,60 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::post('/users/{id}/permissions', [UserPermissionController::class, 'update'])
             ->middleware('permission:atur_permission_user');
 
+
+        // ======================================
+        // KELOLA GAME
+        // ======================================
+
+        // Menampilkan semua game
+        Route::get('/games', [GameController::class, 'index'])
+            ->middleware('permission:lihat_data_game');
+
+        // Menampilkan detail game
+        Route::get('/games/{id}', [GameController::class, 'show'])
+            ->middleware('permission:lihat_data_game');
+
+        // Menambahkan game
+        Route::post('/games', [GameController::class, 'store'])
+            ->middleware('permission:tambah_data_game');
+
+        // Mengubah data game
+        Route::patch('/games/{id}', [GameController::class, 'update'])
+            ->middleware('permission:ubah_data_game');
+
+        // Mengubah status game
+        Route::patch('/games/{id}/status', [GameController::class, 'updateStatus'])
+            ->middleware('permission:ubah_data_game');
+
+        // Menghapus game
+        Route::delete('/games/{id}', [GameController::class, 'destroy'])
+            ->middleware('permission:hapus_data_game');
+
+
+        // ======================================
+        // KELOLA KATEGORI
+        // ======================================
+
+        // Menampilkan semua kategori
+        Route::get('/categories', [KategoriController::class, 'index'])
+            ->middleware('permission:lihat_data_kategori');
+
+        // Menampilkan detail kategori
+        Route::get('/categories/{id}', [KategoriController::class, 'show'])
+            ->middleware('permission:lihat_data_kategori');
+
+        // Menambahkan kategori
+        Route::post('/categories', [KategoriController::class, 'store'])
+            ->middleware('permission:tambah_data_kategori');
+
+        // Mengubah kategori
+        Route::patch('/categories/{id}', [KategoriController::class, 'update'])
+            ->middleware('permission:ubah_data_kategori');
+
+        // Menghapus kategori
+        Route::delete('/categories/{id}', [KategoriController::class, 'destroy'])
+            ->middleware('permission:hapus_data_kategori');
+
     });
+
 ?>
