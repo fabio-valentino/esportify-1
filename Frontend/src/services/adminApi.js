@@ -331,26 +331,40 @@ const API_ORIGIN = API_BASE_URL ? new URL(API_BASE_URL).origin : "";
 const toMediaUrl = (value) => {
   if (!value) return null;
   if (/^(https?:|data:|blob:)/.test(value)) return value;
-  return `${API_ORIGIN}/${String(value).replace(/^\//, "")}`;
+  return `${API_ORIGIN}/storage/${String(value).replace(/^\/?(storage\/)?/, "")}`;
 };
 
-// Backend memakai "Aktif"/"Nonaktif", frontend memakai huruf kecil
+// Backend: "Aktif" / "Nonaktif". Frontend: "aktif" / "nonaktif".
 const fromApiStatus = (s) =>
-  String(s).toLowerCase() === "aktif" ? "aktif" : "nonaktif";
-const toApiStatus = (s) => (s === "aktif" ? "Aktif" : "Nonaktif");
+  String(s ?? "")
+    .trim()
+    .toLowerCase() === "aktif"
+    ? "aktif"
+    : "nonaktif";
 
-// ASSUMPTION: nama field response belum dikonfirmasi. Ubah di dua mapper ini saja.
+const toApiStatus = (s) =>
+  String(s ?? "")
+    .trim()
+    .toLowerCase() === "aktif"
+    ? "Aktif"
+    : "Nonaktif";
+
+// ID selalu dijadikan angka supaya perbandingan di checkbox
+// (categoryIds.includes(c.id)) dan chip kategori selalu cocok.
+const toId = (value) => Number(value);
+
 const mapCategory = (c) => ({
-  id: c.id_kategori ?? c.id,
+  id: toId(c.id_kategori ?? c.id),
   name: c.nama_kategori ?? c.nama ?? c.name,
 });
 
 const mapGame = (g) => ({
-  id: g.id_game ?? g.id,
+  id: toId(g.id_game ?? g.id),
   name: g.nama_game ?? g.nama ?? g.name,
-  avatar: toMediaUrl(g.avatar),
-  categoryIds: (g.categories ?? g.kategori ?? []).map(
-    (c) => c.id_kategori ?? c.id ?? c,
+  // Pakai avatar_url dari backend (URL lengkap). toMediaUrl hanya cadangan.
+  avatar: g.avatar_url ?? toMediaUrl(g.avatar),
+  categoryIds: (g.kategoris ?? g.categories ?? g.kategori ?? []).map((c) =>
+    toId(c.id_kategori ?? c.id ?? c),
   ),
   status: fromApiStatus(g.status),
 });
