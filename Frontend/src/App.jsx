@@ -10,6 +10,7 @@ import AdminPermissions from "./pages/admin/AdminPermissions";
 import UserLayout from "./layouts/UserLayout";
 import Profile from "./pages/Profile";
 import AdminProfile from "./pages/admin/AdminProfile";
+import AdminGames from "./pages/admin/AdminGames";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="permissions" element={<AdminPermissions />} />
             <Route path="profile" element={<AdminProfile />} />
+            <Route path="games" element={<AdminGames />} />
           </Route>
         </Route>
       </Routes>
