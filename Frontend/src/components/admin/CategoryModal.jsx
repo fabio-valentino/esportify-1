@@ -83,7 +83,13 @@ function CategoryModal({ category, onSubmit, onClose }) {
               Batal
             </button>
             <button type="submit" className="admin-save-btn" disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan"}
+              {loading
+                ? category
+                  ? "Menyimpan..."
+                  : "Menambahkan..."
+                : category
+                  ? "Simpan"
+                  : "Tambah Kategori"}
             </button>
           </div>
         </form>

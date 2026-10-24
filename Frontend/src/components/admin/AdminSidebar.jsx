@@ -7,6 +7,7 @@ const navClass = ({ isActive }) =>
 
 const userMenuItems = [
   { label: "Users", to: "/admin/users", icon: "user" },
+  { label: "Roles", to: "/admin/roles", icon: "roles" },
   { label: "Permissions", to: "/admin/permissions", icon: "key" },
 ];
 function AdminSidebar({ open, onNavigate, onLogout }) {
@@ -14,6 +15,7 @@ function AdminSidebar({ open, onNavigate, onLogout }) {
   // Dropdown tertutup dulu, otomatis terbuka kalau halaman aktif ada di dalamnya
   const inUserMenu =
     pathname.startsWith("/admin/users") ||
+    pathname.startsWith("/admin/roles") ||
     pathname.startsWith("/admin/permissions");
   const [menuOpen, setMenuOpen] = useState(inUserMenu);
 

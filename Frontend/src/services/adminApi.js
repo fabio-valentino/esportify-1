@@ -8,6 +8,8 @@ import {
   mockDirectPermissions,
   mockCategories,
   mockGames,
+  mockPermissionList,
+  mockRoleList,
 } from "./mock/adminMock";
 
 const copy = (data) => JSON.parse(JSON.stringify(data));
@@ -182,17 +184,6 @@ const permName = (p) => (typeof p === "string" ? p : (p?.name ?? ""));
 
 const namesOf = (list) => (Array.isArray(list) ? list : []).map(permName);
 
-// GET /api/admin/permissions
-export async function getAllPermissions() {
-  if (USE_ADMIN_MOCK) {
-    await wait(200);
-    return [...mockAllPermissions];
-  }
-
-  const response = await apiRequest("/admin/permissions");
-  return toList(response).map(permName);
-}
-
 // GET /api/admin/users/permissions
 // Mengambil permission banyak user dalam SATU request.
 export async function getUsersPermissions(ids) {
@@ -296,25 +287,64 @@ export async function setUserPermissions(id, permissions) {
   });
 }
 
-// POST /api/admin/permissions
+// ----- Permission (CRUD) -----
+// ASSUMPTION: response berisi objek { id, name }. Body POST/PATCH: { name }.
+const mapPermission = (p) => ({
+  id: Number(p.id ?? p.id_permission),
+  name: permName(p),
+});
+
+export async function getPermissions() {
+  if (USE_ADMIN_MOCK) {
+    await wait(200);
+    return copy(mockPermissionList);
+  }
+  const response = await apiRequest("/admin/permissions");
+  return toList(response).map(mapPermission);
+}
+
+// Hanya nama, dipakai bagian lain yang butuh daftar nama permission
+export async function getAllPermissions() {
+  return (await getPermissions()).map((p) => p.name);
+}
+
+const duplicateError = () =>
+  new ApiError("Data tidak valid.", 422, { name: ["Permission sudah ada."] });
+
 export async function createPermission(name) {
   if (USE_ADMIN_MOCK) {
     await wait();
-
-    if (mockAllPermissions.includes(name)) {
-      throw new ApiError("Data tidak valid.", 422, {
-        name: ["Permission sudah ada."],
-      });
-    }
-
-    mockAllPermissions.push(name);
+    if (mockPermissionList.some((p) => p.name === name)) throw duplicateError();
+    mockPermissionList.push({ id: Date.now(), name });
     return true;
   }
+  return apiRequest("/admin/permissions", { method: "POST", body: { name } });
+}
 
-  return apiRequest("/admin/permissions", {
-    method: "POST",
+export async function updatePermission(id, name) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    if (mockPermissionList.some((p) => p.id !== id && p.name === name))
+      throw duplicateError();
+    const target = mockPermissionList.find((p) => p.id === id);
+    if (target) target.name = name;
+    return true;
+  }
+  return apiRequest(`/admin/permissions/${id}`, {
+    method: "PATCH",
     body: { name },
   });
+}
+
+export async function deletePermission(id) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    const index = mockPermissionList.findIndex((p) => p.id === id);
+    if (index >= 0) mockPermissionList.splice(index, 1);
+    return true;
+  }
+  await apiRequest(`/admin/permissions/${id}`, { method: "DELETE" });
+  return true;
 }
 
 // ==================================================
@@ -334,21 +364,6 @@ const toMediaUrl = (value) => {
   return `${API_ORIGIN}/storage/${String(value).replace(/^\/?(storage\/)?/, "")}`;
 };
 
-// Backend: "Aktif" / "Nonaktif". Frontend: "aktif" / "nonaktif".
-const fromApiStatus = (s) =>
-  String(s ?? "")
-    .trim()
-    .toLowerCase() === "aktif"
-    ? "aktif"
-    : "nonaktif";
-
-const toApiStatus = (s) =>
-  String(s ?? "")
-    .trim()
-    .toLowerCase() === "aktif"
-    ? "Aktif"
-    : "Nonaktif";
-
 // ID selalu dijadikan angka supaya perbandingan di checkbox
 // (categoryIds.includes(c.id)) dan chip kategori selalu cocok.
 const toId = (value) => Number(value);
@@ -361,12 +376,10 @@ const mapCategory = (c) => ({
 const mapGame = (g) => ({
   id: toId(g.id_game ?? g.id),
   name: g.nama_game ?? g.nama ?? g.name,
-  // Pakai avatar_url dari backend (URL lengkap). toMediaUrl hanya cadangan.
   avatar: g.avatar_url ?? toMediaUrl(g.avatar),
   categoryIds: (g.kategoris ?? g.categories ?? g.kategori ?? []).map((c) =>
     toId(c.id_kategori ?? c.id ?? c),
   ),
-  status: fromApiStatus(g.status),
 });
 
 // ----- Kategori -----
@@ -444,13 +457,11 @@ export async function getGames() {
   return toList(response).map(mapGame);
 }
 
-// Susun multipart. avatar hanya dikirim kalau admin memilih file baru.
-const buildGameForm = ({ name, avatarFile, categoryIds, status }) => {
+const buildGameForm = ({ name, avatarFile, categoryIds }) => {
   const form = new FormData();
   form.append("nama_game", name);
   if (avatarFile) form.append("avatar", avatarFile);
   categoryIds.forEach((id) => form.append("category_ids[]", String(id)));
-  if (status) form.append("status", toApiStatus(status));
   return form;
 };
 
@@ -514,16 +525,88 @@ export async function deleteGame(id) {
   return true;
 }
 
-// ASSUMPTION: body { status: "Aktif" | "Nonaktif" }
-export async function setGameStatus(id, status) {
-  if (USE_GAME_MOCK) {
+// ----- Role (CRUD) -----
+// ASSUMPTION: body { name } dan { permissions: [nama] } belum dikonfirmasi backend.
+const roleDuplicate = () =>
+  new ApiError("Data tidak valid.", 422, { name: ["Role sudah ada."] });
+
+// [{ id, name, permissions: [nama] }]
+export async function getRolesWithPermissions() {
+  if (USE_ADMIN_MOCK) {
     await wait();
-    const target = mockGames.find((g) => g.id === id);
-    if (target) target.status = status;
+    return copy(mockRoleList);
+  }
+  const response = await apiRequest("/admin/roles");
+  const roles = toList(response).map((r) => ({
+    id: Number(r.id),
+    name: roleName(r),
+  }));
+
+  // Satu request per role. Kalau role banyak, minta backend menyertakan permissions di /roles.
+  return Promise.all(
+    roles.map(async (role) => {
+      const res = await apiRequest(`/admin/roles/${role.id}/permissions`);
+      const inner = res?.data ?? res;
+      const list = Array.isArray(inner) ? inner : (inner?.permissions ?? []);
+      return { ...role, permissions: list.map(permName) };
+    }),
+  );
+}
+
+export async function createRole(name) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    if (mockRoleList.some((r) => r.name.toLowerCase() === name.toLowerCase()))
+      throw roleDuplicate();
+    mockRoleList.push({ id: Date.now(), name, permissions: [] });
+    return { id: null };
+  }
+  const response = await apiRequest("/admin/roles", {
+    method: "POST",
+    body: { name },
+  });
+  const data = response?.data ?? response;
+  return { id: data?.id ? Number(data.id) : null };
+}
+
+export async function updateRoleName(id, name) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    if (
+      mockRoleList.some(
+        (r) => r.id !== id && r.name.toLowerCase() === name.toLowerCase(),
+      )
+    ) {
+      throw roleDuplicate();
+    }
+    const target = mockRoleList.find((r) => r.id === id);
+    if (target) target.name = name;
     return true;
   }
-  return apiRequest(`/admin/games/${id}/status`, {
-    method: "PATCH",
-    body: { status: toApiStatus(status) },
+  return apiRequest(`/admin/roles/${id}`, { method: "PATCH", body: { name } });
+}
+
+// syncPermissions di backend: daftar ini MENGGANTIKAN seluruh permission role
+export async function setRolePermissions(id, permissions) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    const target = mockRoleList.find((r) => r.id === id);
+    if (target) target.permissions = [...permissions];
+    return true;
+  }
+  return apiRequest(`/admin/roles/${id}/permissions`, {
+    method: "POST",
+    body: { permissions },
   });
+}
+
+export async function deleteRole(id) {
+  if (USE_ADMIN_MOCK) {
+    await wait();
+    const index = mockRoleList.findIndex((r) => r.id === id);
+    if (index >= 0) mockRoleList.splice(index, 1);
+    return true;
+  }
+  await apiRequest(`/admin/roles/${id}`, { method: "DELETE" });
+  return true;
 }

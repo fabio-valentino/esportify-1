@@ -31,6 +31,7 @@ import {
   Trophy,
   Upload,
   TriangleAlert,
+  ClipboardList,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -69,6 +70,7 @@ const icons = {
   trophy: Trophy,
   upload: Upload,
   alert: TriangleAlert,
+  roles: ClipboardList,
 };
 
 function Icon({ name, size = 16 }) {
