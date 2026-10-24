@@ -4,16 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use Illuminate\Validation\Rule;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionController extends Controller
 {
-    // Menampilkan permission yang dimiliki sebuah role
+    // READ - Menampilkan permission milik role
     public function index($id)
     {
-        $role = Role::where('guard_name', 'web')->find($id);
+        $role = Role::where('guard_name', 'web')
+            ->with('permissions:id,name')
+            ->find($id);
 
         if (!$role) {
             return response()->json([
@@ -26,13 +30,16 @@ class RolePermissionController extends Controller
             'success' => true,
             'message' => 'Daftar permission role berhasil diambil.',
             'data' => [
-                'role' => $role->name,
-                'permissions' => $role->permissions->pluck('name'),
+                'role' => [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                ],
+                'permissions' => $role->permissions,
             ],
         ]);
     }
 
-    // Memberikan permission kepada role
+    // UPDATE - Mengganti seluruh permission milik role
     public function store(Request $request, $id)
     {
         $role = Role::where('guard_name', 'web')->find($id);
@@ -45,7 +52,7 @@ class RolePermissionController extends Controller
         }
 
         $validated = $request->validate([
-            'permissions' => ['required', 'array', 'min:1'],
+            'permissions' => ['present', 'array'],
             'permissions.*' => [
                 'required',
                 'string',
@@ -59,14 +66,18 @@ class RolePermissionController extends Controller
             ->whereIn('name', $validated['permissions'])
             ->get();
 
-        $role->syncPermissions($permissions);
+        DB::transaction(function () use ($role, $permissions) {
+            $role->syncPermissions($permissions);
+        });
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return response()->json([
             'success' => true,
-            'message' => 'Permission berhasil diberikan kepada role.',
+            'message' => 'Permission role berhasil diperbarui.',
             'data' => [
                 'role' => $role->name,
-                'permissions' => $role->fresh()->permissions->pluck('name'),
+                'permissions' => $role->fresh()->permissions,
             ],
         ]);
     }

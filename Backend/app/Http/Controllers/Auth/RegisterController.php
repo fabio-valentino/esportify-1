@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
@@ -36,23 +37,33 @@ class RegisterController extends Controller
             ], 422);
         }
 
-        $roleUser = Role::findByName('user', 'web');
+        $data = DB::transaction(function () use ($request) {
+            $rolePlayer = Role::findByName('player', 'web');
 
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => $request->password,
-        ]);
+            $user = User::create([
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => $request->password,
+            ]);
 
-        $user->assignRole($roleUser);
+            $user->assignRole($rolePlayer);
+
+            $user->player()->create([
+                'avatar' => null,
+                'bio' => null,
+                'jenis_kelamin' => null,
+            ]);
+
+            return $user;
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Registrasi berhasil. Silakan login.',
             'data' => [
-                'id_user' => $user->id_user,
-                'username' => $user->username,
-                'email' => $user->email,
+                'id_user' => $data->id_user,
+                'username' => $data->username,
+                'email' => $data->email,
             ],
         ], 201);
     }

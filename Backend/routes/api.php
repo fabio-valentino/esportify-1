@@ -112,7 +112,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])
 
         // Menambahkan user baru
         Route::post('/users', [UserManagementController::class, 'store'])
-            ->middleware('permission:lihat_data_user');
+            ->middleware('permission:tambah_data_user');
 
         // Mengambil permission beberapa user sekaligus
         Route::get('/users/permissions', [UserPermissionController::class, 'indexAll'])

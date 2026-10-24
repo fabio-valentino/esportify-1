@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Admin;
+use App\Models\Player;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
@@ -33,7 +36,7 @@ class UserRoleController extends Controller
         ]);
     }
 
-    // ASSIGN - Memberikan atau mengganti role user
+    // ASSIGN - Mengganti role sekaligus memastikan profil tersedia
     public function store(Request $request, $id)
     {
         $user = User::find($id);
@@ -58,7 +61,24 @@ class UserRoleController extends Controller
             ->where('name', $validated['role'])
             ->first();
 
-        $user->syncRoles([$role]);
+        DB::transaction(function () use ($user, $role) {
+
+            // Pastikan profil tersedia sesuai role
+            if ($role->name === 'admin') {
+                Admin::firstOrCreate([
+                    'id_user' => $user->id_user,
+                ]);
+            }
+
+            if ($role->name === 'player') {
+                Player::firstOrCreate([
+                    'id_user' => $user->id_user,
+                ]);
+            }
+
+            // Ganti role user
+            $user->syncRoles([$role]);
+        });
 
         return response()->json([
             'success' => true,
