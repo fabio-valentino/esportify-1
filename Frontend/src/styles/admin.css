@@ -111,35 +111,6 @@
   border-radius: 16px;
   padding: 28px;
 }
-.admin-table-wrap {
-  overflow-x: auto;
-  border-radius: 14px;
-  background: #d9d9d9;
-}
-.admin-table {
-  width: 100%;
-  min-width: 680px;
-  border-collapse: collapse;
-  color: #111827;
-  font-size: 13px;
-}
-.admin-table th {
-  padding: 16px;
-  background: #8b8d94;
-  color: var(--white);
-  font-size: 14px;
-  font-weight: 600;
-  text-align: left;
-}
-.admin-table td {
-  padding: 14px 16px;
-  border-top: 1px solid #9ca3af;
-  vertical-align: middle;
-}
-.admin-empty {
-  text-align: center;
-  color: #6b7280;
-}
 
 /* ========== Filter ========== */
 .admin-filters {
@@ -148,74 +119,142 @@
   gap: 12px;
   margin-bottom: 24px;
 }
+
+/* ===== Tabel admin (Users, Permissions) ===== */
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+.admin-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  color: var(--white);
+  font-size: 15px;
+}
+.admin-table th {
+  padding: 18px 16px;
+  background: #2f3a4d;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+}
+.admin-table td {
+  padding: 14px 16px;
+  border-top: 1px solid #3a4558;
+  vertical-align: middle;
+}
+.admin-table tbody tr:hover td {
+  background: #1c2230;
+}
+.admin-table .col-action {
+  width: 130px;
+  text-align: right;
+}
+.admin-empty {
+  color: var(--muted);
+}
+td.admin-empty {
+  text-align: center;
+}
+.admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* ===== Toolbar: pencarian, filter, tombol tambah ===== */
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.admin-filters .admin-outline-btn {
+  margin-left: auto;
+}
+
 .admin-search {
   position: relative;
-  color: #6b7280;
+  flex: 1;
+  min-width: 200px;
+  max-width: 380px;
+  color: var(--muted);
 }
 .admin-search .icon {
   position: absolute;
   top: 50%;
-  left: 10px;
+  left: 12px;
   transform: translateY(-50%);
 }
 .admin-search input {
-  width: 260px;
-  max-width: 100%;
-  padding: 8px 12px 8px 34px;
-  border: none;
+  width: 100%;
+  height: 42px;
+  padding: 0 12px 0 40px;
+  border: 1px solid var(--white);
   border-radius: 8px;
-  background: #d9d9d9;
-  color: #111827;
-  font-size: 13px;
+  background: #0e121b;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
 }
-.admin-filter-select {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  background: #d9d9d9;
-  color: #111827;
-  font-size: 13px;
-  font-weight: 600;
+.admin-search input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.admin-search input::placeholder {
+  color: var(--muted);
 }
 
-/* ========== Dropdown di tabel ========== */
-.admin-select {
-  padding: 5px 8px;
-  border: none;
+.admin-filter-select {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--white);
   border-radius: 8px;
+  background: #0e121b;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.admin-filter-select option,
+.admin-select option {
+  background: #181d29;
+  color: var(--white);
+}
+
+/* ===== Dropdown di dalam tabel ===== */
+.admin-select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--white);
   font-size: 12px;
-  font-weight: 600;
+  font-family: inherit;
+}
+.admin-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .role-select {
-  background: #6b9bff;
-  color: #0b1f4d;
+  min-width: 130px;
 }
 .status-aktif {
-  background: #6df23f;
-  color: #14532d;
+  border-color: #16a34a;
+  background: #052e16;
+  color: #22c55e;
 }
 .status-nonaktif {
-  background: #f87171;
-  color: #7f1d1d;
+  border-color: #7f1d1d;
+  background: #450a0a;
+  color: #f87171;
 }
 
 /* ========== Aksi ========== */
-.admin-icon-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.admin-icon-btn.delete {
-  background: #f06060;
-  color: #b91c1c;
-}
-.admin-icon-btn.delete:hover {
-  background: #ea4a4a;
-}
 
 .admin-save-row {
   display: flex;
@@ -252,41 +291,50 @@
   color: #f87171;
 }
 
-/* ========== Pagination ========== */
+/* ===== Pagination: di tengah, di bawah panel ===== */
 .admin-pagination {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  justify-content: center;
   margin-top: 28px;
-  font-size: 12px;
-  color: var(--text);
 }
 .admin-pages {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 .admin-page-btn {
-  min-width: 34px;
-  height: 30px;
-  padding: 0 8px;
-  border: none;
-  border-radius: 6px;
-  background: var(--white);
-  color: #111827;
-  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #30394b;
+  border-radius: 6px;
+  background: #1c2230;
+  color: #d1d5db;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.admin-page-btn:hover:not(:disabled):not(.active) {
+  background: #293449;
 }
 .admin-page-btn.active {
-  background: #6b9bff;
-  color: var(--white);
+  background: #4f8df7;
+  border-color: #4f8df7;
+  color: #ffffff;
 }
 .admin-page-btn:disabled {
-  opacity: 0.5;
+  background: #171b24;
+  color: #4b5563;
   cursor: not-allowed;
+}
+.admin-page-btn:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
 }
 
 /* ========== Tombol tambah & modal ========== */
@@ -457,17 +505,6 @@ p.admin-message {
 .perm-dot.direct {
   background: #6b9bff;
 }
-.admin-icon-btn.edit {
-  background: #6b9bff;
-  color: #1d3fbf;
-}
-.admin-icon-btn.edit:hover {
-  background: #5a8cf5;
-}
-.admin-icon-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 /* Modal edit */
 .admin-warning {
@@ -484,13 +521,39 @@ p.admin-message {
   font-weight: 600;
   color: var(--muted);
 }
+
+/* ===== Chip permission di tabel Roles ===== */
+.role-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 520px;
+}
+.role-chip {
+  padding: 1px 10px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.role-chip.blue {
+  color: #6aa3ff;
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+.role-chip.gray {
+  color: var(--text);
+  border-color: #3a4558;
+  background: #1c2230;
+}
+
+/* Daftar centang permission di modal (dipakai juga oleh form lain) */
 .admin-check-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 220px;
+  max-height: 240px;
   overflow-y: auto;
-  margin-bottom: 12px;
+  padding: 4px 2px;
 }
 .admin-check {
   display: flex;
@@ -504,10 +567,6 @@ p.admin-message {
   width: 16px;
   height: 16px;
   accent-color: var(--blue);
-}
-.admin-check.locked {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 /* ========== Tambah permission ========== */
@@ -628,11 +687,6 @@ p.admin-message {
   text-align: center;
   color: var(--muted);
 }
-.game-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-}
 
 .game-avatar {
   display: inline-flex;
@@ -652,19 +706,6 @@ p.admin-message {
   object-fit: cover;
 }
 
-.game-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.game-chip {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: #3b82f6;
-  color: #0b1f4d;
-  font-size: 12px;
-  font-weight: 600;
-}
 .game-status {
   display: inline-block;
   padding: 2px 12px;
@@ -836,15 +877,262 @@ p.admin-message {
   color: #ef4444;
 }
 
+/* ===== Kelola Game: tampilan outline ===== */
+.admin-outline-btn {
+  border-color: var(--white);
+}
+.admin-outline-btn .icon {
+  color: #22c55e;
+}
+
+.game-table-wrap {
+  border-color: #cbd5e1;
+}
+.game-table td,
+.game-table th {
+  border-color: #3a4558;
+}
+.game-table tr.inactive td {
+  opacity: 0.5;
+}
+
+/* Tombol ikon di tabel game */
+.game-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Pill kategori */
+.game-chip {
+  padding: 1px 12px;
+  margin-right: 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+.game-chip.tone-blue {
+  color: #2356a8;
+}
+.game-chip.tone-white {
+  color: var(--white);
+}
+.game-chip.tone-red {
+  color: #c52f2f;
+}
+.game-chip.tone-green {
+  color: #209e4e;
+}
+.game-chip.tone-yellow {
+  color: #ad9223;
+}
+.game-chip.tone-purple {
+  color: #4b2ea1;
+}
+
+/* ===== Modal Game ===== */
+.game-modal {
+  max-width: 460px;
+  padding: 28px;
+}
+.game-modal .admin-modal-head {
+  margin-bottom: 22px;
+}
+.game-modal .admin-form-field {
+  margin-bottom: 20px;
+}
+.game-modal .admin-form-field > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+.game-modal .admin-form-field input:not([type="checkbox"]) {
+  height: 44px;
+}
+
+/* Avatar */
+.game-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.game-modal .game-upload {
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+  border-style: dashed;
+}
+.game-avatar-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.game-avatar-btn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border: 1px solid #3a4558;
+  border-radius: 8px;
+  background: none;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+}
+.game-avatar-btn:hover {
+  border-color: var(--blue);
+}
+
+/* Kategori sebagai kartu pilihan */
+.game-modal .game-cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.game-cat-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #2c3a52;
+  border-radius: 10px;
+  background: #1c2230;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.game-cat-option:hover {
+  border-color: #3b82f6;
+}
+.game-cat-option.checked {
+  border-color: var(--blue);
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--white);
+}
+.game-cat-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  padding-bottom: 0;
+  accent-color: var(--blue);
+}
+
+.game-cat-option span {
+  margin-left: 20px;
+}
+
+.game-modal .admin-modal-actions {
+  margin-top: 26px;
+}
+.game-modal .admin-save-btn,
+.game-modal .admin-cancel-btn {
+  padding: 10px 20px;
+  font-size: 13px;
+}
+
+/* ===== Tombol aksi tabel: edit (netral) dan hapus (merah) ===== */
+.admin-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+.admin-icon-btn.with-label {
+  padding: 0 14px;
+}
+.admin-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-icon-btn.edit {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+.admin-icon-btn.edit:hover {
+  background: #334155;
+  color: #ffffff;
+}
+.admin-icon-btn.edit:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.admin-icon-btn.delete {
+  background: #451a1a;
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+.admin-icon-btn.delete:hover {
+  background: #7f1d1d;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+.admin-icon-btn.delete:focus-visible {
+  outline: 2px solid #f87171;
+  outline-offset: 2px;
+}
+
+/* Pencarian game */
+.game-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.game-search {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+  color: var(--muted);
+}
+.game-search .icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+}
+.game-search input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px 0 38px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: #0e121b;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.game-search input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.game-search input::placeholder {
+  color: var(--muted);
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
   .admin-menu-btn {
     display: flex;
-  }
-  .admin-add-btn {
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
   }
   .admin-sidebar {
     position: fixed;
@@ -876,14 +1164,12 @@ p.admin-message {
   .admin-panel {
     padding: 18px;
   }
-  .admin-search,
-  .admin-search input {
-    width: 100%;
-  }
-
-  .admin-add-btn {
+  .admin-filters .admin-outline-btn {
     margin-left: 0;
     width: 100%;
     justify-content: center;
+  }
+  .admin-search {
+    max-width: none;
   }
 }

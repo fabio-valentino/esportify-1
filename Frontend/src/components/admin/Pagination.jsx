@@ -2,15 +2,10 @@ import Icon from "../icon";
 
 function Pagination({ page, totalItems, pageSize, onChange }) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const start = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, totalItems);
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="admin-pagination">
-      <p>
-        Menampilkan {start} - {end} dari {totalItems} data
-      </p>
+    <nav className="admin-pagination" aria-label="Pagination">
       <div className="admin-pages">
         <button
           className="admin-page-btn"
@@ -26,6 +21,7 @@ function Pagination({ page, totalItems, pageSize, onChange }) {
             key={n}
             className={`admin-page-btn ${n === page ? "active" : ""}`}
             onClick={() => onChange(n)}
+            aria-current={n === page ? "page" : undefined}
           >
             {n}
           </button>
@@ -40,7 +36,7 @@ function Pagination({ page, totalItems, pageSize, onChange }) {
           <Icon name="chevron-right" size={16} />
         </button>
       </div>
-    </div>
+    </nav>
   );
 }
 

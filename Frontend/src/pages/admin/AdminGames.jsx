@@ -11,17 +11,20 @@ import {
   createGame,
   updateGame,
   deleteGame,
-  setGameStatus,
 } from "../../services/adminApi";
 
 // 403 bisa berarti tidak punya izin
 const errorText = (err) =>
   err.status === 403 ? err.message || "Aksi ini tidak diizinkan." : err.message;
 
+// Warna pill kategori mengikuti urutan kategori (biru, putih, merah, ...)
+const TONES = ["blue", "white", "red", "green", "yellow", "purple"];
+
 function AdminGames() {
   const [categories, setCategories] = useState([]);
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
 
   // Modal: { item } (item null = tambah)
@@ -44,6 +47,18 @@ function AdminGames() {
   }, []);
 
   const categoryName = (id) => categories.find((c) => c.id === id)?.name;
+  const keyword = search.trim().toLowerCase();
+  const filteredGames = games.filter((g) =>
+    g.name.toLowerCase().includes(keyword),
+  );
+
+  const toneOf = (id) =>
+    TONES[
+      Math.max(
+        0,
+        categories.findIndex((c) => c.id === id),
+      ) % TONES.length
+    ];
 
   // Dipanggil modal. Error dilempar kembali supaya tampil di modal.
   const saveCategory = async (name) => {
@@ -67,34 +82,14 @@ function AdminGames() {
       await deleteGame(game.id);
       setGames((prev) => prev.filter((g) => g.id !== game.id));
       setMessage({ text: "Game berhasil dihapus.", type: "success" });
-      setConfirm(null);
     } catch (err) {
-      if (err.status === 409) {
-        // Game sudah dipakai turnamen: tawarkan menonaktifkan
-        setConfirm({ type: "deactivate", game });
-      } else {
-        setMessage({ text: errorText(err), type: "error" });
-        setConfirm(null);
-      }
-    } finally {
-      setWorking(false);
-    }
-  };
-
-  const handleDeactivate = async () => {
-    const game = confirm.game;
-    setWorking(true);
-    try {
-      await setGameStatus(game.id, "nonaktif");
-      setGames((prev) =>
-        prev.map((g) => (g.id === game.id ? { ...g, status: "nonaktif" } : g)),
-      );
       setMessage({
-        text: `Game "${game.name}" dinonaktifkan.`,
-        type: "success",
+        text:
+          err.status === 409
+            ? `Game "${game.name}" sudah digunakan turnamen dan tidak dapat dihapus.`
+            : errorText(err),
+        type: "error",
       });
-    } catch (err) {
-      setMessage({ text: errorText(err), type: "error" });
     } finally {
       setWorking(false);
       setConfirm(null);
@@ -138,11 +133,11 @@ function AdminGames() {
                   <td>{c.name}</td>
                   <td className="col-action">
                     <button
-                      className="admin-icon-btn edit"
+                      className="admin-icon-btn edit with-label"
                       onClick={() => setCatModal({ item: c })}
                       aria-label={`Edit kategori ${c.name}`}
                     >
-                      <Icon name="edit" size={18} />
+                      <Icon name="edit" size={18} /> Edit
                     </button>
                   </td>
                 </tr>
@@ -173,6 +168,18 @@ function AdminGames() {
             <h2>Daftar Game</h2>
             <p>Kelola data game</p>
           </div>
+        </div>
+
+        <div className="game-toolbar">
+          <div className="game-search">
+            <Icon name="search" size={18} />
+            <input
+              type="text"
+              placeholder="Cari game"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
           <button
             className="admin-outline-btn"
             onClick={() => setGameModal({ item: null })}
@@ -188,13 +195,15 @@ function AdminGames() {
                 <th>Avatar</th>
                 <th>Nama Game</th>
                 <th>Kategori</th>
-                <th>Status</th>
                 <th className="col-action">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {games.map((g) => (
-                <tr key={g.id}>
+              {filteredGames.map((g) => (
+                <tr
+                  key={g.id}
+                  className={g.status === "nonaktif" ? "inactive" : ""}
+                >
                   <td>
                     <span className="game-avatar">
                       {g.avatar ? (
@@ -210,17 +219,15 @@ function AdminGames() {
                       {g.categoryIds.map((id) => {
                         const label = categoryName(id);
                         return label ? (
-                          <span key={id} className="game-chip">
+                          <span
+                            key={id}
+                            className={`game-chip tone-${toneOf(id)}`}
+                          >
                             {label}
                           </span>
                         ) : null;
                       })}
                     </div>
-                  </td>
-                  <td>
-                    <span className={`game-status ${g.status}`}>
-                      {g.status === "aktif" ? "Aktif" : "Nonaktif"}
-                    </span>
                   </td>
                   <td className="col-action">
                     <div className="game-actions">
@@ -244,15 +251,17 @@ function AdminGames() {
               ))}
               {loading && (
                 <tr>
-                  <td colSpan={5} className="game-empty">
+                  <td colSpan={4} className="game-empty">
                     Memuat...
                   </td>
                 </tr>
               )}
-              {!loading && games.length === 0 && (
+              {!loading && filteredGames.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="game-empty">
-                    Belum ada game.
+                  <td colSpan={4} className="game-empty">
+                    {games.length === 0
+                      ? "Belum ada game."
+                      : "Game tidak ditemukan."}
                   </td>
                 </tr>
               )}
@@ -290,22 +299,6 @@ function AdminGames() {
         >
           <p>Apakah anda yakin ingin menghapus game "{confirm.game.name}"</p>
           <p>Data yang sudah dihapus tidak dapat dikembalikan</p>
-        </ConfirmDialog>
-      )}
-
-      {confirm?.type === "deactivate" && (
-        <ConfirmDialog
-          tone="warning"
-          icon="alert"
-          title="Nonaktifkan Game?"
-          confirmLabel="Nonaktifkan"
-          loading={working}
-          onConfirm={handleDeactivate}
-          onClose={() => setConfirm(null)}
-        >
-          <p>Game "{confirm.game.name}" sudah digunakan oleh turnamen.</p>
-          <p>Turnamen yang sudah ada tetap aman dan dapat diakses.</p>
-          <p>Game tidak dapat dihapus, tetapi dapat dinonaktifkan.</p>
         </ConfirmDialog>
       )}
     </>

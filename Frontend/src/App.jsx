@@ -11,6 +11,7 @@ import UserLayout from "./layouts/UserLayout";
 import Profile from "./pages/Profile";
 import AdminProfile from "./pages/admin/AdminProfile";
 import AdminGames from "./pages/admin/AdminGames";
+import AdminRoles from "./pages/admin/AdminRoles";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/users" replace />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="roles" element={<AdminRoles />} />
             <Route path="permissions" element={<AdminPermissions />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="games" element={<AdminGames />} />
