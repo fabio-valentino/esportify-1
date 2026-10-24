@@ -17,14 +17,21 @@ class PermissionSeeder extends Seeder
         // Daftar permission Esportify
         $permissions = [
             'lihat_dashboard',
+
+            // Permission Kelola User
             'lihat_data_user',
+            'tambah_data_user',
             'ubah_data_user',
             'hapus_data_user',
+
+            // Permission Kelola Role & Permission
             'kelola_role',
             'kelola_permission',
             'atur_permission_role',
             'atur_role_user',
             'atur_permission_user',
+
+            // Permission Kelola Turnamen
             'kelola_turnamen',
 
             // Permission Kelola Game
