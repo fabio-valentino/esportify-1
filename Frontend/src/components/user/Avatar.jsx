@@ -11,7 +11,15 @@ function Avatar({ src, name = "", size = 36 }) {
       style={{ width: size, height: size, fontSize: size * 0.42 }}
     >
       {src && !failed ? (
-        <img src={src} alt={name} onError={() => setFailed(true)} />
+        <img
+          src={src}
+          alt={name}
+          onError={() => {
+            // SEMENTARA buat debug: hapus baris ini kalau avatar sudah muncul
+            console.warn("[Avatar] gagal dimuat dari URL:", src);
+            setFailed(true);
+          }}
+        />
       ) : (
         name.charAt(0).toUpperCase() || "•"
       )}

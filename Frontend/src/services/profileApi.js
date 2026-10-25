@@ -16,7 +16,9 @@ const skipProfile = {
 
 // ASSUMPTION: avatar bisa URL lengkap atau path. Path relatif digabung dengan
 // alamat server. Kalau backend memakai /storage, ubah di sini saja.
-
+// PERUBAHAN: awalan "public/" dan "storage/" di path dibuang dulu, supaya tidak
+// jadi /storage/storage/... atau /storage/public/... (path dari DB kadang
+// tersimpan dengan awalan itu).
 const toAvatarUrl = (value) => {
   if (!value) return null;
 
@@ -24,17 +26,24 @@ const toAvatarUrl = (value) => {
     return value;
   }
 
-  return `${API_ORIGIN}/storage/${String(value).replace(/^\/+/, "")}`;
+  const path = String(value)
+    .replace(/^\/+/, "")
+    .replace(/^(public|storage)\//, "");
+
+  return `${API_ORIGIN}/storage/${path}`;
 };
 
 // ASSUMPTION: nama field belum dikonfirmasi. Data player bisa ada di objek "player".
+// PERUBAHAN: ikut membaca avatar_url kalau backend memakai nama itu.
 const mapProfile = (d) => {
   const player = d.player ?? {};
   return {
     id: d.id_user ?? d.id,
     username: d.username,
     email: d.email,
-    avatar: toAvatarUrl(player.avatar ?? d.avatar),
+    avatar: toAvatarUrl(
+      player.avatar_url ?? player.avatar ?? d.avatar_url ?? d.avatar,
+    ),
     bio: player.bio ?? d.bio ?? "",
     gender: player.jenis_kelamin ?? d.jenis_kelamin ?? "",
   };
