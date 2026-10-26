@@ -30,6 +30,7 @@ class PengajuanTurnamenController extends Controller
 
         $pengajuan = PengajuanTurnamen::with([
             'game',
+            'kota.provinsi',
             'pendanaan',
             'sumberPendanaan',
             'turnamen',
@@ -63,6 +64,7 @@ class PengajuanTurnamenController extends Controller
 
         $pengajuan = PengajuanTurnamen::with([
             'game',
+            'kota.provinsi',
             'pendanaan',
             'pembayaran',
             'sponsor',
@@ -117,17 +119,11 @@ class PengajuanTurnamenController extends Controller
                 'required',
                 Rule::in(['online', 'offline']),
             ],
-            'provinsi' => [
+            'id_kota' => [
                 'nullable',
                 'required_if:tipe_turnamen,offline',
-                'string',
-                'max:100',
-            ],
-            'kota' => [
-                'nullable',
-                'required_if:tipe_turnamen,offline',
-                'string',
-                'max:100',
+                'integer',
+                'exists:kota,id_kota',
             ],
             'deskripsi_lokasi' => ['nullable', 'string'],
             'slot' => ['required', 'integer', 'min:1'],
@@ -263,11 +259,8 @@ class PengajuanTurnamenController extends Controller
                     'nama_turnamen' => $validated['nama_turnamen'],
                     'nama_penyelenggara' => $validated['nama_penyelenggara'],
                     'tipe_turnamen' => $validated['tipe_turnamen'],
-                    'provinsi' => $validated['tipe_turnamen'] === 'offline'
-                        ? ($validated['provinsi'] ?? null)
-                        : null,
-                    'kota' => $validated['tipe_turnamen'] === 'offline'
-                        ? ($validated['kota'] ?? null)
+                    'id_kota' => $validated['tipe_turnamen'] === 'offline'
+                        ? ($validated['id_kota'] ?? null)
                         : null,
                     'deskripsi_lokasi' => $validated['tipe_turnamen'] === 'offline'
                         ? ($validated['deskripsi_lokasi'] ?? null)
@@ -317,6 +310,7 @@ class PengajuanTurnamenController extends Controller
                 'message' => 'Pengajuan turnamen berhasil dikirim dan menunggu verifikasi.',
                 'data' => $pengajuan->load([
                     'game',
+                    'kota.provinsi',
                     'pendanaan',
                     'pembayaran',
                     'sponsor',
@@ -503,8 +497,7 @@ class PengajuanTurnamenController extends Controller
                 Rule::in(['online', 'offline']),
             ],
 
-            'provinsi' => ['nullable', 'string', 'max:100'],
-            'kota' => ['nullable', 'string', 'max:100'],
+            'id_kota' => ['sometimes', 'nullable', 'integer', 'exists:kota,id_kota'],
             'deskripsi_lokasi' => ['nullable', 'string'],
 
             'slot' => ['sometimes', 'required', 'integer', 'min:1'],
@@ -608,6 +601,17 @@ class PengajuanTurnamenController extends Controller
         $tipeTurnamen = $validated['tipe_turnamen']
             ?? $pengajuan->tipe_turnamen;
 
+        // Turnamen offline wajib memiliki kota. Saat berpindah dari online ke offline,
+        // Player harus memilih kota; untuk online, lokasi akan dikosongkan.
+        if (
+            $tipeTurnamen === 'offline'
+            && empty($validated['id_kota'] ?? $pengajuan->id_kota)
+        ) {
+            throw ValidationException::withMessages([
+                'id_kota' => 'Kota wajib dipilih untuk turnamen offline.',
+            ]);
+        }
+
         $this->validateSponsorSelection(
             $sumberPendanaan,
             $sponsor
@@ -673,20 +677,15 @@ class PengajuanTurnamenController extends Controller
                 }
 
                 if ($tipeTurnamen === 'offline') {
-                    if (array_key_exists('provinsi', $validated)) {
-                        $dataPengajuan['provinsi'] = $validated['provinsi'];
-                    }
-
-                    if (array_key_exists('kota', $validated)) {
-                        $dataPengajuan['kota'] = $validated['kota'];
+                    if (array_key_exists('id_kota', $validated)) {
+                        $dataPengajuan['id_kota'] = $validated['id_kota'];
                     }
 
                     if (array_key_exists('deskripsi_lokasi', $validated)) {
                         $dataPengajuan['deskripsi_lokasi'] = $validated['deskripsi_lokasi'];
                     }
                 } else {
-                    $dataPengajuan['provinsi'] = null;
-                    $dataPengajuan['kota'] = null;
+                    $dataPengajuan['id_kota'] = null;
                     $dataPengajuan['deskripsi_lokasi'] = null;
                 }
 
@@ -799,6 +798,7 @@ class PengajuanTurnamenController extends Controller
                 'message' => 'Pengajuan berhasil diperbarui dan kembali menunggu verifikasi.',
                 'data' => $pengajuan->fresh()->load([
                     'game',
+                    'kota.provinsi',
                     'pendanaan',
                     'pembayaran',
                     'sponsor',
@@ -870,4 +870,3 @@ class PengajuanTurnamenController extends Controller
         }
     }
 }
-?>

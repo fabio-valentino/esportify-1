@@ -18,12 +18,11 @@ class PengajuanTurnamen extends Model
         'id_player',
         'id_game',
         'id_admin',
+        'id_kota',
         'poster',
         'nama_turnamen',
         'nama_penyelenggara',
         'tipe_turnamen',
-        'provinsi',
-        'kota',
         'deskripsi_lokasi',
         'slot',
         'jadwal_pendaftaran_tutup',
@@ -66,6 +65,14 @@ class PengajuanTurnamen extends Model
             'id_game'
         );
     }
+    public function kota(): BelongsTo
+{
+    return $this->belongsTo(
+        Kota::class,
+        'id_kota',
+        'id_kota'
+    );
+}
 
     public function admin(): BelongsTo
     {

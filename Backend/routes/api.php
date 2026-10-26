@@ -26,6 +26,8 @@ use App\Http\Controllers\Admin\PengajuanTurnamenController as AdminPengajuanTurn
 use App\Http\Controllers\Api\Admin\GameController;
 use App\Http\Controllers\Api\Admin\KategoriController;
 
+use App\Http\Controllers\Api\LokasiController;
+
 
 // ==========================================
 // AUTHENTICATION
@@ -39,6 +41,21 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth:sanctum');
 
 
+
+// ==========================================
+// DATA LOKASI PUBLIK
+// ==========================================
+
+Route::get('/provinsi', [
+    LokasiController::class,
+    'provinsi'
+]);
+
+Route::get('/provinsi/{id_provinsi}/kota', [
+    LokasiController::class,
+    'kota'
+]);
+    
 // ==========================================
 // AUTHENTICATED USER & PLAYER
 // ==========================================
