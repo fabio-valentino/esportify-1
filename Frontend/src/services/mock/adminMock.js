@@ -119,3 +119,24 @@ export const mockGames = [
     used: true,
   },
 ];
+
+// Daftar permission dengan id, untuk halaman Permissions
+export const mockPermissionList = mockAllPermissions.map((name, i) => ({
+  id: i + 1,
+  name,
+}));
+
+export const mockRoleList = [
+  { id: 1, name: "Admin", permissions: [...mockAllPermissions] },
+  {
+    id: 2,
+    name: "Owner",
+    permissions: ["lihat_dashboard", "lihat_data_user", "kelola_turnamen"],
+  },
+  { id: 3, name: "Player", permissions: ["lihat_dashboard"] },
+  {
+    id: 4,
+    name: "Penyelenggara",
+    permissions: ["lihat_dashboard", "kelola_turnamen"],
+  },
+];

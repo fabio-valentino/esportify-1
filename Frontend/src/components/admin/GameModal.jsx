@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "../icon";
 
-// ASSUMPTION: batas upload belum dikonfirmasi backend
-const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // ASSUMPTION: batas belum dikonfirmasi backend
 
-// Nama field backend
 const fieldMap = {
   category_ids: "categoryIds",
   "category_ids.0": "categoryIds",
@@ -18,14 +16,12 @@ function GameModal({ game, categories, onSubmit, onClose }) {
 
   const [name, setName] = useState(game?.name ?? "");
   const [categoryIds, setCategoryIds] = useState(game?.categoryIds ?? []);
-  const [status, setStatus] = useState(game?.status ?? "aktif");
   const [avatarFile, setAvatarFile] = useState(null);
   const [preview, setPreview] = useState(game?.avatar ?? null);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Bersihkan URL pratinjau sementara
   useEffect(() => {
     return () => {
       if (preview && preview.startsWith("blob:") && preview !== game?.avatar) {
@@ -43,7 +39,6 @@ function GameModal({ game, categories, onSubmit, onClose }) {
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setErrors((prev) => ({ ...prev, avatar: "File harus berupa gambar." }));
       return;
@@ -67,7 +62,6 @@ function GameModal({ game, categories, onSubmit, onClose }) {
     clearError("categoryIds");
   };
 
-  // Validasi klien hanya kenyamanan. Aturan yang berlaku tetap dari backend.
   const validate = () => {
     const result = {};
     if (name.trim().length < 2) result.name = "Nama game minimal 2 karakter.";
@@ -88,7 +82,7 @@ function GameModal({ game, categories, onSubmit, onClose }) {
 
     setLoading(true);
     try {
-      await onSubmit({ name: name.trim(), avatarFile, categoryIds, status });
+      await onSubmit({ name: name.trim(), avatarFile, categoryIds });
       onClose();
     } catch (err) {
       const fieldErrors = {};
@@ -111,7 +105,7 @@ function GameModal({ game, categories, onSubmit, onClose }) {
   return (
     <div className="admin-modal-backdrop" onMouseDown={onClose}>
       <div
-        className="admin-modal"
+        className="admin-modal game-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="game-title"
@@ -149,21 +143,33 @@ function GameModal({ game, categories, onSubmit, onClose }) {
 
           <div className="admin-form-field">
             <label>Avatar</label>
-            <button
-              type="button"
-              className="game-upload"
-              onClick={() => fileRef.current.click()}
-              aria-label="Unggah avatar"
-            >
-              {preview ? (
-                <img src={preview} alt="Pratinjau avatar" />
-              ) : (
-                <>
-                  <Icon name="upload" size={20} />
-                  <span className="game-upload-label">Unggah</span>
-                </>
-              )}
-            </button>
+            <div className="game-avatar-row">
+              <button
+                type="button"
+                className="game-upload"
+                onClick={() => fileRef.current.click()}
+                aria-label="Unggah avatar"
+              >
+                {preview ? (
+                  <img src={preview} alt="Pratinjau avatar" />
+                ) : (
+                  <>
+                    <Icon name="upload" size={20} />
+                    <span className="game-upload-label">Unggah</span>
+                  </>
+                )}
+              </button>
+              <div className="game-avatar-hint">
+                <button
+                  type="button"
+                  className="game-avatar-btn"
+                  onClick={() => fileRef.current.click()}
+                >
+                  {preview ? "Ganti gambar" : "Pilih gambar"}
+                </button>
+                <span>Format gambar, maksimal 2 MB</span>
+              </div>
+            </div>
             <input
               ref={fileRef}
               type="file"
@@ -179,35 +185,27 @@ function GameModal({ game, categories, onSubmit, onClose }) {
           <div className="admin-form-field">
             <label>Kategori</label>
             <div className="game-cat-grid">
-              {categories.map((c) => (
-                <label key={c.id} className="admin-check">
-                  <input
-                    type="checkbox"
-                    checked={categoryIds.includes(c.id)}
-                    onChange={() => toggleCategory(c.id)}
-                  />
-                  {c.name}
-                </label>
-              ))}
+              {categories.map((c) => {
+                const checked = categoryIds.includes(c.id);
+                return (
+                  <label
+                    key={c.id}
+                    className={`game-cat-option ${checked ? "checked" : ""}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleCategory(c.id)}
+                    />
+                    <span>{c.name}</span>
+                  </label>
+                );
+              })}
             </div>
             {errors.categoryIds && (
               <p className="admin-form-error">{errors.categoryIds}</p>
             )}
           </div>
-
-          {isEdit && (
-            <div className="admin-form-field">
-              <label htmlFor="game-status">Status</label>
-              <select
-                id="game-status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="aktif">Aktif</option>
-                <option value="nonaktif">Nonaktif</option>
-              </select>
-            </div>
-          )}
 
           {message && <p className="admin-form-error">{message}</p>}
 
@@ -220,7 +218,13 @@ function GameModal({ game, categories, onSubmit, onClose }) {
               Batal
             </button>
             <button type="submit" className="admin-save-btn" disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan"}
+              {loading
+                ? isEdit
+                  ? "Menyimpan..."
+                  : "Menambahkan..."
+                : isEdit
+                  ? "Simpan"
+                  : "Tambah Game"}
             </button>
           </div>
         </form>

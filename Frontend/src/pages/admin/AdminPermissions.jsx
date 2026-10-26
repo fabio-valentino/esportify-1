@@ -1,145 +1,84 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Icon from "../../components/icon";
+import PermissionModal from "../../components/admin/PermissionModal";
+import ConfirmDialog from "../../components/admin/ConfirmDialog";
 import Pagination from "../../components/admin/Pagination";
-import EditPermissionModal from "../../components/admin/EditPermissionModal";
-import { useAuth } from "../../context/AuthContext";
+
+const PAGE_SIZE = 5;
 import {
-  getUsers,
-  getUsersPermissions,
-  getUserPermissions,
-  setUserPermissions,
+  getPermissions,
   createPermission,
+  updatePermission,
+  deletePermission,
 } from "../../services/adminApi";
 import { formatPermission } from "../../utils/permission";
-import AddPermissionModal from "../../components/admin/AddPermissionModal";
 
-const PAGE_SIZE = 7;
-
-// 403 bisa berarti tidak punya izin atau aksi dilarang.
+// 403 bisa berarti tidak punya izin kelola_permission
 const errorText = (err) =>
-  err.status === 403
-    ? err.message || "Aksi ini tidak diizinkan."
-    : err.message || "Terjadi kesalahan.";
+  err.status === 403 ? err.message || "Aksi ini tidak diizinkan." : err.message;
 
 function AdminPermissions() {
-  const { user: me } = useAuth();
-
-  const [users, setUsers] = useState([]);
-  const [perms, setPerms] = useState({});
-  const requested = useRef(new Set());
-
+  const [permissions, setPermissions] = useState([]);
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(null);
-  const [showAdd, setShowAdd] = useState(false);
+  const [modal, setModal] = useState(null); // { item } (null = tambah)
+  const [confirm, setConfirm] = useState(null); // permission yang akan dihapus
+  const [working, setWorking] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [page, setPage] = useState(1);
 
-  // Mengambil daftar user.
+  const load = async () => setPermissions(await getPermissions());
+
   useEffect(() => {
-    getUsers()
-      .then(setUsers)
-      .catch((err) =>
-        setMessage({
-          text: errorText(err),
-          type: "error",
-        }),
-      )
+    load()
+      .catch((err) => setMessage({ text: errorText(err), type: "error" }))
       .finally(() => setLoading(false));
   }, []);
 
-  const keyword = search.toLowerCase();
-
-  const filtered = users.filter((u) =>
-    u.username.toLowerCase().includes(keyword),
+  const keyword = search.trim().toLowerCase().replace(/\s+/g, "_");
+  const filtered = permissions.filter((p) =>
+    p.name.toLowerCase().includes(keyword),
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-
   const safePage = Math.min(page, totalPages);
   const startIndex = (safePage - 1) * PAGE_SIZE;
-
   const visible = filtered.slice(startIndex, startIndex + PAGE_SIZE);
 
-  // Ambil permission seluruh user yang sedang tampil
-  // menggunakan satu bulk request.
-  const idsKey = visible.map((u) => u.id).join(",");
-
-  useEffect(() => {
-    const ids = idsKey ? idsKey.split(",").map(Number) : [];
-
-    const newIds = ids.filter((id) => !requested.current.has(id));
-
-    if (newIds.length === 0) return;
-
-    // Tandai agar tidak mengirim request berulang.
-    newIds.forEach((id) => requested.current.add(id));
-
-    getUsersPermissions(newIds)
-      .then((data) => {
-        setPerms((prev) => ({
-          ...prev,
-          ...data,
-        }));
-      })
-      .catch((err) => {
-        setPerms((prev) => {
-          const updated = { ...prev };
-
-          newIds.forEach((id) => {
-            updated[id] = {
-              error: errorText(err),
-            };
-          });
-
-          return updated;
-        });
-
-        // Izinkan percobaan ulang jika request gagal.
-        newIds.forEach((id) => requested.current.delete(id));
-      });
-  }, [idsKey]);
-
-  // Menyimpan perubahan permission satu user.
-  const handleSave = async (permissions) => {
-    await setUserPermissions(editing.id, permissions);
-
-    // Ambil ulang permission setelah perubahan disimpan.
-    const fresh = await getUserPermissions(editing.id);
-
-    setPerms((prev) => ({
-      ...prev,
-      [editing.id]: fresh,
-    }));
-
-    setMessage({
-      text: "Permission user berhasil disimpan.",
-      type: "success",
-    });
+  // Dipanggil modal. Error dilempar kembali supaya tampil di modal.
+  const handleSave = async (name) => {
+    if (modal.item) await updatePermission(modal.item.id, name);
+    else await createPermission(name);
+    await load(); // ambil ulang supaya id dan nama sesuai backend
+    setMessage({ text: "Permission berhasil disimpan.", type: "success" });
   };
 
-  // Menambahkan permission baru.
-  const handleCreate = async (name) => {
-    await createPermission(name);
-
-    setMessage({
-      text: `Permission "${name}" berhasil ditambahkan.`,
-      type: "success",
-    });
+  const handleDelete = async () => {
+    const target = confirm;
+    setWorking(true);
+    try {
+      await deletePermission(target.id);
+      setPermissions((prev) => prev.filter((p) => p.id !== target.id));
+      setMessage({ text: "Permission berhasil dihapus.", type: "success" });
+    } catch (err) {
+      setMessage({ text: errorText(err), type: "error" });
+    } finally {
+      setWorking(false);
+      setConfirm(null);
+    }
   };
 
   return (
     <>
-      <h1 className="admin-title">Data Permission</h1>
+      <h1 className="admin-title">Permissions</h1>
 
       <section className="admin-panel">
         <div className="admin-filters">
           <div className="admin-search">
-            <Icon name="search" size={16} />
-
+            <Icon name="search" size={18} />
             <input
               type="text"
-              placeholder="Cari username.."
+              placeholder="Cari permissions"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -148,21 +87,11 @@ function AdminPermissions() {
             />
           </div>
 
-          <p className="perm-legend">
-            Keterangan warna:
-            <span className="perm-legend-item">
-              <i className="perm-dot"></i>
-              izin dari role
-            </span>
-            <span className="perm-legend-item">
-              <i className="perm-dot direct"></i>
-              izin khusus user
-            </span>
-          </p>
-
-          <button className="admin-add-btn" onClick={() => setShowAdd(true)}>
-            <Icon name="plus" size={16} />
-            Tambah Permission
+          <button
+            className="admin-outline-btn"
+            onClick={() => setModal({ item: null })}
+          >
+            <Icon name="plus" size={16} /> Tambah Permissions
           </button>
         </div>
 
@@ -175,106 +104,86 @@ function AdminPermissions() {
             <thead>
               <tr>
                 <th>No</th>
-                <th>Username</th>
-                <th>Permission</th>
-                <th>Aksi</th>
+                <th>Permissions</th>
+                <th className="col-action">Aksi</th>
               </tr>
             </thead>
-
             <tbody>
-              {visible.map((user, index) => {
-                const p = perms[user.id];
-                const isMe = user.id === me?.id;
-
-                return (
-                  <tr key={user.id}>
-                    <td>{startIndex + index + 1}</td>
-
-                    <td>{user.username}</td>
-
-                    <td>
-                      {!p && <span className="admin-empty">Memuat...</span>}
-
-                      {p?.error && (
-                        <span className="admin-form-error">{p.error}</span>
-                      )}
-
-                      {p && !p.error && (
-                        <div className="perm-list">
-                          {p.effective.length === 0 && (
-                            <span className="admin-empty">-</span>
-                          )}
-
-                          {p.effective.map((name) => (
-                            <span
-                              key={name}
-                              className={`perm-chip ${
-                                p.viaRoles.includes(name) ? "" : "direct"
-                              }`}
-                            >
-                              {formatPermission(name)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-
-                    <td>
+              {visible.map((p, index) => (
+                <tr key={p.id}>
+                  <td>{startIndex + index + 1}</td>
+                  <td title={p.name}>{formatPermission(p.name)}</td>
+                  <td className="col-action">
+                    <div className="admin-actions">
                       <button
                         className="admin-icon-btn edit"
-                        onClick={() => setEditing(user)}
-                        disabled={!p || Boolean(p.error)}
-                        title="Edit"
-                        aria-label={`Edit permission ${user.username}`}
+                        onClick={() => setModal({ item: p })}
+                        aria-label={`Edit ${p.name}`}
                       >
                         <Icon name="edit" size={18} />
                       </button>
-                    </td>
-                  </tr>
-                );
-              })}
-
+                      <button
+                        className="admin-icon-btn delete"
+                        onClick={() => setConfirm(p)}
+                        aria-label={`Hapus ${p.name}`}
+                      >
+                        <Icon name="trash" size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
               {loading && (
                 <tr>
-                  <td colSpan={4} className="admin-empty">
+                  <td colSpan={3} className="admin-empty">
                     Memuat...
                   </td>
                 </tr>
               )}
-
-              {!loading && visible.length === 0 && (
+              {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="admin-empty">
-                    Data tidak ditemukan.
+                  <td colSpan={3} className="admin-empty">
+                    {permissions.length === 0
+                      ? "Belum ada permission."
+                      : "Permission tidak ditemukan."}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-
-        <Pagination
-          page={safePage}
-          totalItems={filtered.length}
-          pageSize={PAGE_SIZE}
-          onChange={setPage}
-        />
       </section>
+      <Pagination
+        page={safePage}
+        totalItems={filtered.length}
+        pageSize={PAGE_SIZE}
+        onChange={setPage}
+      />
 
-      {editing && perms[editing.id] && !perms[editing.id].error && (
-        <EditPermissionModal
-          user={editing}
-          perms={perms[editing.id]}
-          onSave={handleSave}
-          onClose={() => setEditing(null)}
+      {modal && (
+        <PermissionModal
+          permission={modal.item}
+          onSubmit={handleSave}
+          onClose={() => setModal(null)}
         />
       )}
 
-      {showAdd && (
-        <AddPermissionModal
-          onSubmit={handleCreate}
-          onClose={() => setShowAdd(false)}
-        />
+      {confirm && (
+        <ConfirmDialog
+          tone="danger"
+          icon="trash"
+          title="Hapus Permission?"
+          confirmLabel="Hapus"
+          loading={working}
+          onConfirm={handleDelete}
+          onClose={() => setConfirm(null)}
+        >
+          <p>
+            Apakah anda yakin ingin menghapus permission "
+            {formatPermission(confirm.name)}"
+          </p>
+          <p>Role dan route yang memakainya akan kehilangan permission ini.</p>
+        </ConfirmDialog>
       )}
     </>
   );
