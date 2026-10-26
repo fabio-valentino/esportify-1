@@ -26,10 +26,11 @@ return new class extends Migration
                 'offline'
             ]);
 
-            // Lokasi
-            $table->string('provinsi', 100)->nullable();
-            $table->string('kota', 100)->nullable();
-            $table->text('deskripsi_lokasi')->nullable();
+           
+ // Lokasi
+$table->unsignedBigInteger('id_kota')->nullable();
+$table->text('deskripsi_lokasi')->nullable();
+
 
             // Jadwal dan kapasitas
             $table->unsignedInteger('slot');
