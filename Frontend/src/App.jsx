@@ -12,15 +12,13 @@ import Profile from "./pages/Profile";
 import AdminProfile from "./pages/admin/AdminProfile";
 import AdminGames from "./pages/admin/AdminGames";
 import AdminRoles from "./pages/admin/AdminRoles";
-import ManageTournaments from "./pages/tournament/ManageTournaments";
-import SubmissionStatus from "./pages/tournament/SubmissionStatus";
-import CreateTournament from "./pages/tournament/CreateTournament";
+
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
