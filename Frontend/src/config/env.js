@@ -18,3 +18,6 @@ export const SKIP_AUTH =
 
 // Khusus Kelola Game. Ubah ke false setelah semua endpoint game selesai.
 export const USE_GAME_MOCK = import.meta.env.VITE_USE_GAME_MOCK !== "false";
+
+export const USE_TOURNAMENT_MOCK =
+  import.meta.env.VITE_USE_TOURNAMENT_MOCK !== "false";

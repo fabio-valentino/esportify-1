@@ -32,6 +32,10 @@ import {
   Upload,
   TriangleAlert,
   ClipboardList,
+  Ticket,
+  Settings2,
+  Info,
+  FileImage,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -71,6 +75,10 @@ const icons = {
   upload: Upload,
   alert: TriangleAlert,
   roles: ClipboardList,
+  ticket: Ticket,
+  manage: Settings2,
+  info: Info,
+  "file-image": FileImage,
 };
 
 function Icon({ name, size = 16 }) {

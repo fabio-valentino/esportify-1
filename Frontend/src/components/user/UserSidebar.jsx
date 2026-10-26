@@ -1,12 +1,25 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import Icon from "../icon";
 
 const navClass = ({ isActive }) =>
   isActive ? "admin-nav-item active" : "admin-nav-item";
 
+// Cari Turnamen dan Turnamen Saya belum punya halaman: link-nya disiapkan saja
+const tournamentItems = [
+  { label: "Cari Turnamen", to: "/turnamen/cari", icon: "search" },
+  { label: "Turnamen Saya", to: "/turnamen/saya", icon: "ticket" },
+  {
+    label: "Kelola Turnamen",
+    to: "/turnamen/kelola",
+    icon: "manage",
+    also: ["/turnamen/buat", "/turnamen/status-pengajuan"],
+  },
+];
+
 function UserSidebar({ open, onNavigate, onLogout }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { pathname } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(pathname.startsWith("/turnamen"));
 
   return (
     <aside className={`admin-sidebar ${open ? "open" : ""}`}>
@@ -18,13 +31,27 @@ function UserSidebar({ open, onNavigate, onLogout }) {
         className="admin-nav-item admin-nav-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
       >
-        <Icon name="trophy" size={16} /> Turnament
+        <Icon name="trophy" size={16} /> Turnamen
         <Icon name={menuOpen ? "chevron-up" : "chevron-down"} size={14} />
       </button>
 
       {menuOpen && (
         <div className="admin-submenu">
-          <span className="admin-message">Belum ada menu.</span>
+          {tournamentItems.map((item) => {
+            const active =
+              pathname === item.to ||
+              (item.also ?? []).some((p) => pathname.startsWith(p));
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={`admin-nav-item ${active ? "active" : ""}`}
+                onClick={onNavigate}
+              >
+                <Icon name={item.icon} size={15} /> {item.label}
+              </NavLink>
+            );
+          })}
         </div>
       )}
 
