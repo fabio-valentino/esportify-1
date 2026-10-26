@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Game;
+use App\Models\Turnamen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -78,11 +79,6 @@ class GameController extends Controller
                 'mimes:jpg,jpeg,png,webp',
                 'max:2048',
             ],
-            'status' => [
-                'sometimes',
-                'required',
-                Rule::in(['Aktif', 'Nonaktif']),
-            ],
             'category_ids' => [
                 'required',
                 'array',
@@ -112,7 +108,6 @@ class GameController extends Controller
             ], 422);
         }
 
-        // Cari data admin berdasarkan user yang sedang login
         $admin = Admin::where(
             'id_user',
             $request->user()->id_user
@@ -142,7 +137,6 @@ class GameController extends Controller
                     'id_admin' => $admin->id_admin,
                     'nama_game' => $request->nama_game,
                     'avatar' => $avatarPath,
-                    'status' => $request->input('status', 'Aktif'),
                 ]);
 
                 $game->kategoris()->sync(
@@ -160,6 +154,7 @@ class GameController extends Controller
         }
 
         $game->load('kategoris:id_kategori,nama_kategori');
+
         $game->avatar_url = $game->avatar
             ? Storage::disk('public')->url($game->avatar)
             : null;
@@ -198,11 +193,6 @@ class GameController extends Controller
                 'image',
                 'mimes:jpg,jpeg,png,webp',
                 'max:2048',
-            ],
-            'status' => [
-                'sometimes',
-                'required',
-                Rule::in(['Aktif', 'Nonaktif']),
             ],
             'category_ids' => [
                 'sometimes',
@@ -248,7 +238,6 @@ class GameController extends Controller
             ) {
                 $data = $request->only([
                     'nama_game',
-                    'status',
                 ]);
 
                 if ($newAvatar) {
@@ -277,6 +266,7 @@ class GameController extends Controller
 
         $game->refresh();
         $game->load('kategoris:id_kategori,nama_kategori');
+
         $game->avatar_url = $game->avatar
             ? Storage::disk('public')->url($game->avatar)
             : null;
@@ -288,45 +278,7 @@ class GameController extends Controller
         ]);
     }
 
-    // PATCH: Mengubah status game
-    public function updateStatus(Request $request, $id)
-    {
-        $game = Game::find($id);
-
-        if (!$game) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Game tidak ditemukan.',
-            ], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'status' => [
-                'required',
-                Rule::in(['Aktif', 'Nonaktif']),
-            ],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Status game tidak valid.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $game->update([
-            'status' => $request->status,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status game berhasil diperbarui.',
-            'data' => $game,
-        ]);
-    }
-
-    // DELETE: Menghapus game
+    // DELETE: Menghapus game jika belum memiliki turnamen
     public function destroy($id)
     {
         $game = Game::find($id);
@@ -338,9 +290,22 @@ class GameController extends Controller
             ], 404);
         }
 
+        $hasTournament = Turnamen::whereHas(
+            'pengajuan',
+            function ($query) use ($game) {
+                $query->where('id_game', $game->id_game);
+            }
+        )->exists();
+
+        if ($hasTournament) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Game tidak dapat dihapus karena sudah memiliki turnamen.',
+            ], 422);
+        }
+
         $avatar = $game->avatar;
 
-        // Hapus game dan relasi kategori dalam transaksi
         DB::transaction(function () use ($game) {
             $game->kategoris()->detach();
             $game->delete();
