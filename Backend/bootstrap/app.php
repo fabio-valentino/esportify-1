@@ -8,6 +8,8 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
+use App\Http\Middleware\CheckAdminPengajuanDeadline;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -22,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+
+            // Pemeriksaan tenggat keputusan pengajuan Admin.
+            'admin.pengajuan.deadline' => CheckAdminPengajuanDeadline::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
