@@ -123,7 +123,7 @@ function CreateTournament() {
     const e = {};
     if (!form.closeDate) e.closeDate = "Tetapkan tanggal pendaftaran ditutup.";
     else if (form.closeDate < minClose) {
-      e.closeDate = "Pendaftaran ditutup paling cepat 6 hari dari hari ini.";
+      e.closeDate = `Pendaftaran ditutup paling cepat ${MIN_CLOSE_DAYS} hari dari hari ini.`;
     }
     if (!form.matchDate) e.matchDate = "Tetapkan hari pertandingan.";
     else if (form.closeDate && form.matchDate < minMatch) {
@@ -145,14 +145,6 @@ function CreateTournament() {
         e.address = "Alamat lokasi wajib diisi.";
     }
     if (!(Number(form.slot) >= 2)) e.slot = "Slot minimal 2.";
-    if (!form.closeDate) e.closeDate = "Tetapkan tanggal pendaftaran ditutup.";
-    else if (form.closeDate < today)
-      e.closeDate = "Tanggal tidak boleh di masa lalu.";
-    if (!form.matchDate) e.matchDate = "Tetapkan hari pertandingan.";
-    else if (form.closeDate && form.matchDate < form.closeDate) {
-      e.matchDate =
-        "Hari pertandingan tidak boleh sebelum pendaftaran ditutup.";
-    }
     if (form.description.trim().length < 10)
       e.description = "Deskripsi minimal 10 karakter.";
     if (form.prize === "") e.prize = "Isi total hadiah (0 jika tidak ada).";
