@@ -12,7 +12,7 @@ import Profile from "./pages/Profile";
 import AdminProfile from "./pages/admin/AdminProfile";
 import AdminGames from "./pages/admin/AdminGames";
 import AdminRoles from "./pages/admin/AdminRoles";
-import Landing from "./pages/Landing";
+
 
 function App() {
   return (
@@ -26,6 +26,12 @@ function App() {
         <Route element={<ProtectedRoute userOnly />}>
           <Route element={<UserLayout />}>
             <Route path="/home" element={<UserHome />} />
+            <Route path="/turnamen/buat" element={<CreateTournament />} />
+            <Route path="/turnamen/kelola" element={<ManageTournaments />} />
+            <Route
+              path="/turnamen/status-pengajuan"
+              element={<SubmissionStatus />}
+            />
           </Route>
         </Route>
 
