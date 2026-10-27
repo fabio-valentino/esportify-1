@@ -1129,6 +1129,286 @@ p.admin-message {
   color: var(--muted);
 }
 
+/* ===== Pengajuan Turnamen (admin) ===== */
+.sub-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  border: 1px solid #164e63;
+  border-radius: 12px;
+  background: rgba(8, 145, 178, 0.12);
+  color: var(--white);
+}
+.sub-banner strong {
+  font-size: 16px;
+}
+.sub-banner p {
+  font-size: 13px;
+  color: var(--muted);
+}
+.sub-banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
+}
+
+.sub-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.sub-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sub-count b {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #1c2230;
+  color: var(--white);
+}
+
+.sub-name {
+  font-weight: 600;
+  color: var(--white);
+}
+.sub-tag {
+  margin-left: 10px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: #1c2230;
+  color: #6b7a99;
+  font-size: 11px;
+}
+.sub-date {
+  display: block;
+  color: var(--white);
+}
+.sub-wait {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.s-detail-btn.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.s-detail-btn.locked:hover {
+  background: #121a2b;
+}
+
+/* ===== Detail Pengajuan (admin) ===== */
+.d-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--white);
+  font: inherit;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.d-back:hover {
+  color: #6aa3ff;
+}
+.d-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 860px;
+}
+
+.d-card {
+  padding: 16px 20px;
+  border-radius: 10px;
+  background: #181d29;
+}
+.d-card.d-center {
+  text-align: center;
+}
+.d-label {
+  margin: 6px 0 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.d-card .d-label:first-child {
+  margin-top: 0;
+}
+.d-value {
+  margin: 6px 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.d-box {
+  margin: 6px 0 12px;
+  padding: 10px;
+  border: 1px solid #2c3a52;
+  border-radius: 6px;
+  background: #121826;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+.d-row {
+  display: flex;
+  gap: 24px;
+  margin: 4px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.d-row b {
+  color: var(--white);
+  font-size: 16px;
+}
+.d-poster {
+  display: block;
+  max-width: 240px;
+  max-height: 320px;
+  margin: 10px auto 0;
+  border-radius: 6px;
+  object-fit: contain;
+}
+.d-card .t-file-row {
+  margin: 6px 0 10px;
+}
+
+.d-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+.d-btn {
+  flex: 1;
+  min-width: 160px;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+.d-btn.reject {
+  background: #dc2626;
+}
+.d-btn.revision {
+  background: #d97706;
+}
+.d-btn.approve {
+  background: #16a34a;
+}
+.d-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+.d-btn:disabled {
+  background: #1f2937;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Dialog Revisi dan Penolakan */
+.decision-modal {
+  max-width: 520px;
+  padding: 24px;
+  border-color: #2c3a52;
+  background: #0f141f;
+}
+.decision-head {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #3a4558;
+}
+.decision-head h2 {
+  font-size: 20px;
+  color: var(--white);
+}
+.decision-head p {
+  font-size: 13px;
+  color: var(--muted);
+}
+.decision-icon.revision {
+  color: #f59e0b;
+}
+.decision-icon.reject {
+  color: #ef4444;
+}
+.decision-options {
+  margin-bottom: 14px;
+}
+.decision-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+  color: var(--white);
+}
+.decision-hint {
+  justify-content: flex-start;
+  margin: 4px 0 12px;
+  text-align: left;
+}
+.decision-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.decision-cancel,
+.decision-confirm {
+  flex: 1;
+  padding: 11px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+.decision-cancel {
+  border: 1px solid #3a4558;
+  background: #0f141f;
+  color: var(--white);
+}
+.decision-confirm {
+  border: none;
+  color: var(--white);
+}
+.decision-confirm.revision {
+  background: #d97706;
+}
+.decision-confirm.reject {
+  background: #dc2626;
+}
+.decision-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.t-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
   .admin-menu-btn {

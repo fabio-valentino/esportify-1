@@ -44,6 +44,10 @@ function AdminSidebar({ open, onNavigate, onLogout }) {
         </div>
       )}
 
+      <NavLink to="/admin/pengajuan" className={navClass} onClick={onNavigate}>
+        <Icon name="trophy" size={16} /> Pengajuan Turnamen
+      </NavLink>
+
       <NavLink to="/admin/games" className={navClass} onClick={onNavigate}>
         <Icon name="gamepad" size={16} /> Kelola Game
       </NavLink>

@@ -16,6 +16,8 @@ import Landing from "./pages/Landing";
 import CreateTournament from "./pages/tournament/CreateTournament";
 import ManageTournaments from "./pages/tournament/ManageTournaments";
 import SubmissionStatus from "./pages/tournament/SubmissionStatus";
+import AdminSubmissions from "./pages/admin/AdminSubmissions";
+import AdminSubmissionDetail from "./pages/admin/AdminSubmissionDetail";
 
 function App() {
   return (
@@ -54,6 +56,8 @@ function App() {
             <Route path="permissions" element={<AdminPermissions />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="games" element={<AdminGames />} />
+            <Route path="pengajuan" element={<AdminSubmissions />} />
+            <Route path="pengajuan/:id" element={<AdminSubmissionDetail />} />
           </Route>
         </Route>
       </Routes>

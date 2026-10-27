@@ -36,6 +36,7 @@ import {
   Settings2,
   Info,
   FileImage,
+  Hourglass,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -79,6 +80,7 @@ const icons = {
   manage: Settings2,
   info: Info,
   "file-image": FileImage,
+  hourglass: Hourglass,
 };
 
 function Icon({ name, size = 16 }) {
