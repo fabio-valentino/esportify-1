@@ -15,7 +15,6 @@ class Game extends Model
     protected $fillable = [
         'id_admin',
         'avatar',
-        'status',
         'nama_game',
     ];
 

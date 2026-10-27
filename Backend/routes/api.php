@@ -3,16 +3,22 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// ==========================================
 // AUTH CONTROLLERS
+// ==========================================
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 
+// ==========================================
 // PLAYER CONTROLLERS
+// ==========================================
 use App\Http\Controllers\Player\ProfileController;
 use App\Http\Controllers\Player\PengajuanTurnamenController;
 use App\Http\Controllers\Api\Player\GameController as PlayerGameController;
 
+// ==========================================
 // ADMIN CONTROLLERS
+// ==========================================
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -23,10 +29,17 @@ use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\UserPermissionController;
 use App\Http\Controllers\Admin\PengajuanTurnamenController as AdminPengajuanTurnamenController;
 
+// ==========================================
+// ADMIN API CONTROLLERS
+// ==========================================
 use App\Http\Controllers\Api\Admin\GameController;
 use App\Http\Controllers\Api\Admin\KategoriController;
 
+// ==========================================
+// PUBLIC API CONTROLLERS
+// ==========================================
 use App\Http\Controllers\Api\LokasiController;
+use App\Http\Controllers\Api\TurnamenController;
 
 
 // ==========================================
@@ -39,7 +52,6 @@ Route::post('/login', [LoginController::class, 'login']);
 
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth:sanctum');
-
 
 
 // ==========================================
@@ -55,14 +67,52 @@ Route::get('/provinsi/{id_provinsi}/kota', [
     LokasiController::class,
     'kota'
 ]);
-    
+
+
+// ==========================================
+// PUBLIKASI TURNAMEN DAN GAME
+// ==========================================
+
+// Daftar turnamen untuk Guest
+Route::get('/turnamen', [
+    TurnamenController::class,
+    'index'
+]);
+
+// Daftar game untuk Guest dan seluruh pengunjung
+Route::get('/public/games', [
+    PlayerGameController::class,
+    'index'
+]);
+
+
 // ==========================================
 // AUTHENTICATED USER & PLAYER
 // ==========================================
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    // ==========================================
+    // TURNAMEN
+    // ==========================================
+
+    // Daftar turnamen yang dikelola oleh Player login
+    Route::get('/turnamen-kelolaan', [
+        TurnamenController::class,
+        'kelolaan'
+    ]);
+
+    // Detail turnamen untuk pengguna yang sudah login
+    Route::get('/turnamen/{id}', [
+        TurnamenController::class,
+        'show'
+    ]);
+
+
+    // ==========================================
     // AUTHENTICATED USER
+    // ==========================================
+
     Route::get('/user', function (Request $request) {
         $user = $request->user();
 
@@ -77,15 +127,27 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
+
+    // ==========================================
     // PLAYER PROFILE
+    // ==========================================
+
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
 
+
+    // ==========================================
     // GAME PLAYER
+    // ==========================================
+
     Route::get('/games', [PlayerGameController::class, 'index']);
     Route::get('/games/{id}', [PlayerGameController::class, 'show']);
 
+
+    // ==========================================
     // PENGAJUAN TURNAMEN PLAYER
+    // ==========================================
+
     Route::get('/pengajuan-turnamen', [
         PengajuanTurnamenController::class,
         'index'
@@ -110,6 +172,7 @@ Route::middleware('auth:sanctum')->group(function () {
         PengajuanTurnamenController::class,
         'update'
     ]);
+
 });
 
 
@@ -159,7 +222,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
 
         Route::middleware('admin.pengajuan.deadline')->group(function () {
 
+            // ==========================================
             // ADMIN PROFILE
+            // ==========================================
+
             Route::get('/profile', [
                 AdminProfileController::class,
                 'show'
@@ -171,14 +237,20 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ]);
 
 
+            // ==========================================
             // DASHBOARD
+            // ==========================================
+
             Route::get('/dashboard', [
                 AdminController::class,
                 'dashboard'
             ])->middleware('permission:lihat_dashboard');
 
 
+            // ==========================================
             // KELOLA USER
+            // ==========================================
+
             Route::get('/users', [
                 UserManagementController::class,
                 'index'
@@ -210,7 +282,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:hapus_data_user');
 
 
+            // ==========================================
             // KELOLA ROLE
+            // ==========================================
+
             Route::get('/roles', [
                 RoleManagementController::class,
                 'index'
@@ -237,7 +312,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:kelola_role');
 
 
+            // ==========================================
             // KELOLA PERMISSION
+            // ==========================================
+
             Route::get('/permissions', [
                 PermissionManagementController::class,
                 'index'
@@ -264,7 +342,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:kelola_permission');
 
 
+            // ==========================================
             // PENGATURAN ROLE & PERMISSION
+            // ==========================================
+
             Route::get('/roles/{id}/permissions', [
                 RolePermissionController::class,
                 'index'
@@ -276,7 +357,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:atur_permission_role');
 
 
+            // ==========================================
             // PENGATURAN USER & ROLE
+            // ==========================================
+
             Route::get('/users/{id}/roles', [
                 UserRoleController::class,
                 'index'
@@ -288,7 +372,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:atur_role_user');
 
 
+            // ==========================================
             // PENGATURAN USER & PERMISSION
+            // ==========================================
+
             Route::get('/users/{id}/permissions', [
                 UserPermissionController::class,
                 'index'
@@ -300,7 +387,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:atur_permission_user');
 
 
+            // ==========================================
             // KELOLA GAME ADMIN
+            // ==========================================
+
             Route::get('/games', [
                 GameController::class,
                 'index'
@@ -327,7 +417,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:hapus_data_game');
 
 
+            // ==========================================
             // KELOLA KATEGORI
+            // ==========================================
+
             Route::get('/categories', [
                 KategoriController::class,
                 'index'
@@ -354,5 +447,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])
             ])->middleware('permission:hapus_data_kategori');
 
         });
+
     });
 ?>
