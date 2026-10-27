@@ -33,7 +33,7 @@ class KategoriController extends Controller
     {
         $kategori = Kategori::with([
             'admin:id_admin,id_user',
-            'games:id_game,nama_game,status',
+            'games:id_game,nama_game',
         ])
         ->withCount('games')
         ->find($id);
