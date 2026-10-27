@@ -83,13 +83,8 @@ function AdminGames() {
       setGames((prev) => prev.filter((g) => g.id !== game.id));
       setMessage({ text: "Game berhasil dihapus.", type: "success" });
     } catch (err) {
-      setMessage({
-        text:
-          err.status === 409
-            ? `Game "${game.name}" sudah digunakan turnamen dan tidak dapat dihapus.`
-            : errorText(err),
-        type: "error",
-      });
+      // 422: "Game tidak dapat dihapus karena sudah memiliki turnamen."
+      setMessage({ text: errorText(err), type: "error" });
     } finally {
       setWorking(false);
       setConfirm(null);

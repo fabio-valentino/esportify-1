@@ -10,6 +10,8 @@ import {
   mockGames,
   mockPermissionList,
   mockRoleList,
+  mockSubmissions,
+  mockSubmissionDetail,
 } from "./mock/adminMock";
 
 const copy = (data) => JSON.parse(JSON.stringify(data));
@@ -610,3 +612,86 @@ export async function deleteRole(id) {
   await apiRequest(`/admin/roles/${id}`, { method: "DELETE" });
   return true;
 }
+
+
+
+// ----- Pengajuan turnamen (admin): SELALU memakai backend, tanpa mock -----
+// Respons admin: { message, data }.
+const fileName = (path) => (path ? String(path).split("/").pop() : "");
+const mediaOf = (url, path) => url ?? toMediaUrl(path);
+
+// GET /api/admin/pengajuan-turnamen
+// Jangan panggil GET /{id} dari sini: endpoint itu mengubah status.
+export async function getAdminSubmissions() {
+  const response = await apiRequest("/admin/pengajuan-turnamen");
+  return toList(response).map((s) => ({
+    id: Number(s.id_pengajuan),
+    name: s.nama_turnamen ?? "-",
+    tag: s.game?.kategoris?.[0]?.nama_kategori ?? "",
+    organizer: s.nama_penyelenggara ?? s.player?.user?.username ?? s.player?.username ?? "-",
+    createdAt: s.created_at ?? "",
+    status: s.status ?? "",
+  }));
+}
+
+// GET /api/admin/pengajuan-turnamen/{id}
+// "Menunggu Verifikasi" -> "Sedang ditinjau" (efek samping). 409 = sedang diedit.
+export async function getAdminSubmissionDetail(id) {
+  const response = await apiRequest(`/admin/pengajuan-turnamen/${id}`);
+  const d = response?.data ?? response;
+  const pay = d.pembayaran ?? {};
+  const fee = d.pendanaan ?? {};
+
+  return {
+    id: Number(d.id_pengajuan),
+    name: d.nama_turnamen ?? "-",
+    organizer: d.nama_penyelenggara ?? d.player?.user?.username ?? "-",
+    status: d.status ?? "",
+    createdAt: d.created_at ?? "",
+    posterUrl: mediaOf(d.poster_url, d.poster),
+    game: d.game?.nama_game ?? "-",
+    type: String(d.tipe_turnamen ?? "").toLowerCase(),
+    province: d.kota?.provinsi?.nama_provinsi ?? "",
+    city: d.kota?.nama_kota ?? "",
+    address: d.deskripsi_lokasi ?? "",
+    slot: d.slot ?? "",
+    closeDate: d.jadwal_pendaftaran_tutup ?? "",
+    matchDate: d.jadwal_main ?? "",
+    description: d.deskripsi_turnamen ?? "",
+    prize: d.total_hadiah,
+    funding: (d.sumber_pendanaan ?? []).map((s) => s.nama_sumber ?? String(s)),
+    sponsors: (d.sponsor ?? []).map((s) => ({ name: s.nama_sponsor, contact: s.kontak_sponsor })),
+    fundingDetail: d.rincian_pendanaan ?? "",
+    feeType: String(fee.jenis_biaya ?? d.jenis_biaya ?? "").toLowerCase(),
+    fee: fee.biaya_pendaftaran,
+    // ASSUMPTION: nama field pembayaran belum ada contohnya
+    paymentMethod: String(pay.metode_pembayaran ?? "").toLowerCase(),
+    qrisUrl: mediaOf(pay.qris_url, pay.qris),
+    qrisName: fileName(pay.qris),
+    account: pay.no_rekening ?? "",
+    // ASSUMPTION: KTP dibuka lewat ktp_url, atau path /storage/. Kalau backend
+    // menyimpannya privat, URL ini 404 dan perlu endpoint khusus dari backend.
+    ktpUrl: mediaOf(d.ktp_url, d.ktp),
+    ktpName: fileName(d.ktp) || "ktp",
+  };
+}
+
+export const approveSubmission = (id) =>
+  apiRequest(`/admin/pengajuan-turnamen/${id}/approve`, { method: "POST" });
+
+export const rejectSubmission = (id, alasan) =>
+  apiRequest(`/admin/pengajuan-turnamen/${id}/reject`, {
+    method: "POST",
+    body: { alasan_admin: alasan },
+  });
+
+export const requestRevision = (id, alasan) =>
+  apiRequest(`/admin/pengajuan-turnamen/${id}/revision`, {
+    method: "POST",
+    body: { alasan_admin: alasan },
+  });
+
+
+
+
+

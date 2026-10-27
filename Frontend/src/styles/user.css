@@ -968,6 +968,12 @@
   background: rgba(37, 99, 235, 0.2);
 }
 
+.s-badge.purple {
+  color: #a78bfa;
+  border-color: #4c1d95;
+  background: rgba(109, 40, 217, 0.2);
+}
+
 .s-detail-btn {
   display: inline-flex;
   align-items: center;
@@ -1482,6 +1488,14 @@
 }
 .pr-page .pf-divider {
   display: none;
+}
+
+.t-preview-pdf {
+  width: 100%;
+  height: calc(90vh - 80px);
+  border: none;
+  border-radius: 8px;
+  background: #fff;
 }
 
 /* ---------- Responsive ---------- */
