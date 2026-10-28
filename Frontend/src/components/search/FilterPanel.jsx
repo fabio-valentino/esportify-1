@@ -115,8 +115,8 @@ function FilterPanel({
         >
           <option value="">Semua provinsi</option>
           {provinces.map((p) => (
-            <option key={p} value={p}>
-              {p}
+            <option key={p.id} value={p.id}>
+              {p.name}
             </option>
           ))}
         </SelectField>
@@ -130,8 +130,8 @@ function FilterPanel({
         >
           <option value="">Semua kota</option>
           {cities.map((c) => (
-            <option key={c} value={c}>
-              {c}
+            <option key={c.id} value={c.id}>
+              {c.name}
             </option>
           ))}
         </SelectField>

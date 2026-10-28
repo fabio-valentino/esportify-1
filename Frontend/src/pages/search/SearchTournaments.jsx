@@ -33,6 +33,10 @@ const EMPTY_FILTERS = {
 const labelOf = (list, value) =>
   list.find((o) => o.value === value)?.label ?? value;
 
+// BARU: cari nama dari id untuk daftar { id, name }
+const nameOf = (list, id, fallback) =>
+  list.find((x) => x.id === id)?.name ?? fallback;
+
 function SearchTournaments() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -79,20 +83,21 @@ function SearchTournaments() {
       .catch(() => setProvinces([]));
   }, []);
 
-  // Kota mengikuti provinsi yang dipilih di panel
+  // Kota mengikuti provinsi: yang di panel saat terbuka, yang aktif di URL saat tertutup
+  const activeProvince = open ? draft.provinsi : criteria.provinsi;
   useEffect(() => {
-    if (!draft.provinsi) {
+    if (!activeProvince) {
       setCities([]);
       return;
     }
     let off = false;
-    getSearchCities(draft.provinsi)
+    getSearchCities(activeProvince)
       .then((list) => !off && setCities(list))
       .catch(() => !off && setCities([]));
     return () => {
       off = true;
     };
-  }, [draft.provinsi]);
+  }, [activeProvince]);
 
   useEffect(() => {
     setQueryText(criteria.q);
@@ -202,9 +207,14 @@ function SearchTournaments() {
       key: "jadwal",
       label: labelOf(SCHEDULE_OPTIONS, criteria.jadwal),
     });
-  if (criteria.kota) chips.push({ key: "kota", label: criteria.kota });
+  // BARU: kota dan provinsi sekarang id, jadi nama dicari dari daftarnya
+  if (criteria.kota)
+    chips.push({ key: "kota", label: nameOf(cities, criteria.kota, "Kota") });
   else if (criteria.provinsi)
-    chips.push({ key: "provinsi", label: criteria.provinsi });
+    chips.push({
+      key: "provinsi",
+      label: nameOf(provinces, criteria.provinsi, "Provinsi"),
+    });
 
   const hasCriteria = Boolean(criteria.q) || chips.length > 0;
 

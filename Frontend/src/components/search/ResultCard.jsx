@@ -9,11 +9,25 @@ import {
 // onOpen kosong = halaman detail belum ada, tombol dinonaktifkan.
 function ResultCard({ item, onOpen }) {
   const [imgFailed, setImgFailed] = useState(false);
-  const full = item.slotTotal > 0 && item.slotFilled >= item.slotTotal;
+
+  // Slot terisi belum ada di backend (null). Selama itu, tampilkan total slot saja.
+  const hasSlotFilled = item.slotFilled != null;
+  const full =
+    hasSlotFilled && item.slotTotal > 0 && item.slotFilled >= item.slotTotal;
   const percent =
-    item.slotTotal > 0
+    hasSlotFilled && item.slotTotal > 0
       ? Math.min(100, Math.round((item.slotFilled / item.slotTotal) * 100))
       : 0;
+
+  // Hadiah dan biaya yang tidak diketahui (null) disembunyikan, bukan ditulis Rp0 / Gratis
+  const hasMoney = item.prize != null || item.fee != null;
+
+  const statusLabel =
+    item.status === "berlangsung"
+      ? "Sedang berlangsung"
+      : item.registrationOpen === false
+        ? "Pendaftaran ditutup"
+        : "";
 
   return (
     <article className="ct-card">
@@ -38,6 +52,13 @@ function ResultCard({ item, onOpen }) {
             {item.type}
           </span>
         )}
+        {statusLabel && (
+          <span
+            className={`ct-tag ct-tag-status ${item.status === "berlangsung" ? "live" : ""}`}
+          >
+            {statusLabel}
+          </span>
+        )}
       </div>
 
       <div className="ct-meta">
@@ -47,29 +68,47 @@ function ResultCard({ item, onOpen }) {
 
       <h3 className="ct-title">{item.name}</h3>
 
-      <div className="ct-stats">
-        <div>
-          <span>Total Hadiah</span>
-          <b className="ct-prize">{formatRupiah(item.prize)}</b>
+      {/* Lokasi hanya ada untuk turnamen offline. Online sudah ditandai tag Online. */}
+      {item.location && (
+        <div className="ct-meta">
+          <span>{item.location}</span>
         </div>
-        <div className="ct-right">
-          <span>Biaya Pendaftaran</span>
-          <b>{formatFee(item.fee)}</b>
-        </div>
-      </div>
+      )}
 
-      <div>
-        <div className="ct-slot">
-          <span>Slot Terisi</span>
-          <b>
-            {item.slotFilled} / {item.slotTotal}
-            {full ? " (Penuh)" : ""}
-          </b>
+      {hasMoney && (
+        <div className="ct-stats">
+          {item.prize != null && (
+            <div>
+              <span>Total Hadiah</span>
+              <b className="ct-prize">{formatRupiah(item.prize)}</b>
+            </div>
+          )}
+          {item.fee != null && (
+            <div className="ct-right">
+              <span>Biaya Pendaftaran</span>
+              <b>{formatFee(item.fee)}</b>
+            </div>
+          )}
         </div>
-        <div className="ct-bar" aria-hidden="true">
-          <i style={{ width: `${percent}%` }} />
+      )}
+
+      {item.slotTotal > 0 && (
+        <div>
+          <div className="ct-slot">
+            <span>{hasSlotFilled ? "Slot Terisi" : "Total Slot"}</span>
+            <b>
+              {hasSlotFilled
+                ? `${item.slotFilled} / ${item.slotTotal}${full ? " (Penuh)" : ""}`
+                : item.slotTotal}
+            </b>
+          </div>
+          {hasSlotFilled && (
+            <div className="ct-bar" aria-hidden="true">
+              <i style={{ width: `${percent}%` }} />
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       <button
         type="button"
