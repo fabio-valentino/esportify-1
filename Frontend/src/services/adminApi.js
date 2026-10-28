@@ -17,10 +17,11 @@ import {
 const copy = (data) => JSON.parse(JSON.stringify(data));
 const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Ambil array dari response.
 const toList = (response) => {
   const inner = response?.data ?? response;
-  return Array.isArray(inner) ? inner : [];
+  if (Array.isArray(inner)) return inner;
+  if (Array.isArray(inner?.data)) return inner.data; // paginator Laravel
+  return [];
 };
 
 // Mengambil nama role.
@@ -613,8 +614,6 @@ export async function deleteRole(id) {
   return true;
 }
 
-
-
 // ----- Pengajuan turnamen (admin): SELALU memakai backend, tanpa mock -----
 // Respons admin: { message, data }.
 const fileName = (path) => (path ? String(path).split("/").pop() : "");
@@ -628,7 +627,11 @@ export async function getAdminSubmissions() {
     id: Number(s.id_pengajuan),
     name: s.nama_turnamen ?? "-",
     tag: s.game?.kategoris?.[0]?.nama_kategori ?? "",
-    organizer: s.nama_penyelenggara ?? s.player?.user?.username ?? s.player?.username ?? "-",
+    organizer:
+      s.nama_penyelenggara ??
+      s.player?.user?.username ??
+      s.player?.username ??
+      "-",
     createdAt: s.created_at ?? "",
     status: s.status ?? "",
   }));
@@ -660,7 +663,10 @@ export async function getAdminSubmissionDetail(id) {
     description: d.deskripsi_turnamen ?? "",
     prize: d.total_hadiah,
     funding: (d.sumber_pendanaan ?? []).map((s) => s.nama_sumber ?? String(s)),
-    sponsors: (d.sponsor ?? []).map((s) => ({ name: s.nama_sponsor, contact: s.kontak_sponsor })),
+    sponsors: (d.sponsor ?? []).map((s) => ({
+      name: s.nama_sponsor,
+      contact: s.kontak_sponsor,
+    })),
     fundingDetail: d.rincian_pendanaan ?? "",
     feeType: String(fee.jenis_biaya ?? d.jenis_biaya ?? "").toLowerCase(),
     fee: fee.biaya_pendaftaran,
@@ -690,8 +696,3 @@ export const requestRevision = (id, alasan) =>
     method: "POST",
     body: { alasan_admin: alasan },
   });
-
-
-
-
-

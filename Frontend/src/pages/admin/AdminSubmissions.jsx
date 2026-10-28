@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "../../components/icon";
 import Pagination from "../../components/admin/Pagination";
 import SubmissionStatusBadge from "../../components/tournament/SubmissionStatusBadge";
-import { getAdminSubmissions } from "../../services/adminApi";
-import "../../styles/user.css"; // gaya tabel dan badge status dipakai ulang
+import { useAdminPriority } from "../../context/AdminPriorityContext";
+import { waitingText } from "../../utils/priority";
+import "../../styles/user.css";
 
 const PAGE_SIZE = 7;
-
-// Nilai asli dari backend (huruf kecil untuk pencocokan)
 const STATUSES = [
   "Menunggu Verifikasi",
   "Sedang diedit",
@@ -26,50 +25,34 @@ const STATUS_LABEL = {
 const same = (a, b) =>
   String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
 
-// ISO -> 08/11/2026
 const formatDate = (value) => {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ""));
   return m ? `${m[3]}/${m[2]}/${m[1]}` : value;
 };
 
-// Hanya tampilan: sudah berapa lama sejak diajukan. Aturan prioritas tetap dari backend.
-const waitingText = (iso) => {
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return "";
-  const minutes = Math.max(0, Math.floor((Date.now() - t) / 60000));
-  if (minutes < 60) return `Menunggu ${minutes} menit`;
-  if (minutes < 1440) return `Menunggu ${Math.floor(minutes / 60)} jam`;
-  return `Menunggu ${Math.floor(minutes / 1440)} hari`;
-};
-
-const WAITING_STATUSES = ["menunggu verifikasi", "sedang ditinjau"];
-
-const errorText = (err) =>
-  err.status === 403
-    ? err.message || "Kamu tidak punya izin melihat pengajuan."
-    : err.message;
-
 function AdminSubmissions() {
-  const [items, setItems] = useState([]);
+  const { items, priority, loading, error, now } = useAdminPriority();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const tableRef = useRef(null);
 
-  useEffect(() => {
-    getAdminSubmissions()
-      .then(setItems)
-      .catch((err) => setError(errorText(err)))
-      .finally(() => setLoading(false));
-  }, []);
-
+  const priorityIds = useMemo(
+    () => new Set(priority.map((s) => s.id)),
+    [priority],
+  );
   const pendingCount = items.filter((s) =>
     same(s.status, "Menunggu Verifikasi"),
   ).length;
 
+  // Prioritas di atas (paling lama dulu), sisanya mengikuti urutan backend
+  const sorted = useMemo(
+    () => [...priority, ...items.filter((s) => !priorityIds.has(s.id))],
+    [items, priority, priorityIds],
+  );
+
   const keyword = search.trim().toLowerCase();
-  const filtered = items.filter(
+  const filtered = sorted.filter(
     (s) =>
       (!status || same(s.status, status)) &&
       (s.name.toLowerCase().includes(keyword) ||
@@ -81,26 +64,59 @@ function AdminSubmissions() {
   const startIndex = (safePage - 1) * PAGE_SIZE;
   const visible = filtered.slice(startIndex, startIndex + PAGE_SIZE);
 
+  const scrollToTable = () => {
+    setSearch("");
+    setStatus("");
+    setPage(1);
+    tableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <>
       <h1 className="admin-title">Pengajuan Turnamen</h1>
 
-      {pendingCount > 0 && (
-        <div className="sub-banner">
+      {priority.length > 0 ? (
+        <div className="sub-banner priority">
           <span className="sub-banner-icon">
-            <Icon name="hourglass" size={20} />
+            <Icon name="clock" size={20} />
           </span>
-          <div>
-            <strong>{pendingCount} pengajuan menunggu verifikasi</strong>
+          <div className="sub-banner-text">
+            <strong>
+              {priority.length} pengajuan belum diverifikasi lebih dari 3 hari
+              <span className="sub-pri-tag">HIGH PRIORITY</span>
+            </strong>
             <p>
-              Segera lakukan verifikasi untuk menghindari keterlambatan kepada
-              penyelenggara.
+              Halaman admin lain terkunci sampai semua pengajuan terlambat
+              selesai diverifikasi.
             </p>
           </div>
+          <div className="sub-banner-actions">
+            <span className="sub-remaining">
+              <i></i> Sisa {priority.length}
+            </span>
+            <button type="button" className="sub-go" onClick={scrollToTable}>
+              Tinjau Sekarang <Icon name="arrow-right" size={16} />
+            </button>
+          </div>
         </div>
+      ) : (
+        pendingCount > 0 && (
+          <div className="sub-banner">
+            <span className="sub-banner-icon">
+              <Icon name="hourglass" size={20} />
+            </span>
+            <div className="sub-banner-text">
+              <strong>{pendingCount} pengajuan menunggu verifikasi</strong>
+              <p>
+                Segera lakukan verifikasi untuk menghindari keterlambatan kepada
+                penyelenggara.
+              </p>
+            </div>
+          </div>
+        )
       )}
 
-      <section className="admin-panel">
+      <section className="admin-panel" ref={tableRef}>
         <div className="sub-toolbar">
           <div className="admin-search">
             <Icon name="search" size={16} />
@@ -129,9 +145,6 @@ function AdminSubmissions() {
               </option>
             ))}
           </select>
-          <span className="sub-count">
-            Menampilkan <b>{visible.length}</b> dari {filtered.length} pengajuan
-          </span>
         </div>
 
         {error && <p className="admin-message error">{error}</p>}
@@ -150,24 +163,30 @@ function AdminSubmissions() {
             </thead>
             <tbody>
               {visible.map((s, index) => {
+                const late = priorityIds.has(s.id);
                 const locked = same(s.status, "Sedang diedit");
                 return (
-                  <tr key={s.id}>
+                  <tr key={s.id} className={late ? "priority" : ""}>
                     <td>{startIndex + index + 1}</td>
                     <td>
                       <span className="sub-name">{s.name}</span>
-                      {s.tag && <span className="sub-tag">{s.tag}</span>}
+                      {late && (
+                        <span className="sub-warn" title="Prioritas verifikasi">
+                          <Icon name="alert" size={14} />
+                        </span>
+                      )}
+                      {!late && s.tag && (
+                        <span className="sub-tag">{s.tag}</span>
+                      )}
                     </td>
                     <td>{s.organizer}</td>
                     <td>
                       <span className="sub-date">
                         {formatDate(s.createdAt)}
                       </span>
-                      {WAITING_STATUSES.includes(
-                        String(s.status).toLowerCase(),
-                      ) && (
-                        <small className="sub-wait">
-                          {waitingText(s.createdAt)}
+                      {late && (
+                        <small className="sub-wait late">
+                          {waitingText(s.createdAt, now)}
                         </small>
                       )}
                     </td>

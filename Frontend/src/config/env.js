@@ -28,3 +28,6 @@ export const USE_LANDING_GAME_MOCK =
 
 export const USE_TOURNAMENT_MOCK =
   import.meta.env.VITE_USE_TOURNAMENT_MOCK !== "false";
+
+export const PRIORITY_AFTER_MINUTES =
+  Number(import.meta.env.VITE_PRIORITY_MINUTES) || 4320;

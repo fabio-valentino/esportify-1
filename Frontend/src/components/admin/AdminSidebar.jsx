@@ -10,47 +10,71 @@ const userMenuItems = [
   { label: "Roles", to: "/admin/roles", icon: "roles" },
   { label: "Permissions", to: "/admin/permissions", icon: "key" },
 ];
-function AdminSidebar({ open, onNavigate, onLogout }) {
+
+// Item yang terkunci: bukan link, hanya teks dengan ikon gembok
+function Locked({ icon, label }) {
+  return (
+    <div
+      className="admin-nav-item locked"
+      aria-disabled="true"
+      title="Terkunci sampai pengajuan prioritas selesai"
+    >
+      <Icon name={icon} size={16} /> {label}
+      <Icon name="lock" size={14} />
+    </div>
+  );
+}
+
+function AdminSidebar({ open, locked, onNavigate, onLogout }) {
   const { pathname } = useLocation();
-  // Dropdown tertutup dulu, otomatis terbuka kalau halaman aktif ada di dalamnya
-  const inUserMenu =
-    pathname.startsWith("/admin/users") ||
-    pathname.startsWith("/admin/roles") ||
-    pathname.startsWith("/admin/permissions");
+  const inUserMenu = [
+    "/admin/users",
+    "/admin/roles",
+    "/admin/permissions",
+  ].some((p) => pathname.startsWith(p));
   const [menuOpen, setMenuOpen] = useState(inUserMenu);
 
   return (
     <aside className={`admin-sidebar ${open ? "open" : ""}`}>
-      <button
-        className="admin-nav-item admin-nav-toggle"
-        onClick={() => setMenuOpen(!menuOpen)}
-      >
-        <Icon name="users" size={16} /> User Management
-        <Icon name={menuOpen ? "chevron-up" : "chevron-down"} size={14} />
-      </button>
-
-      {menuOpen && (
-        <div className="admin-submenu">
-          {userMenuItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={navClass}
-              onClick={onNavigate}
-            >
-              <Icon name={item.icon} size={15} /> {item.label}
-            </NavLink>
-          ))}
-        </div>
+      {locked ? (
+        <Locked icon="users" label="User Management" />
+      ) : (
+        <>
+          <button
+            className="admin-nav-item admin-nav-toggle"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <Icon name="users" size={16} /> User Management
+            <Icon name={menuOpen ? "chevron-up" : "chevron-down"} size={14} />
+          </button>
+          {menuOpen && (
+            <div className="admin-submenu">
+              {userMenuItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={navClass}
+                  onClick={onNavigate}
+                >
+                  <Icon name={item.icon} size={15} /> {item.label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <NavLink to="/admin/pengajuan" className={navClass} onClick={onNavigate}>
         <Icon name="trophy" size={16} /> Pengajuan Turnamen
       </NavLink>
 
-      <NavLink to="/admin/games" className={navClass} onClick={onNavigate}>
-        <Icon name="gamepad" size={16} /> Kelola Game
-      </NavLink>
+      {locked ? (
+        <Locked icon="gamepad" label="Kelola Game" />
+      ) : (
+        <NavLink to="/admin/games" className={navClass} onClick={onNavigate}>
+          <Icon name="gamepad" size={16} /> Kelola Game
+        </NavLink>
+      )}
 
       <button className="admin-nav-item sidebar-logout" onClick={onLogout}>
         <Icon name="logout" size={18} /> Keluar
