@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import logo from "../../assets/ESPORTIFY-Logo.png";
 import "../../styles/auth.css";
+import bg from "../../assets/auth-bg.png";
 
 // Kerangka halaman login & register: teks di kiri, kartu form di kanan
 function AuthShell({ heading, highlight, description, children }) {
   return (
     <div className="auth">
-      <section className="auth-left">
+      <section className="auth-left" style={{ backgroundImage: `url(${bg})` }}>
         <Link to="/" className="logo">
           <img src={logo} alt="ESPORTIFY" className="logo-img" />
           ESPORTIFY

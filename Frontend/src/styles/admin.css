@@ -1,0 +1,1646 @@
+/* ========== Layout ========== */
+.admin {
+  min-height: 100vh;
+  background: #0e121b;
+}
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: #0f1328;
+  border-bottom: 1px solid #1b2033;
+}
+.admin-topbar-left,
+.admin-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-circle-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.admin-dot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+.admin-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--white);
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 28px 48px;
+}
+.admin-title {
+  font-size: 28px;
+  color: var(--white);
+  margin-bottom: 32px;
+}
+.admin-overlay {
+  display: none;
+}
+
+/* ========== Sidebar ========== */
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+}
+.admin-nav-toggle .icon:last-child {
+  margin-left: auto;
+}
+.admin-nav-item:hover {
+  background: #1f2535;
+}
+.admin-nav-item.active {
+  background: var(--blue);
+  color: var(--white);
+}
+.admin-submenu {
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-submenu .admin-nav-item.active {
+  background: #2b4a85;
+}
+
+/* Tombol Keluar di dasar sidebar */
+.sidebar-logout .icon {
+  color: #ef4444;
+}
+
+/* ========== Panel & tabel ========== */
+.admin-panel {
+  background: #181d29;
+  border-radius: 16px;
+  padding: 28px;
+}
+
+/* ========== Filter ========== */
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* ===== Tabel admin (Users, Permissions) ===== */
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+.admin-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  color: var(--white);
+  font-size: 15px;
+}
+.admin-table th {
+  padding: 18px 16px;
+  background: #2f3a4d;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+}
+.admin-table td {
+  padding: 14px 16px;
+  border-top: 1px solid #3a4558;
+  vertical-align: middle;
+}
+.admin-table tbody tr:hover td {
+  background: #1c2230;
+}
+.admin-table .col-action {
+  width: 130px;
+  text-align: right;
+}
+.admin-empty {
+  color: var(--muted);
+}
+td.admin-empty {
+  text-align: center;
+}
+.admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* ===== Toolbar: pencarian, filter, tombol tambah ===== */
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.admin-filters .admin-outline-btn {
+  margin-left: auto;
+}
+
+.admin-search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 380px;
+  color: var(--muted);
+}
+.admin-search .icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+}
+.admin-search input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px 0 40px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: #0e121b;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.admin-search input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.admin-search input::placeholder {
+  color: var(--muted);
+}
+
+.admin-filter-select {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: #0e121b;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.admin-filter-select option,
+.admin-select option {
+  background: #181d29;
+  color: var(--white);
+}
+
+/* ===== Dropdown di dalam tabel ===== */
+.admin-select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--white);
+  font-size: 12px;
+  font-family: inherit;
+}
+.admin-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.role-select {
+  min-width: 130px;
+}
+.status-aktif {
+  border-color: #16a34a;
+  background: #052e16;
+  color: #22c55e;
+}
+.status-nonaktif {
+  border-color: #7f1d1d;
+  background: #450a0a;
+  color: #f87171;
+}
+
+/* ========== Aksi ========== */
+
+.admin-save-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+.admin-save-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #16a34a;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-save-btn:hover {
+  background: #15803d;
+}
+.admin-save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-message {
+  font-size: 12px;
+  color: var(--muted);
+}
+.admin-message.success {
+  color: var(--green);
+}
+.admin-message.error {
+  color: #f87171;
+}
+
+/* ===== Pagination: di tengah, di bawah panel ===== */
+.admin-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+.admin-pages {
+  display: flex;
+  gap: 10px;
+}
+.admin-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #30394b;
+  border-radius: 6px;
+  background: #1c2230;
+  color: #d1d5db;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.admin-page-btn:hover:not(:disabled):not(.active) {
+  background: #293449;
+}
+.admin-page-btn.active {
+  background: #4f8df7;
+  border-color: #4f8df7;
+  color: #ffffff;
+}
+.admin-page-btn:disabled {
+  background: #171b24;
+  color: #4b5563;
+  cursor: not-allowed;
+}
+.admin-page-btn:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* ========== Tombol tambah & modal ========== */
+.admin-add-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-add-btn:hover {
+  background: var(--blue-hover);
+}
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+.admin-modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  background: #181d29;
+}
+.admin-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.admin-modal-head h2 {
+  font-size: 18px;
+  color: var(--white);
+}
+.admin-modal-close {
+  display: flex;
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+.admin-modal-close:hover {
+  color: var(--white);
+}
+
+.admin-form-field {
+  margin-bottom: 14px;
+}
+.admin-form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+.admin-form-field input,
+.admin-form-field select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #1c2230;
+  color: var(--white);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.admin-form-field select.has-error {
+  border-color: #f87171;
+}
+
+.admin-form-field input:focus,
+.admin-form-field select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.admin-form-field input.has-error {
+  border-color: #f87171;
+}
+.admin-form-error {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #f87171;
+}
+
+.admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+.admin-cancel-btn {
+  padding: 8px 16px;
+  border: 1px solid #2c3a52;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-cancel-btn:hover {
+  background: #1f2535;
+}
+
+.admin-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+p.admin-message {
+  margin-bottom: 16px;
+}
+
+/* ========== Permission ========== */
+.perm-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 460px;
+}
+.perm-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: #aab4c8;
+  color: #1f2937; /* izin dari role */
+  font-size: 11px;
+  font-weight: 600;
+}
+.perm-chip.direct {
+  background: #6b9bff;
+  color: #0b1f4d;
+} /* izin khusus user */
+.perm-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.perm-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.perm-dot {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  background: #aab4c8;
+}
+.perm-dot.direct {
+  background: #6b9bff;
+}
+
+/* Modal edit */
+.admin-warning {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(250, 204, 21, 0.12);
+  color: #facc15;
+  font-size: 12px;
+}
+.admin-subtitle {
+  margin: 4px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* ===== Chip permission di tabel Roles ===== */
+.role-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 520px;
+}
+.role-chip {
+  padding: 1px 10px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.role-chip.blue {
+  color: #6aa3ff;
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+.role-chip.gray {
+  color: var(--text);
+  border-color: #3a4558;
+  background: #1c2230;
+}
+
+/* Daftar centang permission di modal (dipakai juga oleh form lain) */
+.admin-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.admin-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+}
+
+/* ========== Tambah permission ========== */
+.admin-add-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-add-btn:hover {
+  background: var(--blue-hover);
+}
+
+.admin-form-field {
+  margin-bottom: 14px;
+}
+.admin-form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+.admin-form-field input:not([type="checkbox"]) {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #1c2230;
+  color: var(--white);
+  font-size: 13px;
+  font-family: inherit;
+}
+.admin-form-field input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.admin-form-field input.has-error {
+  border-color: #f87171;
+}
+.admin-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ========== Kelola Game ========== */
+.game-section {
+  margin-bottom: 28px;
+}
+.game-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.game-section-head h2 {
+  font-size: 20px;
+  color: var(--white);
+}
+.game-section-head p {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.admin-outline-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: none;
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-outline-btn:hover {
+  background: #1f2535;
+}
+
+.game-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #3a4558;
+  border-radius: 6px;
+}
+.game-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  color: var(--white);
+  font-size: 14px;
+}
+.game-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+.game-table td {
+  padding: 12px 16px;
+  border-top: 1px solid #3a4558;
+  vertical-align: middle;
+}
+.game-table .col-action {
+  text-align: right;
+  width: 110px;
+}
+.game-empty {
+  text-align: center;
+  color: var(--muted);
+}
+
+.game-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #1e3a6e;
+  color: #93bbff;
+  font-weight: 700;
+}
+.game-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.game-status {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.game-status.aktif {
+  background: #00ff1a;
+  color: #052e16;
+}
+.game-status.nonaktif {
+  background: #f87171;
+  color: #7f1d1d;
+}
+
+/* Checkbox kategori di form game: kembalikan ke ukuran normal */
+.admin-form-field .admin-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.admin-form-field .admin-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  padding: 0;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+/* Form game */
+.game-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid #3a4558;
+  border-radius: 8px;
+  background: none;
+  color: var(--white);
+}
+.game-upload:hover {
+  border-color: var(--blue);
+}
+.game-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.game-upload-label {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #4f46e5;
+}
+.game-cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.admin-form-field select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #1c2230;
+  color: var(--white);
+  font-size: 13px;
+  font-family: inherit;
+}
+.admin-form-field select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.admin-form-field select.has-error {
+  border-color: #f87171;
+}
+
+/* Dialog konfirmasi */
+.admin-confirm {
+  max-width: 400px;
+}
+.admin-confirm h2 {
+  font-size: 18px;
+  color: var(--white);
+  margin: 8px 0;
+}
+.admin-confirm-icon.danger {
+  color: #ef4444;
+}
+.admin-confirm-icon.warning {
+  color: #facc15;
+}
+.admin-confirm-text {
+  font-size: 12px;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-danger-btn,
+.admin-warn-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-danger-btn {
+  background: #ef4444;
+  color: var(--white);
+}
+.admin-warn-btn {
+  background: #facc15;
+  color: #1f2937;
+}
+.admin-danger-btn:disabled,
+.admin-warn-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ===== Layout: sidebar menempel, hanya konten yang scroll ===== */
+.admin-body {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 64px);
+}
+.admin-sidebar {
+  position: sticky;
+  top: 64px;
+  align-self: flex-start;
+  width: 240px;
+  flex-shrink: 0;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px 12px;
+  background: #171c28;
+}
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 28px 48px;
+}
+
+/* Tombol Keluar di dasar sidebar */
+.sidebar-logout {
+  margin-top: auto;
+  color: var(--white);
+  font-weight: 600;
+  font-size: 15px;
+}
+.sidebar-logout .icon {
+  color: #ef4444;
+}
+
+/* ===== Kelola Game: tampilan outline ===== */
+.admin-outline-btn {
+  border-color: var(--white);
+}
+.admin-outline-btn .icon {
+  color: #22c55e;
+}
+
+.game-table-wrap {
+  border-color: #cbd5e1;
+}
+.game-table td,
+.game-table th {
+  border-color: #3a4558;
+}
+.game-table tr.inactive td {
+  opacity: 0.5;
+}
+
+/* Tombol ikon di tabel game */
+.game-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Pill kategori */
+.game-chip {
+  padding: 1px 12px;
+  margin-right: 10px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+.game-chip.tone-blue {
+  color: #2356a8;
+}
+.game-chip.tone-white {
+  color: var(--white);
+}
+.game-chip.tone-red {
+  color: #c52f2f;
+}
+.game-chip.tone-green {
+  color: #209e4e;
+}
+.game-chip.tone-yellow {
+  color: #ad9223;
+}
+.game-chip.tone-purple {
+  color: #4b2ea1;
+}
+
+/* ===== Modal Game ===== */
+.game-modal {
+  max-width: 460px;
+  padding: 28px;
+}
+.game-modal .admin-modal-head {
+  margin-bottom: 22px;
+}
+.game-modal .admin-form-field {
+  margin-bottom: 20px;
+}
+.game-modal .admin-form-field > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+.game-modal .admin-form-field input:not([type="checkbox"]) {
+  height: 44px;
+}
+
+/* Avatar */
+.game-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.game-modal .game-upload {
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+  border-style: dashed;
+}
+.game-avatar-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.game-avatar-btn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border: 1px solid #3a4558;
+  border-radius: 8px;
+  background: none;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+}
+.game-avatar-btn:hover {
+  border-color: var(--blue);
+}
+
+/* Kategori sebagai kartu pilihan */
+.game-modal .game-cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.game-cat-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #2c3a52;
+  border-radius: 10px;
+  background: #1c2230;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.game-cat-option:hover {
+  border-color: #3b82f6;
+}
+.game-cat-option.checked {
+  border-color: var(--blue);
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--white);
+}
+.game-cat-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  padding-bottom: 0;
+  accent-color: var(--blue);
+}
+
+.game-cat-option span {
+  margin-left: 20px;
+}
+
+.game-modal .admin-modal-actions {
+  margin-top: 26px;
+}
+.game-modal .admin-save-btn,
+.game-modal .admin-cancel-btn {
+  padding: 10px 20px;
+  font-size: 13px;
+}
+
+/* ===== Tombol aksi tabel: edit (netral) dan hapus (merah) ===== */
+.admin-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+.admin-icon-btn.with-label {
+  padding: 0 14px;
+}
+.admin-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-icon-btn.edit {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+.admin-icon-btn.edit:hover {
+  background: #334155;
+  color: #ffffff;
+}
+.admin-icon-btn.edit:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.admin-icon-btn.delete {
+  background: #451a1a;
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+.admin-icon-btn.delete:hover {
+  background: #7f1d1d;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+.admin-icon-btn.delete:focus-visible {
+  outline: 2px solid #f87171;
+  outline-offset: 2px;
+}
+
+/* Pencarian game */
+.game-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.game-search {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+  color: var(--muted);
+}
+.game-search .icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+}
+.game-search input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px 0 38px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: #0e121b;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.game-search input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.game-search input::placeholder {
+  color: var(--muted);
+}
+
+/* ===== Pengajuan Turnamen (admin) ===== */
+.sub-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  border: 1px solid #164e63;
+  border-radius: 12px;
+  background: rgba(8, 145, 178, 0.12);
+  color: var(--white);
+}
+.sub-banner.priority {
+  border-color: #854d0e;
+  background: rgba(146, 64, 14, 0.18);
+}
+.sub-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+.sub-banner strong {
+  font-size: 16px;
+}
+.sub-banner p {
+  font-size: 13px;
+  color: var(--muted);
+}
+.sub-banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
+}
+.sub-banner.priority .sub-banner-icon {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+.sub-pri-tag {
+  margin-left: 10px;
+  padding: 1px 8px;
+  border: 1px solid #854d0e;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+.sub-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.sub-remaining {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px;
+  border: 1px solid #854d0e;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  font-size: 12px;
+}
+.sub-remaining i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+.sub-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.sub-go:hover {
+  background: var(--blue-hover);
+}
+
+.sub-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.sub-name {
+  font-weight: 600;
+  color: var(--white);
+}
+.sub-tag {
+  margin-left: 10px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: #1c2230;
+  color: #6b7a99;
+  font-size: 11px;
+}
+.sub-warn {
+  margin-left: 8px;
+  color: #f59e0b;
+  vertical-align: middle;
+}
+.sub-date {
+  display: block;
+  color: var(--white);
+}
+.sub-wait {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+.sub-wait.late {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.s-table tr.priority td {
+  background: rgba(245, 158, 11, 0.05);
+}
+.s-table tr.priority td:first-child {
+  box-shadow: inset 3px 0 0 #f59e0b;
+}
+.s-detail-btn.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Sidebar terkunci */
+.admin-nav-item.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.admin-nav-item.locked .icon:last-child {
+  margin-left: auto;
+}
+
+/* Popup prioritas */
+.pri-modal {
+  max-width: 400px;
+  padding: 28px 24px;
+  text-align: center;
+}
+.pri-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid #854d0e;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+.pri-kicker {
+  margin: 14px 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #f59e0b;
+}
+.pri-modal h2 {
+  font-size: 20px;
+  color: var(--white);
+}
+.pri-text {
+  margin: 10px 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.pri-list {
+  margin-bottom: 16px;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid #243044;
+  border-radius: 10px;
+  background: #121826;
+  text-align: left;
+}
+.pri-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--white);
+}
+.pri-list li span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.pri-list li i {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+.pri-list li b {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f59e0b;
+}
+.pri-list li.more {
+  justify-content: center;
+  color: var(--muted);
+}
+.pri-go {
+  width: 100%;
+}
+/* .sub-count b {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #1c2230;
+  color: var(--white);
+} */
+
+.sub-name {
+  font-weight: 600;
+  color: var(--white);
+}
+.sub-tag {
+  margin-left: 10px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: #1c2230;
+  color: #6b7a99;
+  font-size: 11px;
+}
+.sub-date {
+  display: block;
+  color: var(--white);
+}
+
+.s-detail-btn.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.s-detail-btn.locked:hover {
+  background: #121a2b;
+}
+
+/* ===== Detail Pengajuan (admin) ===== */
+.d-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--white);
+  font: inherit;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.d-back:hover {
+  color: #6aa3ff;
+}
+.d-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 860px;
+}
+
+.d-card {
+  padding: 16px 20px;
+  border-radius: 10px;
+  background: #181d29;
+}
+.d-card.d-center {
+  text-align: center;
+}
+.d-label {
+  margin: 6px 0 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.d-card .d-label:first-child {
+  margin-top: 0;
+}
+.d-value {
+  margin: 6px 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.d-box {
+  margin: 6px 0 12px;
+  padding: 10px;
+  border: 1px solid #2c3a52;
+  border-radius: 6px;
+  background: #121826;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+.d-row {
+  display: flex;
+  gap: 24px;
+  margin: 4px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.d-row b {
+  color: var(--white);
+  font-size: 16px;
+}
+.d-poster {
+  display: block;
+  max-width: 240px;
+  max-height: 320px;
+  margin: 10px auto 0;
+  border-radius: 6px;
+  object-fit: contain;
+}
+.d-card .t-file-row {
+  margin: 6px 0 10px;
+}
+
+.d-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+.d-btn {
+  flex: 1;
+  min-width: 160px;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+.d-btn.reject {
+  background: #dc2626;
+}
+.d-btn.revision {
+  background: #d97706;
+}
+.d-btn.approve {
+  background: #16a34a;
+}
+.d-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+.d-btn:disabled {
+  background: #1f2937;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Dialog Revisi dan Penolakan */
+.decision-modal {
+  max-width: 520px;
+  padding: 24px;
+  border-color: #2c3a52;
+  background: #0f141f;
+}
+.decision-head {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #3a4558;
+}
+.decision-head h2 {
+  font-size: 20px;
+  color: var(--white);
+}
+.decision-head p {
+  font-size: 13px;
+  color: var(--muted);
+}
+.decision-icon.revision {
+  color: #f59e0b;
+}
+.decision-icon.reject {
+  color: #ef4444;
+}
+.decision-options {
+  margin-bottom: 14px;
+}
+.decision-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+  color: var(--white);
+}
+.decision-hint {
+  justify-content: flex-start;
+  margin: 4px 0 12px;
+  text-align: left;
+}
+.decision-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.decision-cancel,
+.decision-confirm {
+  flex: 1;
+  padding: 11px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+.decision-cancel {
+  border: 1px solid #3a4558;
+  background: #0f141f;
+  color: var(--white);
+}
+.decision-confirm {
+  border: none;
+  color: var(--white);
+}
+.decision-confirm.revision {
+  background: #d97706;
+}
+.decision-confirm.reject {
+  background: #dc2626;
+}
+.decision-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.t-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .admin-menu-btn {
+    display: flex;
+  }
+  .admin-sidebar {
+    position: fixed;
+    top: 64px;
+    bottom: 0;
+    left: 0;
+    height: auto;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+  }
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+  .admin-overlay {
+    display: block;
+    position: fixed;
+    inset: 64px 0 0 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  .admin-main {
+    padding: 24px 16px 40px;
+  }
+  .admin-title {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  .admin-panel {
+    padding: 18px;
+  }
+
+  .sub-banner {
+    flex-wrap: wrap;
+  }
+  .sub-banner-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .admin-filters .admin-outline-btn {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .admin-search {
+    max-width: none;
+  }
+}

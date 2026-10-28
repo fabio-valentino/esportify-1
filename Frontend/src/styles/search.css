@@ -1,0 +1,556 @@
+/* Halaman Cari Turnamen. Semua class berawalan .ct- dan token di-scope ke .ct-page.
+   Tidak menyentuh admin.css, user.css, atau CSS halaman lain. */
+
+.ct-page {
+  --ct-bg: #0b0f17;
+  --ct-card: #121826;
+  --ct-elev: #182033;
+  --ct-line: #243049;
+  --ct-tx: #f1f5f9;
+  --ct-tx2: #94a3b8;
+  --ct-tx3: #64748b;
+  --ct-pri: #3b82f6;
+  --ct-pri-h: #2563eb;
+  --ct-pri-s: #60a5fa;
+  --ct-ok: #4ade80;
+  color: var(--ct-tx);
+}
+.ct-page *,
+.ct-page *::before,
+.ct-page *::after {
+  box-sizing: border-box;
+}
+.ct-page h2,
+.ct-page h3,
+.ct-page p {
+  margin: 0;
+}
+.ct-page :focus-visible {
+  outline: 2px solid var(--ct-pri-s);
+  outline-offset: 2px;
+}
+
+/* ---------- Tombol ---------- */
+.ct-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.ct-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ct-btn-block {
+  width: 100%;
+}
+.ct-btn-p {
+  background: var(--ct-pri);
+  color: #fff;
+}
+.ct-btn-p:hover {
+  background: var(--ct-pri-h);
+}
+.ct-btn-s {
+  background: var(--ct-elev);
+  border-color: var(--ct-line);
+  color: var(--ct-tx);
+}
+.ct-btn-s:hover:not(:disabled) {
+  border-color: #3a4d6e;
+}
+.ct-btn-o {
+  background: transparent;
+  border-color: var(--ct-pri);
+  color: var(--ct-pri-s);
+}
+.ct-btn-o:hover {
+  background: rgba(59, 130, 246, 0.12);
+}
+.ct-btn-g {
+  background: none;
+  color: var(--ct-tx2);
+}
+.ct-btn-g:hover {
+  color: var(--ct-tx);
+}
+.ct-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ct-tx2);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ct-link:hover {
+  color: var(--ct-tx);
+}
+.ct-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ct-pri);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Tombol Filter: ada filter yang sedang diterapkan (panel tertutup) */
+.ct-btn-o.has-filter {
+  background: rgba(59, 130, 246, 0.22);
+  color: #fff;
+}
+.ct-btn-o.has-filter:hover {
+  background: rgba(59, 130, 246, 0.32);
+}
+/* Tombol Filter: panel terbuka (aktif, terisi penuh) */
+.ct-btn-o.is-open {
+  background: var(--ct-pri);
+  border-color: var(--ct-pri);
+  color: #fff;
+}
+.ct-btn-o.is-open:hover {
+  background: var(--ct-pri-h);
+  border-color: var(--ct-pri-h);
+}
+.ct-btn-o.is-open .ct-badge {
+  background: #fff;
+  color: var(--ct-pri-h);
+}
+
+/* ---------- Search bar ---------- */
+.ct-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.ct-search .ct-btn {
+  height: 44px;
+}
+.ct-search-field {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+.ct-search-field .icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ct-tx3);
+  pointer-events: none;
+}
+.ct-search-field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px 0 42px;
+  border: 1px solid var(--ct-line);
+  border-radius: 10px;
+  background: var(--ct-card);
+  color: var(--ct-tx);
+  font: inherit;
+  font-size: 14px;
+}
+.ct-search-field input::placeholder {
+  color: var(--ct-tx3);
+}
+.ct-search-field input:focus {
+  outline: none;
+  border-color: var(--ct-pri);
+}
+
+/* ---------- Chip filter aktif ---------- */
+.ct-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.ct-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px 0 12px;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--ct-pri-s);
+  font-size: 13px;
+  font-weight: 500;
+}
+.ct-chip button {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.ct-chip button:hover {
+  color: var(--ct-tx);
+}
+
+/* ---------- Panel filter ---------- */
+.ct-panel {
+  margin-bottom: 28px;
+  padding: 24px;
+  border: 1px solid var(--ct-line);
+  border-radius: 14px;
+  background: var(--ct-card);
+}
+.ct-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.ct-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.ct-label {
+  font-size: 13px;
+  color: var(--ct-tx2);
+}
+.ct-select-wrap {
+  position: relative;
+}
+.ct-select {
+  width: 100%;
+  height: 44px;
+  padding: 0 40px 0 14px;
+  appearance: none;
+  border: 1px solid var(--ct-line);
+  border-radius: 10px;
+  background: var(--ct-bg);
+  color: var(--ct-tx);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.ct-select:focus {
+  outline: none;
+  border-color: var(--ct-pri);
+}
+.ct-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ct-select option {
+  background: var(--ct-card);
+  color: var(--ct-tx);
+}
+.ct-select-wrap .icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ct-tx3);
+  pointer-events: none;
+}
+.ct-seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  height: 44px;
+  padding: 4px;
+  border: 1px solid var(--ct-line);
+  border-radius: 10px;
+  background: var(--ct-bg);
+}
+.ct-seg button {
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--ct-tx2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ct-seg button:not(.on):hover {
+  color: var(--ct-tx);
+}
+.ct-seg button.on {
+  background: var(--ct-pri);
+  color: #fff;
+}
+.ct-panel-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ct-line);
+}
+
+/* ---------- Daftar & kartu ---------- */
+.ct-list-title {
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: 700;
+  scroll-margin-top: 88px;
+}
+.ct-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.ct-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--ct-line);
+  border-radius: 14px;
+  background: var(--ct-card);
+}
+.ct-poster {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--ct-elev);
+}
+.ct-poster-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ct-poster-fb {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, #1a2540, #151a33 55%, #231a44);
+  color: rgba(96, 165, 250, 0.25);
+}
+.ct-tag {
+  position: absolute;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(11, 15, 23, 0.82);
+  backdrop-filter: blur(6px);
+}
+.ct-tag-game {
+  top: 12px;
+  left: 12px;
+  color: var(--ct-tx);
+}
+.ct-tag-type {
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid var(--ct-line);
+  color: var(--ct-tx2);
+}
+.ct-tag-type.online {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.ct-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ct-tx2);
+}
+.ct-title {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ct-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ct-stats span,
+.ct-slot span {
+  display: block;
+  font-size: 12px;
+  color: var(--ct-tx3);
+}
+.ct-stats b,
+.ct-slot b {
+  font-size: 14px;
+  font-weight: 600;
+}
+.ct-prize {
+  color: var(--ct-ok);
+}
+.ct-right {
+  text-align: right;
+}
+.ct-slot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.ct-slot span {
+  font-size: 13px;
+  color: var(--ct-tx2);
+}
+.ct-bar {
+  height: 6px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ct-elev);
+}
+.ct-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ct-pri);
+}
+
+/* ---------- Skeleton & state ---------- */
+.ct-skel {
+  min-height: 520px;
+  background: linear-gradient(
+    100deg,
+    var(--ct-card) 30%,
+    var(--ct-elev) 50%,
+    var(--ct-card) 70%
+  );
+  background-size: 200% 100%;
+  animation: ct-shimmer 1.4s linear infinite;
+}
+@keyframes ct-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.ct-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 64px 16px;
+  text-align: center;
+  border: 1px dashed var(--ct-line);
+  border-radius: 14px;
+  background: var(--ct-card);
+  color: var(--ct-tx2);
+}
+.ct-state h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ct-tx);
+}
+.ct-state p {
+  font-size: 14px;
+}
+.ct-state .ct-btn {
+  margin-top: 8px;
+}
+.ct-state-ic {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  background: var(--ct-elev);
+  color: var(--ct-pri-s);
+}
+
+/* ---------- Paginasi ---------- */
+.ct-pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 32px;
+}
+.ct-pager button,
+.ct-pager-gap {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--ct-line);
+  border-radius: 10px;
+  background: var(--ct-elev);
+  color: var(--ct-tx);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+.ct-pager button {
+  cursor: pointer;
+}
+.ct-pager button:hover:not(:disabled):not(.on) {
+  border-color: #3a4d6e;
+}
+.ct-pager button.on {
+  background: var(--ct-pri);
+  border-color: var(--ct-pri);
+  color: #fff;
+}
+.ct-pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ct-pager-gap {
+  border-color: transparent;
+  background: none;
+  color: var(--ct-tx3);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .ct-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 800px) {
+  .ct-panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .ct-grid {
+    grid-template-columns: 1fr;
+  }
+  .ct-panel {
+    padding: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ct-skel {
+    animation: none;
+  }
+  .ct-btn {
+    transition: none;
+  }
+}

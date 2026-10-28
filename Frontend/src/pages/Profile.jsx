@@ -1,0 +1,494 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import Icon from "../components/icon";
+import Avatar from "../components/user/Avatar";
+import PasswordModal from "../components/user/PasswordModal";
+import { useAuth } from "../context/AuthContext";
+import { SKIP_AUTH } from "../config/env";
+import {
+  getProfile,
+  updateUsername,
+  updateBio,
+  updateGender,
+  changePassword,
+  uploadAvatar,
+} from "../services/profileApi";
+
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // ASSUMPTION: batas belum dikonfirmasi backend
+// value = string yang dikirim ke backend, HARUS sama persis dengan isi ENUM
+// jenis_kelamin di database (cek migration). label = teks yang tampil di UI.
+// ENUM database: 'laki-laki', 'perempuan', 'rahasia'
+const GENDER_OPTIONS = [
+  { value: "laki-laki", label: "Laki-laki" },
+  { value: "perempuan", label: "Perempuan" },
+  { value: "rahasia", label: "Rahasia" },
+];
+const DEFAULT_GENDER = "rahasia";
+
+// Nilai kosong/tidak dikenal dari backend ditampilkan sebagai default (hanya tampilan,
+// tidak dikirim ke backend kalau user tidak mengubahnya).
+const resolveGender = (v) =>
+  GENDER_OPTIONS.find(
+    (o) =>
+      o.value.toLowerCase() ===
+      String(v ?? "")
+        .trim()
+        .toLowerCase(),
+  )?.value ?? DEFAULT_GENDER;
+
+// Tiap field tetap dikirim lewat endpoint-nya masing-masing (sama seperti sebelumnya).
+// errorKey = nama key error dari backend (sama seperti yang dipakai EditableField).
+const FIELDS = [
+  { key: "username", api: updateUsername, errorKey: "username" },
+  { key: "bio", api: updateBio, errorKey: "bio" },
+  { key: "gender", api: updateGender, errorKey: "jenis_kelamin" },
+];
+
+const readError = (err, errorKey) => {
+  const fe = err?.fields?.[errorKey];
+  return (Array.isArray(fe) ? fe[0] : fe) || err?.message || "Gagal menyimpan.";
+};
+
+function Profile() {
+  const { profile, setProfile } = useOutletContext();
+  const { refreshUser } = useAuth();
+  const navigate = useNavigate();
+  const fileRef = useRef(null);
+
+  // Mode halaman: false = hanya lihat (default), true = form bisa diedit
+  const [isEditing, setIsEditing] = useState(false);
+
+  // ---------- Avatar (logika sama seperti sebelumnya) ----------
+  const [uploading, setUploading] = useState(false);
+  const [avatarMsg, setAvatarMsg] = useState({ text: "", type: "" });
+
+  const handleAvatar = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = "";
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setAvatarMsg({ text: "File harus berupa gambar.", type: "error" });
+      return;
+    }
+    if (file.size > MAX_AVATAR_SIZE) {
+      setAvatarMsg({ text: "Ukuran gambar maksimal 2 MB.", type: "error" });
+      return;
+    }
+
+    setUploading(true);
+    setAvatarMsg({ text: "", type: "" });
+    try {
+      const localUrl = await uploadAvatar(file);
+      let next = localUrl
+        ? { ...profile, avatar: localUrl }
+        : await getProfile();
+
+      // Browser sering menampilkan gambar lama kalau URL-nya sama (backend menimpa
+      // file / nama file sama). Tambahkan ?v=timestamp supaya dimuat ulang.
+      if (next.avatar && !/^(data:|blob:)/.test(next.avatar)) {
+        const sep = next.avatar.includes("?") ? "&" : "?";
+        next = { ...next, avatar: `${next.avatar}${sep}v=${Date.now()}` };
+      }
+      setProfile(next);
+      if (!SKIP_AUTH) await refreshUser().catch(() => {});
+      setAvatarMsg({ text: "Foto profil diperbarui.", type: "success" });
+    } catch (err) {
+      const fe = err.fields?.avatar;
+      setAvatarMsg({
+        text:
+          (Array.isArray(fe) ? fe[0] : fe) ||
+          err.message ||
+          "Gagal mengunggah foto.",
+        type: "error",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // ---------- Form informasi pribadi (satu tombol simpan) ----------
+  const base = {
+    username: profile.username ?? "",
+    bio: profile.bio ?? "",
+    gender: resolveGender(profile.gender),
+  };
+
+  const [form, setForm] = useState(base);
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState("");
+  const [pwOpen, setPwOpen] = useState(false);
+
+  // Input terkunci saat mode lihat atau saat sedang menyimpan
+  const locked = !isEditing || saving;
+
+  const valueOf = (key) =>
+    key === "username" ? form.username.trim() : form[key];
+
+  const changed = FIELDS.filter((f) => valueOf(f.key) !== base[f.key]);
+  const dirty = changed.length > 0;
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 2800);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const setField = (key, value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: "" }));
+  };
+
+  // Klik "Edit": mulai dari data yang tersimpan
+  const handleEdit = () => {
+    setForm(base);
+    setErrors({});
+    setIsEditing(true);
+  };
+
+  // Klik "Batal": buang perubahan dan kembali ke mode lihat
+  const handleReset = () => {
+    setForm(base);
+    setErrors({});
+    setIsEditing(false);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!isEditing || !dirty || saving) return;
+
+    // Validasi hanya untuk field yang diubah (aturan sama seperti sebelumnya)
+    const local = {};
+    changed.forEach((f) => {
+      const v = valueOf(f.key);
+      if (f.key === "username" && v.length < 3)
+        local.username = "Username minimal 3 karakter.";
+      if (f.key === "gender" && !v) local.gender = "Pilih jenis kelamin.";
+    });
+    if (Object.keys(local).length) {
+      setErrors(local);
+      return;
+    }
+
+    setSaving(true);
+    const saved = {};
+    const failed = {};
+
+    // Berurutan, bukan paralel, supaya perilaku ke backend tetap aman
+    for (const f of changed) {
+      const v = valueOf(f.key);
+      try {
+        await f.api(v);
+        saved[f.key] = v;
+      } catch (err) {
+        failed[f.key] = readError(err, f.errorKey);
+      }
+    }
+
+    if (Object.keys(saved).length) {
+      setProfile({ ...profile, ...saved });
+      setForm((cur) => ({ ...cur, ...saved }));
+      if (saved.username && !SKIP_AUTH) await refreshUser().catch(() => {});
+    }
+
+    setErrors(failed);
+    setSaving(false);
+
+    // Semua berhasil: kembali ke mode lihat. Kalau ada yang gagal, tetap di
+    // mode edit supaya pesan error-nya terlihat.
+    if (!Object.keys(failed).length) {
+      setToast("Profil berhasil diperbarui");
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <div className="pr-page">
+      <button type="button" className="pr-back" onClick={() => navigate(-1)}>
+        <svg
+          width="25"
+          height="25"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+        Kembali
+      </button>
+
+      <h1 className="pr-title">Profil</h1>
+      <p className="pr-sub">Kelola informasi akun kamu.</p>
+
+      <div className="pr-grid">
+        {/* ===== Kolom kiri: avatar ===== */}
+        <section className="pr-card pr-side">
+          <div className="pr-ring">
+            <Avatar src={profile.avatar} name={profile.username} size={128} />
+
+            {/* Ganti foto hanya bisa saat mode edit */}
+            {isEditing && (
+              <button
+                type="button"
+                className="pr-camera"
+                onClick={() => fileRef.current.click()}
+                disabled={uploading}
+                aria-label="Ganti foto profil"
+              >
+                <Icon name="camera" size={18} />
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleAvatar}
+            />
+          </div>
+
+          <h2 className="pr-name">{profile.username}</h2>
+          {profile.bio && <p className="pr-bio">{profile.bio}</p>}
+
+          {uploading && <p className="pr-msg">Mengunggah...</p>}
+          {avatarMsg.text && (
+            <p className={`pr-msg ${avatarMsg.type}`}>{avatarMsg.text}</p>
+          )}
+
+          {isEditing && <p className="pr-hint">Gambar maksimal 2 MB.</p>}
+        </section>
+
+        {/* ===== Kolom kanan ===== */}
+        <div className="pr-col">
+          <form
+            className={`pr-card ${isEditing ? "" : "pr-view"}`}
+            onSubmit={handleSave}
+            noValidate
+          >
+            <div className="pr-head">
+              {/* Baris judul: judul di kiri, tombol Edit/Batal di pojok kanan */}
+              <div className="pr-head-top">
+                <h3>Informasi pribadi</h3>
+
+                {/* Satu tombol yang berganti: Edit (pensil) <-> Batal (silang) */}
+                <button
+                  type="button"
+                  className="pr-btn pr-btn-s pr-btn-toggle"
+                  onClick={isEditing ? handleReset : handleEdit}
+                  disabled={saving}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    {isEditing ? (
+                      <>
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                        <path d="m15 5 4 4" />
+                      </>
+                    )}
+                  </svg>
+                  {isEditing ? "Batal" : "Edit"}
+                </button>
+              </div>
+
+              <p>
+                {isEditing
+                  ? "Perubahan tersimpan setelah kamu menekan Simpan perubahan."
+                  : "Informasi profil yang tampil di akun kamu."}
+              </p>
+            </div>
+
+            <div className="pr-body">
+              <div className="pr-field">
+                <label className="pr-label" htmlFor="pr-username">
+                  Username
+                </label>
+                <input
+                  id="pr-username"
+                  className={`pr-input ${errors.username ? "err" : ""}`}
+                  value={form.username}
+                  onChange={(e) => setField("username", e.target.value)}
+                  disabled={locked}
+                />
+                {errors.username && <p className="pr-err">{errors.username}</p>}
+              </div>
+
+              <div className="pr-field">
+                <label className="pr-label" htmlFor="pr-bio">
+                  Bio
+                </label>
+                <textarea
+                  id="pr-bio"
+                  className={`pr-input pr-textarea ${errors.bio ? "err" : ""}`}
+                  value={form.bio}
+                  placeholder={isEditing ? "" : "Belum ada bio"}
+                  onChange={(e) => setField("bio", e.target.value)}
+                  disabled={locked}
+                />
+                {isEditing && (
+                  <p className="pr-count">{form.bio.length} karakter</p>
+                )}
+                {errors.bio && <p className="pr-err">{errors.bio}</p>}
+              </div>
+
+              <div className="pr-field">
+                <span className="pr-label">Jenis kelamin</span>
+                <div className="pr-chips">
+                  {GENDER_OPTIONS.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`pr-chip ${
+                        form.gender === opt.value ? "on" : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="gender"
+                        value={opt.value}
+                        checked={form.gender === opt.value}
+                        onChange={() => setField("gender", opt.value)}
+                        disabled={locked}
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+                {errors.gender && <p className="pr-err">{errors.gender}</p>}
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="pr-foot">
+                <span className={`pr-dirty ${dirty ? "on" : ""}`}>
+                  <i />
+                  {dirty
+                    ? "Ada perubahan yang belum disimpan"
+                    : "Belum ada perubahan"}
+                </span>
+                <button
+                  type="submit"
+                  className="pr-btn pr-btn-p"
+                  disabled={!dirty || saving}
+                >
+                  {saving ? "Menyimpan..." : "Simpan perubahan"}
+                </button>
+              </div>
+            )}
+          </form>
+
+          {/* Email read-only permanen (tidak ada endpoint ubah email) */}
+          <section className="pr-card">
+            <div className="pr-head">
+              <h3>Akun</h3>
+              <p>Email dan password yang kamu pakai untuk masuk.</p>
+            </div>
+
+            <div className="pr-row">
+              <div className="pr-sec-ic blue" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="M3 7l9 6 9-6" />
+                </svg>
+              </div>
+              <div className="pr-sec-tx">
+                <b>Email</b>
+                <span className="pr-email">{profile.email}</span>
+              </div>
+              <span className="pr-badge">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="4" y="11" width="16" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+              </span>
+            </div>
+
+            <div className="pr-row">
+              <div className="pr-sec-ic" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="4" y="11" width="16" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+              </div>
+              <div className="pr-sec-tx">
+                <b>Password</b>
+                <span>••••••••</span>
+              </div>
+              <button
+                type="button"
+                className="pr-btn pr-btn-s"
+                onClick={() => setPwOpen(true)}
+              >
+                Ubah password
+              </button>
+            </div>
+          </section>
+
+          {/* changePassword dipanggil dengan kontrak yang sama:
+              { currentPassword, password, confirmPassword } */}
+          {pwOpen && (
+            <PasswordModal
+              onSubmit={changePassword}
+              onClose={() => setPwOpen(false)}
+              onSuccess={() => setToast("Password berhasil diubah")}
+            />
+          )}
+        </div>
+      </div>
+
+      {toast && (
+        <div className="pr-toast" role="status">
+          {toast}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default Profile;
