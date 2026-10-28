@@ -16,8 +16,13 @@ function UserLayout() {
   const closeSidebar = () => setSidebarOpen(false);
 
   const handleLogout = async () => {
-    await signOut();
-    navigate("/login", { replace: true });
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Logout backend gagal:", err);
+    } finally {
+      navigate("/", { replace: true });
+    }
   };
 
   const [profile, setProfile] = useState(null);
