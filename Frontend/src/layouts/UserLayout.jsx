@@ -21,7 +21,7 @@ function UserLayout() {
     } catch (err) {
       console.error("Logout backend gagal:", err);
     } finally {
-      navigate("/", { replace: true });
+      window.location.replace("/");
     }
   };
 

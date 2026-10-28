@@ -42,14 +42,12 @@ function AdminShell() {
   const locked = !loading && priority.length > 0;
 
   const handleLogout = async () => {
-    sessionStorage.removeItem(POPUP_KEY);
-
     try {
       await signOut();
     } catch (err) {
       console.error("Logout backend gagal:", err);
     } finally {
-      navigate("/", { replace: true });
+      window.location.replace("/");
     }
   };
 
