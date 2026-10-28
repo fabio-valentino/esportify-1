@@ -24,6 +24,32 @@ const PAYMENT_OPTIONS = [
   { value: "qris_transfer", label: "QRIS dan Transfer Bank" },
 ];
 
+const FIELD_MAP = {
+  poster: "poster",
+  nama_turnamen: "name",
+  nama_penyelenggara: "organizer",
+  id_game: "gameId",
+  tipe_turnamen: "type",
+  id_kota: "city",
+  deskripsi_lokasi: "address",
+  slot: "slot",
+  jadwal_pendaftaran_tutup: "closeDate",
+  jadwal_main: "matchDate",
+  deskripsi_turnamen: "description",
+  total_hadiah: "prize",
+  rincian_pendanaan: "fundingDetail",
+  sumber_pendanaan: "funding",
+  "sponsor.0.nama_sponsor": "sponsorName",
+  "sponsor.0.kontak_sponsor": "sponsorContact",
+  jenis_biaya: "fee",
+  biaya_pendaftaran: "feeAmount",
+  metode_pembayaran: "paymentMethod",
+  qris: "qris",
+  no_rekening: "account",
+  ktp: "ktp",
+  setuju_pertanggungjawaban: "agree",
+};
+
 const initial = {
   poster: null,
   name: "",
@@ -46,7 +72,6 @@ const initial = {
   feeAmount: "",
   paymentMethod: "",
   qris: null,
-  bank: "",
   account: "",
   ktp: null,
   agree: false,
@@ -94,11 +119,16 @@ function CreateTournament() {
   useEffect(() => {
     if (!form.province) {
       setCities([]);
-      return;
+      return undefined;
     }
-    getCities(form.province)
-      .then(setCities)
-      .catch(() => setCities([]));
+    let active = true;
+    setCities([]);
+    getCities(Number(form.province))
+      .then((list) => active && setCities(list))
+      .catch(() => active && setCities([]));
+    return () => {
+      active = false;
+    };
   }, [form.province]);
 
   const set = (key, value) => {
@@ -144,7 +174,7 @@ function CreateTournament() {
       if (form.address.trim().length < 5)
         e.address = "Alamat lokasi wajib diisi.";
     }
-    if (!(Number(form.slot) >= 2)) e.slot = "Slot minimal 2.";
+    if (!(Number(form.slot) >= 1)) e.slot = "Slot minimal 1.";
     if (form.description.trim().length < 10)
       e.description = "Deskripsi minimal 10 karakter.";
     if (form.prize === "") e.prize = "Isi total hadiah (0 jika tidak ada).";
@@ -165,9 +195,8 @@ function CreateTournament() {
         e.feeAmount = "Nominal pendaftaran harus lebih dari 0.";
       if (!form.paymentMethod) e.paymentMethod = "Pilih metode pembayaran.";
       if (useQris && !form.qris) e.qris = "QRIS wajib diunggah.";
-      if (useBank) {
-        if (!form.bank.trim()) e.bank = "Nama bank wajib diisi.";
-        if (!form.account.trim()) e.account = "Nomor rekening wajib diisi.";
+      if (useBank && form.account.trim().length < 5) {
+        e.account = "Isi nomor rekening, nama bank, dan atas nama.";
       }
     }
 
@@ -202,7 +231,7 @@ function CreateTournament() {
     } catch (err) {
       const fieldErrors = {};
       Object.entries(err.fields || {}).forEach(([k, v]) => {
-        fieldErrors[k] = Array.isArray(v) ? v[0] : v;
+        fieldErrors[FIELD_MAP[k] || k] = Array.isArray(v) ? v[0] : v;
       });
       setErrors(fieldErrors);
       setMessage(err.message || "Gagal mengajukan turnamen.");
@@ -238,10 +267,7 @@ function CreateTournament() {
   const changePayment = (value) => {
     set("paymentMethod", value);
     if (!["qris", "qris_transfer"].includes(value)) set("qris", null);
-    if (!["transfer", "qris_transfer"].includes(value)) {
-      set("bank", "");
-      set("account", "");
-    }
+    if (!["transfer", "qris_transfer"].includes(value)) set("account", "");
   };
 
   const useQris = ["qris", "qris_transfer"].includes(form.paymentMethod);
@@ -265,11 +291,13 @@ function CreateTournament() {
       <FormSection title="Poster" error={errors.poster}>
         <UploadButton
           label="Unggah Poster"
-          hint="FORMAT JPG, PNG • MAKS 2 MB"
-          maxMB={2}
+          hint="FORMAT JPG, PNG, WEBP • MAKS 5 MB"
+          maxMB={5}
           file={form.poster}
           onChange={(f) => set("poster", f)}
           onError={setError("poster")}
+          accept=".jpg,.jpeg,.png,.pdf"
+          allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
         />
       </FormSection>
 
@@ -312,8 +340,8 @@ function CreateTournament() {
             >
               <option value="">Provinsi</option>
               {provinces.map((p) => (
-                <option key={p} value={p}>
-                  {p}
+                <option key={p.id} value={String(p.id)}>
+                  {p.name}
                 </option>
               ))}
             </select>
@@ -329,8 +357,8 @@ function CreateTournament() {
             >
               <option value="">Kota</option>
               {cities.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+                <option key={c.id} value={String(c.id)}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -491,11 +519,17 @@ function CreateTournament() {
               <>
                 <div className="t-upload-frame">
                   <UploadButton
-                    hint="FORMAT FILE PNG, JPG • 3 MB"
-                    maxMB={3}
+                    hint="FORMAT JPG, PNG, WEBP • MAKS 5 MB"
+                    maxMB={5}
                     file={form.qris}
                     onChange={(f) => set("qris", f)}
                     onError={setError("qris")}
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    allowedTypes={[
+                      "image/jpeg",
+                      "image/png",
+                      "application/pdf",
+                    ]}
                   />
                 </div>
                 {errors.qris && <p className="t-field-error">{errors.qris}</p>}
@@ -504,18 +538,14 @@ function CreateTournament() {
 
             {useBank && (
               <>
-                <h3>Bank</h3>
-                {underline("bank", {
-                  placeholder: "Masukkan nama bank yang digunakan",
-                  ...text("bank"),
-                })}
-                {errors.bank && <p className="t-field-error">{errors.bank}</p>}
-
                 <h3>Nomor Rekening</h3>
                 {underline("account", {
-                  placeholder: "Contoh: 1234567890 - Samuel",
+                  placeholder: "Contoh: 1234567890 - BCA - Budi Santoso",
                   ...text("account"),
                 })}
+                <p className="t-upload-hint">
+                  Tulis nomor rekening, nama bank, dan atas nama.
+                </p>
                 {errors.account && (
                   <p className="t-field-error">{errors.account}</p>
                 )}
@@ -529,9 +559,11 @@ function CreateTournament() {
         <div className="t-upload-frame">
           <UploadButton
             label="Unggah KTP"
-            hint="Pastikan foto KTP terbaca jelas dan foto wajah terlihat terang/fokus."
-            maxMB={3}
+            hint="JPG, PNG, atau PDF • maks 5 MB. Pastikan KTP terbaca jelas."
+            maxMB={5}
             file={form.ktp}
+            accept=".jpg,.jpeg,.png,.pdf"
+            allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
             onChange={(f) => set("ktp", f)}
             onError={setError("ktp")}
           />

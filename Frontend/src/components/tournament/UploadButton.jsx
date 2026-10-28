@@ -4,10 +4,14 @@ import Icon from "../icon";
 const extOf = (name = "") => (name.split(".").pop() || "").toUpperCase();
 
 // onChange(file | null). Validasi tipe dan ukuran dilakukan di sini.
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 function UploadButton({
   label = "Upload",
   hint,
-  accept = "image/*",
+  accept = ".jpg,.jpeg,.png,.webp",
+  allowedTypes = IMAGE_TYPES,
   maxMB,
   file,
   onChange,
@@ -39,6 +43,11 @@ function UploadButton({
   const handleFile = (e) => {
     const picked = e.target.files[0];
     e.target.value = "";
+    if (!allowedTypes.includes(picked.type)) {
+      onError("Format file tidak didukung.");
+      return;
+    }
+
     if (!picked) return;
 
     if (!picked.type.startsWith("image/")) {
@@ -119,8 +128,16 @@ function UploadButton({
                 <Icon name="x" size={20} />
               </button>
             </div>
-            {previewUrl && (
-              <img src={previewUrl} alt={`Pratinjau ${file?.name}`} />
+            {previewUrl && file?.type === "application/pdf" ? (
+              <iframe
+                title="Pratinjau PDF"
+                src={previewUrl}
+                className="t-preview-pdf"
+              />
+            ) : (
+              previewUrl && (
+                <img src={previewUrl} alt={`Pratinjau ${file?.name}`} />
+              )
             )}
           </div>
         </div>

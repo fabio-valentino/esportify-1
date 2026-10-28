@@ -1,125 +1,106 @@
-import { USE_TOURNAMENT_MOCK } from "../config/env";
-import { ApiError } from "./httpClient";
+import { apiRequest } from "./httpClient";
 
-const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// SEMENTARA: data contoh. Bukan implementasi backend.
-const mockManaged = [
-  {
-    id: 1,
-    name: "MLBB Surabaya",
-    game: "Mobile Legends : Bang-bang",
-    status: "pendaftaran", // "pendaftaran" | "berlangsung" | "selesai"
-    registrationCloses: "12 November 2026",
-    matchDate: "14 November 2026",
-    type: "Offline",
-    registered: 32,
-    capacity: 64,
-    pendingVerification: 5,
-  },
-];
-
-// Endpoint turnamen BELUM ada di kontrak. Jangan ditebak.
-// Setelah kontrak ada, isi dengan apiRequest(...) dan petakan response ke bentuk mock.
-const notReady = (name) =>
-  new ApiError(`Endpoint belum disepakati dengan backend (${name}).`);
-
-export async function getManagedTournaments() {
-  if (USE_TOURNAMENT_MOCK) {
-    await wait();
-    return JSON.parse(JSON.stringify(mockManaged));
-  }
-  throw notReady("daftar turnamen kelolaan");
-}
-
-// ----- Form Buat Turnamen -----
-// SEMENTARA: data pilihan contoh. Bukan implementasi backend.
-const mockGames = [
-  { id: 1, name: "Mobile Legends : Bang-bang" },
-  { id: 2, name: "PUBG MOBILE" },
-  { id: 3, name: "Valorant" },
-  { id: 4, name: "Free Fire" },
-];
-const mockLocations = {
-  "Jawa Timur": ["Surabaya", "Gresik", "Malang"],
-  "Jawa Barat": ["Bandung", "Bekasi", "Bogor"],
-  "DKI Jakarta": ["Jakarta Pusat", "Jakarta Selatan"],
+// Semua fungsi di file ini SELALU memakai backend (tanpa mock).
+// Respons player: { success, message, data }.
+const listOf = (response) => {
+  const inner = response?.data ?? response;
+  return Array.isArray(inner) ? inner : [];
 };
 
-export async function getGameOptions() {
-  if (USE_TOURNAMENT_MOCK) {
-    await wait(150);
-    return [...mockGames];
-  }
-  throw notReady("daftar game");
-}
+// ASSUMPTION: ID sumber pendanaan. Hanya Dana Pribadi = 2 yang terkonfirmasi.
+const FUNDING_IDS = { sponsor: 1, dana_pribadi: 2, biaya_peserta: 3 };
 
-export async function getProvinces() {
-  if (USE_TOURNAMENT_MOCK) return Object.keys(mockLocations);
-  throw notReady("daftar provinsi");
-}
-
-export async function getCities(province) {
-  if (USE_TOURNAMENT_MOCK) return [...(mockLocations[province] ?? [])];
-  throw notReady("daftar kota");
-}
-
-// values: lihat CreateTournament.jsx. File ada di values.poster, values.ktp, values.qris.
-// Setelah kontrak ada, susun FormData dengan nama field dari backend lalu apiRequest(...).
-export async function submitTournament(values) {
-  if (USE_TOURNAMENT_MOCK) {
-    await wait(600);
-    mockSubmissions.unshift({
-      id: Date.now(),
-      name: values.name,
-      submittedAt: new Date().toISOString().slice(0, 10),
-      status: "Menunggu Verifikasi",
-    });
-    return true;
-  }
-  throw notReady("ajukan turnamen");
+// ----- Kelola Turnamen -----
+// GET /api/turnamen-kelolaan. Daftar kosong = 200 dengan data: [] (bukan error).
+export async function getManagedTournaments() {
+  const response = await apiRequest("/turnamen-kelolaan");
+  return listOf(response).map((t) => {
+    const p = t.pengajuan ?? {};
+    return {
+      id: Number(t.id_turnamen),
+      name: p.nama_turnamen ?? "-",
+      game: p.game?.nama_game ?? "-",
+      status: String(t.status ?? "").trim().toLowerCase(), // pendaftaran | berlangsung | selesai
+      registrationCloses: p.jadwal_pendaftaran_tutup ?? "",
+      matchDate: p.jadwal_main ?? "",
+      type: String(p.tipe_turnamen ?? "").toLowerCase(),
+      capacity: p.slot ?? null,
+    };
+  });
 }
 
 // ----- Status Pengajuan -----
-// SEMENTARA: data contoh. Bukan implementasi backend.
-// Bentuk yang dipakai halaman: { id, name, submittedAt (ISO atau teks), status (teks dari backend) }
-const mockSubmissions = [
-  {
-    id: 1,
-    name: "PUBGM Weekend",
-    submittedAt: "2026-11-10",
-    status: "Menunggu Verifikasi",
-  },
-  {
-    id: 2,
-    name: "ROBLOX RACING",
-    submittedAt: "2026-11-09",
-    status: "Sedang Ditinjau",
-  },
-  {
-    id: 3,
-    name: "HOK Battle S2",
-    submittedAt: "2026-11-05",
-    status: "Perlu Revisi",
-  },
-  {
-    id: 4,
-    name: "MLBB Surabaya",
-    submittedAt: "2026-11-01",
-    status: "Disetujui",
-  },
-  {
-    id: 5,
-    name: "Free Fire SMA Area",
-    submittedAt: "2026-10-05",
-    status: "Ditolak",
-  },
-];
-
+// GET /api/pengajuan-turnamen (terbaru di atas, tanpa pagination)
 export async function getSubmissions() {
-  if (USE_TOURNAMENT_MOCK) {
-    await wait();
-    return JSON.parse(JSON.stringify(mockSubmissions));
+  const response = await apiRequest("/pengajuan-turnamen");
+  return listOf(response).map((s) => ({
+    id: Number(s.id_pengajuan),
+    name: s.nama_turnamen ?? "-",
+    submittedAt: s.created_at ?? "",
+    status: s.status ?? "",
+  }));
+}
+
+// ----- Pilihan form Buat Turnamen -----
+// GET /api/public/games (publik)
+export async function getGameOptions() {
+  const response = await apiRequest("/public/games");
+  return listOf(response).map((g) => ({ id: Number(g.id_game), name: g.nama_game }));
+}
+
+// GET /api/provinsi dan /api/provinsi/{id}/kota (publik)
+export async function getProvinces() {
+  const response = await apiRequest("/provinsi");
+  return listOf(response).map((p) => ({ id: Number(p.id_provinsi), name: p.nama_provinsi }));
+}
+
+export async function getCities(provinceId) {
+  const response = await apiRequest(`/provinsi/${provinceId}/kota`);
+  return listOf(response).map((c) => ({ id: Number(c.id_kota), name: c.nama_kota }));
+}
+
+// ----- Buat Turnamen -----
+// POST /api/pengajuan-turnamen (multipart/form-data)
+export async function submitTournament(v) {
+  const f = new FormData();
+  f.append("poster", v.poster);
+  f.append("nama_turnamen", v.name.trim());
+  f.append("nama_penyelenggara", v.organizer.trim());
+  f.append("id_game", String(v.gameId));
+  f.append("tipe_turnamen", v.type);
+
+  // Offline: id_kota wajib. Online: tidak dikirim.
+  if (v.type === "offline") {
+    f.append("id_kota", String(Number(v.city)));
+    if (v.address.trim()) f.append("deskripsi_lokasi", v.address.trim());
   }
-  throw notReady("daftar pengajuan turnamen");
+
+  f.append("slot", String(Number(v.slot)));
+  f.append("jadwal_pendaftaran_tutup", v.closeDate);
+  f.append("jadwal_main", v.matchDate);
+  f.append("deskripsi_turnamen", v.description.trim());
+  f.append("total_hadiah", String(Number(v.prize)));
+  f.append("rincian_pendanaan", v.fundingDetail.trim());
+
+  v.funding.forEach((key) => f.append("sumber_pendanaan[]", String(FUNDING_IDS[key])));
+  // Data sponsor hanya dikirim kalau Sponsor dipilih
+  if (v.funding.includes("sponsor")) {
+    f.append("sponsor[0][nama_sponsor]", v.sponsorName.trim());
+    f.append("sponsor[0][kontak_sponsor]", v.sponsorContact.trim());
+  }
+
+  f.append("jenis_biaya", v.fee);
+  if (v.fee === "berbayar") {
+    f.append("biaya_pendaftaran", String(Number(v.feeAmount)));
+    f.append("metode_pembayaran", v.paymentMethod);
+    if (["qris", "qris_transfer"].includes(v.paymentMethod)) f.append("qris", v.qris);
+    if (["transfer", "qris_transfer"].includes(v.paymentMethod)) {
+      f.append("no_rekening", v.account.trim());
+    }
+  }
+
+  f.append("ktp", v.ktp);
+  f.append("setuju_pertanggungjawaban", v.agree ? "1" : "0");
+
+  return apiRequest("/pengajuan-turnamen", { method: "POST", body: f });
 }
