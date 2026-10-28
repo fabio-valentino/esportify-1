@@ -81,6 +81,16 @@ function Login() {
       highlight="Level Tertinggi."
       description="Bergabunglah dengan ribuan pemain dan tim yang bertanding di turnamen regional terverifikasi dengan sistem anti-cheat"
     >
+      <div className="login-page">
+        <button
+          type="button"
+          className="login-back"
+          onClick={() => navigate("/")}
+        >
+          <Icon name="chevron-left" size={14} />
+          <span>Batal</span>
+        </button>
+      </div>
       <h2 className="auth-title">Selamat datang kembali</h2>
       <p className="auth-subtitle">login untuk melanjutkan ke turnamen anda.</p>
 

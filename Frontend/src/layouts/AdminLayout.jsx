@@ -42,9 +42,15 @@ function AdminShell() {
   const locked = !loading && priority.length > 0;
 
   const handleLogout = async () => {
-    sessionStorage.removeItem(POPUP_KEY); // popup muncul lagi di login berikutnya
-    await signOut();
-    navigate("/login", { replace: true });
+    sessionStorage.removeItem(POPUP_KEY);
+
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Logout backend gagal:", err);
+    } finally {
+      navigate("/", { replace: true });
+    }
   };
 
   const goReview = () => {
