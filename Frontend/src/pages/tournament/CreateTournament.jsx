@@ -559,7 +559,7 @@ function CreateTournament() {
         <div className="t-upload-frame">
           <UploadButton
             label="Unggah KTP"
-            hint="JPG, PNG, atau PDF • maks 5 MB. Pastikan KTP terbaca jelas."
+            hint="JPG, PNG, atau PDF • maks 5 MB. Pastikan foto KTP terbaca jelas dan foto wajah terlihat terang/fokus."
             maxMB={5}
             file={form.ktp}
             accept=".jpg,.jpeg,.png,.pdf"
