@@ -18,10 +18,7 @@ class CheckAdminPengajuanDeadline
     public function handle(Request $request, Closure $next): Response
     {
         $overduePengajuan = PengajuanTurnamen::query()
-            ->whereIn('status', [
-                'Menunggu Verifikasi',
-                'Sedang ditinjau',
-            ])
+            ->where('status', 'Menunggu Verifikasi')
             ->where('created_at', '<=', now()->subMinutes(
                 self::DEADLINE_MINUTES
             ))
