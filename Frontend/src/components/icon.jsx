@@ -57,6 +57,7 @@ const icons = {
   "chevron-right": ChevronRight,
   "chevron-up": ChevronUp,
   "external-link": ExternalLink,
+
   eye: Eye,
   "eye-off": EyeOff,
   gamepad: Gamepad2,
