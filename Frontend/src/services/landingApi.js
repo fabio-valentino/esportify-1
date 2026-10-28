@@ -191,7 +191,7 @@ export async function getTopCommunities(limit = 3) {
 // ASSUMPTION: GET /games = route PUBLIK BARU (belum ada di api.php; yang ada baru
 // /admin/games yang butuh login admin). Backend perlu: tanpa auth, hanya game aktif,
 // diurutkan dari yang paling banyak dipakai. Kalau nama route-nya beda, ubah di sini saja.
-const GAMES_ENDPOINT = "/games";
+const GAMES_ENDPOINT = "/public/games";
 
 export async function getSupportedGames() {
   if (USE_LANDING_GAME_MOCK) {
