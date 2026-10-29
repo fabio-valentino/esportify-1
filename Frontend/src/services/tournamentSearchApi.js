@@ -368,6 +368,21 @@ export async function getSearchCategories() {
     a.name.localeCompare(b.name, "id"),
   );
 }
+/* ---------------- Untuk landing page ---------------- */
+
+// Turnamen yang pendaftarannya sedang dibuka, hadiah terbesar di atas.
+// Sort stabil: hadiah sama -> urutan dari backend tetap.
+export async function getFeaturedTournaments(limit = 3) {
+  const open = (await loadAll()).filter(
+    (tournament) =>
+      tournament.status === "pendaftaran" &&
+      tournament.registrationOpen !== false,
+  );
+
+  return [...open]
+    .sort((a, b) => (b.prize ?? -1) - (a.prize ?? -1))
+    .slice(0, limit);
+}
 
 /* ---------------- Opsi lokasi ---------------- */
 

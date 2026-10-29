@@ -4,11 +4,15 @@ import {
   USE_LANDING_GAME_MOCK,
 } from "../config/env";
 import { apiRequest } from "./httpClient";
+import { getFeaturedTournaments } from "./tournamentSearchApi";
 
 // Pengaturan data landing page:
 // 1. USE_LANDING_MOCK mengatur mock turnamen dan komunitas.
 // 2. USE_LANDING_GAME_MOCK mengatur mock game.
-// 3. Endpoint dan mapper disesuaikan jika format backend berubah.
+// 3. Turnamen asli: GET /turnamen (lewat tournamentSearchApi).
+
+// Formatter dipakai bersama halaman Cari Turnamen (tanggal dalam WIB)
+export { formatDate, formatFee, formatRupiah } from "./tournamentSearchApi";
 
 const wait = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -62,54 +66,9 @@ const toList = (res) => {
   return [];
 };
 
-/* ---------------- Formatter tampilan ---------------- */
-
-export const formatRupiah = (n) =>
-  Number(n) > 0 ? `Rp${Number(n).toLocaleString("id-ID")}` : "Rp0";
-
-export const formatFee = (n) => (Number(n) > 0 ? formatRupiah(n) : "Gratis");
-
-export const formatDate = (value) => {
-  const d = value ? new Date(value) : null;
-
-  if (!d || Number.isNaN(d.getTime())) {
-    return "Jadwal menyusul";
-  }
-
-  return new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(d);
-};
-
-const normalizeType = (v) => {
-  const s = String(v ?? "").toLowerCase();
-
-  if (s.includes("offline")) return "Offline";
-  if (s.includes("online")) return "Online";
-
-  return "";
-};
-
 /* ---------------- Mapper data API ---------------- */
 
-// ASSUMPTION: nama field mengikuti struktur respons backend.
-const mapTournament = (d) => ({
-  id: d.id_turnamen ?? d.id,
-  name: d.nama_turnamen ?? d.nama ?? d.name ?? "",
-  poster: toMediaUrl(d.poster),
-  game: d.game?.nama_game ?? d.game?.nama ?? d.nama_game ?? d.game_name ?? "",
-  type: normalizeType(d.tipe ?? d.type),
-  date:
-    d.hari_pertandingan ?? d.tanggal_pertandingan ?? d.tanggal_mulai ?? null,
-  prize: Number(d.total_hadiah ?? 0),
-  fee: Number(d.nominal_pendaftaran ?? d.biaya_pendaftaran ?? 0),
-  slotFilled: Number(d.peserta_terdaftar ?? d.slot_terisi ?? 0),
-  slotTotal: Number(d.slot ?? d.total_slot ?? 0),
-});
-
+// ASSUMPTION: nama field komunitas mengikuti struktur respons backend.
 const mapCommunity = (d) => ({
   id: d.id_komunitas ?? d.id,
   name: d.nama_komunitas ?? d.nama ?? d.name ?? "",
@@ -209,21 +168,23 @@ const mockGames = [
 
 /* ---------------- Endpoint API ---------------- */
 
-// ASSUMPTION: endpoint publik turnamen.
+// Turnamen yang sedang membuka pendaftaran, total hadiah terbesar di atas.
+// (Nama fungsi dipertahankan supaya pemanggilnya tidak perlu diubah.)
 export async function getLatestTournaments(limit = 3) {
   if (USE_LANDING_MOCK) {
     await wait();
     return mockTournaments.slice(0, limit);
   }
 
-  const res = await apiRequest(`/tournaments?sort=latest&limit=${limit}`);
-
-  return toList(res).slice(0, limit).map(mapTournament);
+  return getFeaturedTournaments(limit);
 }
 
 // ASSUMPTION: endpoint publik komunitas.
+// Backend belum punya modul komunitas. Ubah ke true saat GET /communities siap.
+const COMMUNITY_API_READY = false;
+
 export async function getTopCommunities(limit = 3) {
-  if (USE_LANDING_MOCK) {
+  if (USE_LANDING_MOCK || !COMMUNITY_API_READY) {
     await wait();
     return mockCommunities.slice(0, limit);
   }
