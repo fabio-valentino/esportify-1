@@ -91,6 +91,53 @@ class PengajuanTurnamenController extends Controller
         ]);
     }
 
+    public function lihatKtp(Request $request, $id)
+    {
+        $player = $request->user()->player;
+
+        if (!$player) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Profil player tidak ditemukan.'
+            ], 404);
+        }
+
+        $pengajuan = PengajuanTurnamen::where('id_player', $player->id_player)
+            ->where('id_pengajuan', $id)
+            ->first();
+
+        if (!$pengajuan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pengajuan turnamen tidak ditemukan.'
+            ], 404);
+        }
+
+        $path = $pengajuan->ktp;
+
+        if (!$path || !Storage::disk('local')->exists($path)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File KTP tidak ditemukan.'
+            ], 404);
+        }
+
+        // Bersihkan output buffer agar tidak ada karakter tambahan
+        // sebelum byte pertama file KTP.
+        while (ob_get_level() > 0) {
+            ob_clean();
+        }
+
+        return response()->file(
+            Storage::disk('local')->path($path),
+            [
+                'Content-Type' => Storage::disk('local')->mimeType($path),
+                'Cache-Control' => 'private, no-store',
+                'X-Content-Type-Options' => 'nosniff',
+            ]
+        );
+    }
+
     /**
      * Membuat pengajuan turnamen baru.
      */
@@ -650,7 +697,8 @@ class PengajuanTurnamenController extends Controller
                 $sumberPendanaan,
                 $newPoster,
                 $newKtp,
-                $newQris
+                $newQris,
+                $isRevisi
             ) {
                 $fieldPengajuan = [
                     'nama_turnamen',
@@ -703,6 +751,12 @@ class PengajuanTurnamenController extends Controller
 
                 // Setelah berhasil diedit, pengajuan kembali ke antrean verifikasi.
                 $dataPengajuan['status'] = 'Menunggu Verifikasi';
+
+                // Jika Player berhasil mengirim ulang revisi,
+                // catat waktu pengajuan ulang.
+                if ($isRevisi) {
+                    $dataPengajuan['diajukan_ulang_pada'] = now();
+                }
 
                 // Penanda waktu revisi dibersihkan setelah revisi selesai.
                 $dataPengajuan['revisi_diminta_pada'] = null;

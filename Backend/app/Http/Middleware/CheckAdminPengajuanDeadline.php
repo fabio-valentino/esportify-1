@@ -17,19 +17,34 @@ class CheckAdminPengajuanDeadline
 
     public function handle(Request $request, Closure $next): Response
     {
+        // Menghitung batas waktu 5 menit dari waktu sekarang.
+        $batasWaktu = now()->subMinutes(
+            self::DEADLINE_MINUTES
+        );
+
+        // Mengambil pengajuan yang sudah melewati batas waktu.
         $overduePengajuan = PengajuanTurnamen::query()
-            ->where('status', 'Menunggu Verifikasi')
-            ->where('created_at', '<=', now()->subMinutes(
-                self::DEADLINE_MINUTES
-            ))
-            ->orderBy('created_at', 'asc')
+            ->whereIn('status', [
+                'Menunggu Verifikasi',
+                'Sedang ditinjau',
+            ])
+            ->whereRaw(
+                'COALESCE(diajukan_ulang_pada, created_at) <= ?',
+                [$batasWaktu]
+            )
+            ->orderByRaw(
+                'COALESCE(diajukan_ulang_pada, created_at) ASC'
+            )
             ->get([
                 'id_pengajuan',
                 'nama_turnamen',
                 'status',
                 'created_at',
+                'diajukan_ulang_pada',
             ]);
 
+        // Jika ada pengajuan yang melewati tenggat,
+        // fitur Admin lainnya dikunci sementara.
         if ($overduePengajuan->isNotEmpty()) {
             return response()->json([
                 'success' => false,
@@ -41,6 +56,8 @@ class CheckAdminPengajuanDeadline
             ], 423);
         }
 
+        // Jika tidak ada pengajuan terlambat,
+        // request dapat dilanjutkan.
         return $next($request);
     }
 }
