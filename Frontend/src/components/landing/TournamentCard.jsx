@@ -3,10 +3,14 @@ import Poster from "./Poster";
 import { formatDate, formatFee, formatRupiah } from "../../services/landingApi";
 
 // Kartu hanya menerima props. Tidak peduli data dari mock atau backend.
+// Nilai null (belum tersedia di backend) disembunyikan, bukan ditulis Rp0 / Gratis.
 function TournamentCard({ item, onOpen }) {
-  const pct = item.slotTotal
-    ? Math.min(100, Math.round((item.slotFilled / item.slotTotal) * 100))
-    : 0;
+  const hasSlotFilled = item.slotFilled != null;
+  const pct =
+    hasSlotFilled && item.slotTotal
+      ? Math.min(100, Math.round((item.slotFilled / item.slotTotal) * 100))
+      : 0;
+  const hasMoney = item.prize != null || item.fee != null;
 
   return (
     <article className="ld-card ld-card-click" onClick={() => onOpen(item)}>
@@ -31,35 +35,47 @@ function TournamentCard({ item, onOpen }) {
           {item.name}
         </h3>
 
-        <div className="ld-stats">
-          <div>
-            <span>Total Hadiah</span>
-            <b className="ld-prize">{formatRupiah(item.prize)}</b>
+        {hasMoney && (
+          <div className="ld-stats">
+            {item.prize != null && (
+              <div>
+                <span>Total Hadiah</span>
+                <b className="ld-prize">{formatRupiah(item.prize)}</b>
+              </div>
+            )}
+            {item.fee != null && (
+              <div className="ld-right">
+                <span>Biaya Pendaftaran</span>
+                <b>{formatFee(item.fee)}</b>
+              </div>
+            )}
           </div>
-          <div className="ld-right">
-            <span>Biaya Pendaftaran</span>
-            <b>{formatFee(item.fee)}</b>
-          </div>
-        </div>
+        )}
 
-        <div className="ld-slot">
-          <div className="ld-slot-row">
-            <span>Slot Terisi</span>
-            <b>
-              {item.slotFilled} / {item.slotTotal}
-            </b>
+        {item.slotTotal > 0 && (
+          <div className="ld-slot">
+            <div className="ld-slot-row">
+              <span>{hasSlotFilled ? "Slot Terisi" : "Total Slot"}</span>
+              <b>
+                {hasSlotFilled
+                  ? `${item.slotFilled} / ${item.slotTotal}`
+                  : item.slotTotal}
+              </b>
+            </div>
+            {hasSlotFilled && (
+              <div
+                className="ld-bar"
+                role="progressbar"
+                aria-valuenow={pct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Slot terisi"
+              >
+                <i style={{ width: `${pct}%` }} />
+              </div>
+            )}
           </div>
-          <div
-            className="ld-bar"
-            role="progressbar"
-            aria-valuenow={pct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Slot terisi"
-          >
-            <i style={{ width: `${pct}%` }} />
-          </div>
-        </div>
+        )}
 
         <button type="button" className="ld-btn ld-btn-s ld-btn-block">
           Lihat Detail
