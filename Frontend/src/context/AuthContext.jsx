@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
     try {
       await logout();
     } finally {
+      clearToken();
       setUser(null);
     }
   };

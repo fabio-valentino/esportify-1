@@ -17,8 +17,19 @@ function Login() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Halaman asal (string path) dari ProtectedRoute. Dipakai hanya kalau
+  // sesuai dengan role-nya (admin tidak dikirim ke halaman user, dan sebaliknya).
+  const from = location.state?.from;
+  const targetFor = (u) => {
+    const home = homePathFor(u);
+    return typeof from === "string" &&
+      from.startsWith("/admin") === (home === "/admin")
+      ? from
+      : home;
+  };
+
   // Sudah login? Tidak perlu lihat halaman login
-  if (!checking && user) return <Navigate to={homePathFor(user)} replace />;
+  if (!checking && user) return <Navigate to={targetFor(user)} replace />;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -39,14 +50,7 @@ function Login() {
     setMessage("");
     try {
       const currentUser = await signIn(form);
-      const from = location.state?.from;
-      // Pakai halaman asal hanya kalau sesuai dengan role-nya
-      const target =
-        from &&
-        from.startsWith("/admin") === (homePathFor(currentUser) === "/admin")
-          ? from
-          : homePathFor(currentUser);
-      navigate(target, { replace: true });
+      navigate(targetFor(currentUser), { replace: true });
     } catch (err) {
       const fieldErrors = {};
       Object.entries(err.fields || {}).forEach(([key, value]) => {
@@ -81,6 +85,16 @@ function Login() {
       highlight="Level Tertinggi."
       description="Bergabunglah dengan ribuan pemain dan tim yang bertanding di turnamen regional terverifikasi dengan sistem anti-cheat"
     >
+      <div className="login-page">
+        <button
+          type="button"
+          className="login-back"
+          onClick={() => navigate("/")}
+        >
+          <Icon name="chevron-left" size={14} />
+          <span>Batal</span>
+        </button>
+      </div>
       <h2 className="auth-title">Selamat datang kembali</h2>
       <p className="auth-subtitle">login untuk melanjutkan ke turnamen anda.</p>
 

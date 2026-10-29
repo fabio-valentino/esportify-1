@@ -990,6 +990,69 @@
   background: #1c2740;
 }
 
+/* ===== Detail pengajuan (player) ===== */
+.d-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.d-box.note {
+  min-height: 70px;
+  text-align: left;
+  font-weight: 400;
+  color: var(--text);
+  white-space: pre-line;
+}
+.d-box.expired {
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+.t-preview-pdf {
+  width: 100%;
+  height: calc(90vh - 80px);
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.t-edit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 4px 0 8px;
+}
+.t-edit-btn,
+.t-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.t-edit-btn:hover,
+.t-cancel:hover {
+  background: #334155;
+  color: var(--white);
+}
+.t-edit-btn.revision {
+  border-color: #92400e;
+  background: rgba(217, 119, 6, 0.15);
+  color: #fbbf24;
+}
+.t-edit-btn.revision:hover {
+  background: rgba(217, 119, 6, 0.3);
+}
+.t-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
   .t-tab {
@@ -1697,14 +1760,6 @@
   color: var(--pr-tx3);
 }
 
-@media (max-width: 520px) {
-  .pr-row {
-    flex-wrap: wrap;
-  }
-  .pr-row .pr-btn {
-    width: 100%;
-  }
-}
 /* =====================================================================
    PENGGANTI profile-redesign-align.css yang lama.
    Hapus blok align lama di user.css, lalu tempel ini di PALING BAWAH.
@@ -1732,9 +1787,215 @@
   align-self: auto;
 }
 
+/* ===== Detail Turnamen ===== */
+.td-top {
+  display: grid;
+  grid-template-columns: minmax(240px, 315px) 1fr;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.td-poster {
+  align-self: start;
+  overflow: hidden;
+  border: 1px solid #243044;
+  border-radius: 12px;
+  background: #121826;
+}
+.td-poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.td-poster .admin-message {
+  padding: 24px;
+  text-align: center;
+}
+
+.td-summary {
+  padding: 22px 24px;
+  border: 1px solid #243044;
+  border-radius: 14px;
+  background: #111827;
+}
+.td-summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.td-game {
+  padding: 3px 12px;
+  border: 1px solid #2c3a52;
+  border-radius: 999px;
+  background: #1a2336;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+.td-title {
+  margin: 14px 0 18px;
+  font-size: 26px;
+  color: var(--white);
+}
+.td-summary .t-status {
+  font-size: 12px;
+}
+.td-summary .t-status i {
+  width: 8px;
+  height: 8px;
+  margin-top: 3px;
+}
+
+.td-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #243044;
+}
+.td-grid small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.td-grid b {
+  font-size: 16px;
+  color: var(--white);
+}
+.td-money b {
+  font-size: 26px;
+}
+.td-money b.green {
+  color: #22c55e;
+}
+.td-bar {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: #1f2937;
+  overflow: hidden;
+}
+.td-bar i {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+}
+
+.td-card {
+  margin-bottom: 14px;
+  padding: 22px 24px;
+  border: 1px solid #1f2a3d;
+  border-radius: 12px;
+  background: #131a28;
+}
+.td-card h2 {
+  margin-bottom: 14px;
+  font-size: 18px;
+  color: var(--white);
+}
+.td-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.td-item:last-child {
+  margin-bottom: 0;
+}
+.td-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #1d3a6e;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.15);
+  color: #6aa3ff;
+}
+.td-item-main {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+}
+.td-item-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.td-desc {
+  max-height: 150px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #94a3b8;
+  white-space: pre-line;
+}
+.td-desc.open {
+  max-height: none;
+}
+.td-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #6aa3ff;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.td-register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+}
+.td-register:hover {
+  background: var(--blue-hover);
+}
+
+@media (max-width: 800px) {
+  .td-top {
+    grid-template-columns: 1fr;
+  }
+  .td-poster {
+    max-width: 315px;
+  }
+  .td-title {
+    font-size: 22px;
+  }
+}
+
 /* layar kecil: satu kolom, tidak perlu nempel */
 @media (max-width: 960px) {
   .pr-side {
     position: static;
+  }
+}
+@media (max-width: 520px) {
+  .pr-row {
+    flex-wrap: wrap;
+  }
+  .pr-row .pr-btn {
+    width: 100%;
   }
 }

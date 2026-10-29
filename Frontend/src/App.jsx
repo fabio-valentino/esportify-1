@@ -19,6 +19,9 @@ import SubmissionStatus from "./pages/tournament/SubmissionStatus";
 import SearchTournaments from "./pages/search/SearchTournaments";
 import AdminSubmissions from "./pages/admin/AdminSubmissions";
 import AdminSubmissionDetail from "./pages/admin/AdminSubmissionDetail";
+import SubmissionDetail from "./pages/tournament/SubmissionDetail";
+import TournamentDetail from "./pages/tournament/TournamentDetail";
+import ManagedTournamentDetail from "./pages/tournament/ManagedTournamentDetail";
 
 function App() {
   return (
@@ -28,11 +31,26 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
+        {/* Publik: guest boleh melihat daftar turnamen.
+            Klik "Lihat Detail" akan diarahkan ke login oleh ProtectedRoute. */}
+        <Route element={<UserLayout />}>
+          <Route path="/turnamen/cari" element={<SearchTournaments />} />
+        </Route>
+
         {/* Khusus user biasa: admin diarahkan ke /admin */}
         <Route element={<ProtectedRoute userOnly />}>
           <Route element={<UserLayout />}>
             <Route path="/home" element={<UserHome />} />
-            <Route path="/turnamen/cari" element={<SearchTournaments />} />
+            <Route
+              path="/turnamen/pengajuan/:id"
+              element={<SubmissionDetail />}
+            />
+
+            <Route
+              path="/turnamen/detail/:id"
+              element={<ManagedTournamentDetail />}
+            />
+            <Route path="/turnamen/cari/:id" element={<TournamentDetail />} />
             <Route path="/turnamen/buat" element={<CreateTournament />} />
             <Route path="/turnamen/kelola" element={<ManageTournaments />} />
             <Route

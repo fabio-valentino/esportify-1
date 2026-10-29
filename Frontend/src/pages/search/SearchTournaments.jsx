@@ -7,31 +7,46 @@ import Pagination from "../../components/search/Pagination";
 import {
   FEE_OPTIONS,
   PER_PAGE,
-  SCHEDULE_OPTIONS,
   TYPE_OPTIONS,
   getSearchCategories,
   getSearchCities,
   getSearchProvinces,
   searchTournaments,
 } from "../../services/tournamentSearchApi";
+import { cleanSchedule, scheduleLabel } from "../../utils/searchSchedule";
 import "../../styles/search.css";
 
-// ASSUMPTION: halaman detail turnamen belum ada. Isi saat route-nya jadi,
+// ASSUMPTION: halaman detail turnamen belum ada (menunggu desain). Isi saat route-nya jadi,
 // contoh: (id) => `/turnamen/${id}`. Selama null, tombol "Lihat Detail" nonaktif.
-const DETAIL_PATH = null;
-
-const FILTER_KEYS = ["kategori", "tipe", "biaya", "jadwal", "provinsi", "kota"];
+const DETAIL_PATH = (id) => `/turnamen/cari/${id}`;
+// CHANGED: ditambah dari dan sampai (rentang tanggal kustom)
+const FILTER_KEYS = [
+  "kategori",
+  "tipe",
+  "biaya",
+  "jadwal",
+  "dari",
+  "sampai",
+  "provinsi",
+  "kota",
+];
 const EMPTY_FILTERS = {
   kategori: "",
   tipe: "",
   biaya: "",
   jadwal: "",
+  dari: "",
+  sampai: "",
   provinsi: "",
   kota: "",
 };
 
 const labelOf = (list, value) =>
   list.find((o) => o.value === value)?.label ?? value;
+
+// Cari nama dari id untuk daftar { id, name }
+const nameOf = (list, id, fallback) =>
+  list.find((x) => x.id === id)?.name ?? fallback;
 
 function SearchTournaments() {
   const navigate = useNavigate();
@@ -42,14 +57,23 @@ function SearchTournaments() {
   // Semua kriteria hidup di URL: refresh dan tombol Back tetap konsisten.
   const criteria = useMemo(() => {
     const p = new URLSearchParams(paramsKey);
+    const tipe = p.get("tipe") ?? "";
+    const offline = tipe === "offline";
+    // CHANGED: jadwal dibersihkan (nilai tidak valid diabaikan, dari/sampai ditukar kalau terbalik)
+    const schedule = cleanSchedule({
+      jadwal: p.get("jadwal") ?? "",
+      dari: p.get("dari") ?? "",
+      sampai: p.get("sampai") ?? "",
+    });
     return {
       q: p.get("q") ?? "",
       kategori: p.get("kategori") ?? "",
-      tipe: p.get("tipe") ?? "",
+      tipe,
       biaya: p.get("biaya") ?? "",
-      jadwal: p.get("jadwal") ?? "",
-      provinsi: p.get("provinsi") ?? "",
-      kota: p.get("kota") ?? "",
+      ...schedule,
+      // CHANGED: provinsi dan kota hanya berlaku untuk tipe Offline
+      provinsi: offline ? (p.get("provinsi") ?? "") : "",
+      kota: offline ? (p.get("kota") ?? "") : "",
       page: Math.max(1, Math.floor(Number(p.get("page"))) || 1),
     };
   }, [paramsKey]);
@@ -79,20 +103,21 @@ function SearchTournaments() {
       .catch(() => setProvinces([]));
   }, []);
 
-  // Kota mengikuti provinsi yang dipilih di panel
+  // Kota mengikuti provinsi: yang di panel saat terbuka, yang aktif di URL saat tertutup
+  const activeProvince = open ? draft.provinsi : criteria.provinsi;
   useEffect(() => {
-    if (!draft.provinsi) {
+    if (!activeProvince) {
       setCities([]);
       return;
     }
     let off = false;
-    getSearchCities(draft.provinsi)
+    getSearchCities(activeProvince)
       .then((list) => !off && setCities(list))
       .catch(() => !off && setCities([]));
     return () => {
       off = true;
     };
-  }, [draft.provinsi]);
+  }, [activeProvince]);
 
   useEffect(() => {
     setQueryText(criteria.q);
@@ -164,15 +189,29 @@ function SearchTournaments() {
     setOpen(true);
   };
 
+  // CHANGED: ganti tipe ke non-offline mengosongkan provinsi dan kota;
+  // ganti jadwal ke non-kustom mengosongkan tanggal
   const changeDraft = (key, value) =>
-    setDraft((d) => ({
-      ...d,
-      [key]: value,
-      ...(key === "provinsi" ? { kota: "" } : {}),
-    }));
+    setDraft((d) => {
+      const next = { ...d, [key]: value };
+      if (key === "provinsi") next.kota = "";
+      if (key === "tipe" && value !== "offline") {
+        next.provinsi = "";
+        next.kota = "";
+      }
+      if (key === "jadwal" && value !== "custom") {
+        next.dari = "";
+        next.sampai = "";
+      }
+      return next;
+    });
 
   const applyDraft = () => {
-    update(draft);
+    update({
+      ...draft,
+      ...cleanSchedule(draft),
+      ...(draft.tipe !== "offline" ? { provinsi: "", kota: "" } : {}),
+    });
     setOpen(false);
   };
 
@@ -187,24 +226,46 @@ function SearchTournaments() {
     listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // Satu chip per filter aktif (provinsi dan kota dihitung satu lokasi)
-  const categoryName = (id) =>
-    categories.find((c) => c.id === id)?.name ?? "Kategori";
+  // Satu chip per filter aktif. "clear" = parameter URL yang dihapus saat chip ditutup.
+  // Provinsi dan kota dihitung satu lokasi.
   const chips = [];
   if (criteria.kategori)
-    chips.push({ key: "kategori", label: categoryName(criteria.kategori) });
+    chips.push({
+      key: "kategori",
+      label: nameOf(categories, criteria.kategori, "Kategori"),
+      clear: ["kategori"],
+    });
   if (criteria.tipe)
-    chips.push({ key: "tipe", label: labelOf(TYPE_OPTIONS, criteria.tipe) });
+    chips.push({
+      key: "tipe",
+      label: labelOf(TYPE_OPTIONS, criteria.tipe),
+      clear: ["tipe", "provinsi", "kota"],
+    });
   if (criteria.biaya)
-    chips.push({ key: "biaya", label: labelOf(FEE_OPTIONS, criteria.biaya) });
-  if (criteria.jadwal)
+    chips.push({
+      key: "biaya",
+      label: labelOf(FEE_OPTIONS, criteria.biaya),
+      clear: ["biaya"],
+    });
+  const jadwalText = scheduleLabel(criteria);
+  if (jadwalText)
     chips.push({
       key: "jadwal",
-      label: labelOf(SCHEDULE_OPTIONS, criteria.jadwal),
+      label: jadwalText,
+      clear: ["jadwal", "dari", "sampai"],
     });
-  if (criteria.kota) chips.push({ key: "kota", label: criteria.kota });
+  if (criteria.kota)
+    chips.push({
+      key: "kota",
+      label: nameOf(cities, criteria.kota, "Kota"),
+      clear: ["kota"],
+    });
   else if (criteria.provinsi)
-    chips.push({ key: "provinsi", label: criteria.provinsi });
+    chips.push({
+      key: "provinsi",
+      label: nameOf(provinces, criteria.provinsi, "Provinsi"),
+      clear: ["provinsi", "kota"],
+    });
 
   const hasCriteria = Boolean(criteria.q) || chips.length > 0;
 
@@ -338,7 +399,9 @@ function SearchTournaments() {
               <button
                 type="button"
                 aria-label={`Hapus filter ${c.label}`}
-                onClick={() => update({ [c.key]: "" })}
+                onClick={() =>
+                  update(Object.fromEntries(c.clear.map((k) => [k, ""])))
+                }
               >
                 <Icon name="x" size={12} />
               </button>

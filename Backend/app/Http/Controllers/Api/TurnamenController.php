@@ -7,30 +7,60 @@ use App\Models\Turnamen;
 use App\Models\Player;
 use App\Models\Penyelenggara;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
 class TurnamenController extends Controller
 {
     /**
+     * Satu aturan status untuk list dan detail.
+     */
+    private function hitungStatus($jadwalMain): string
+    {
+        if (!$jadwalMain) {
+            return 'pendaftaran';
+        }
+
+        $jadwal = Carbon::parse($jadwalMain);
+
+        if (now()->lt($jadwal)) {
+            return 'pendaftaran';
+        }
+
+        if (now()->isSameDay($jadwal)) {
+            return 'berlangsung';
+        }
+
+        return 'selesai';
+    }
+
+    /**
      * Menampilkan daftar turnamen yang sudah dipublikasikan.
      * Endpoint ini dapat diakses oleh Guest maupun Player.
+     * Turnamen berstatus "selesai" tidak ditampilkan.
      */
     public function index()
     {
         $turnamen = Turnamen::query()
             ->whereHas('pengajuan')
             ->with([
-                'pengajuan:id_pengajuan,id_game,nama_turnamen,nama_penyelenggara,poster,tipe_turnamen,slot,jadwal_pendaftaran_tutup,jadwal_main,deskripsi_lokasi',
+                'pengajuan:id_pengajuan,id_game,id_kota,nama_turnamen,nama_penyelenggara,poster,tipe_turnamen,slot,total_hadiah,jadwal_pendaftaran_tutup,jadwal_main,deskripsi_lokasi',
                 'pengajuan.game:id_game,nama_game',
+                'pengajuan.game.kategoris:id_kategori,nama_kategori',
+                'pengajuan.kota:id_kota,id_provinsi,nama_kota',
+                'pengajuan.kota.provinsi:id_provinsi,nama_provinsi',
+                'pengajuan.pendanaan',
             ])
-            ->orderByDesc('created_at')
             ->get()
             ->map(function ($item) {
                 $pengajuan = $item->pengajuan;
+                $game = $pengajuan->game;
+                $kota = $pengajuan->kota;
+                $pendanaan = $pengajuan->pendanaan;
 
                 return [
                     'id_turnamen' => $item->id_turnamen,
-                    'status' => $item->status,
+                    'status' => $this->hitungStatus($pengajuan->jadwal_main),
                     'created_at' => $item->created_at,
 
                     'pengajuan' => [
@@ -40,19 +70,52 @@ class TurnamenController extends Controller
                         'poster' => $pengajuan->poster,
                         'tipe_turnamen' => $pengajuan->tipe_turnamen,
                         'slot' => $pengajuan->slot,
+                        'total_hadiah' => $pengajuan->total_hadiah,
                         'jadwal_pendaftaran_tutup' => $pengajuan->jadwal_pendaftaran_tutup,
                         'jadwal_main' => $pengajuan->jadwal_main,
                         'deskripsi_lokasi' => $pengajuan->deskripsi_lokasi,
 
-                        'game' => $pengajuan->game
+                        'pendaftaran_terbuka' => $pengajuan->jadwal_pendaftaran_tutup
+                            ? now()->lt($pengajuan->jadwal_pendaftaran_tutup)
+                            : true,
+
+                        'game' => $game
                             ? [
-                                'id_game' => $pengajuan->game->id_game,
-                                'nama_game' => $pengajuan->game->nama_game,
+                                'id_game' => $game->id_game,
+                                'nama_game' => $game->nama_game,
+                                'kategoris' => $game->kategoris->map(fn ($k) => [
+                                    'id_kategori' => $k->id_kategori,
+                                    'nama_kategori' => $k->nama_kategori,
+                                ])->values(),
+                            ]
+                            : null,
+
+                        'kota' => $kota
+                            ? [
+                                'id_kota' => $kota->id_kota,
+                                'id_provinsi' => $kota->id_provinsi,
+                                'nama_kota' => $kota->nama_kota,
+                                'provinsi' => $kota->provinsi
+                                    ? [
+                                        'id_provinsi' => $kota->provinsi->id_provinsi,
+                                        'nama_provinsi' => $kota->provinsi->nama_provinsi,
+                                    ]
+                                    : null,
+                            ]
+                            : null,
+
+                        'pendanaan' => $pendanaan
+                            ? [
+                                'jenis_biaya' => $pendanaan->jenis_biaya,
+                                'biaya_pendaftaran' => $pendanaan->biaya_pendaftaran,
                             ]
                             : null,
                     ],
                 ];
-            });
+            })
+            ->filter(fn ($t) => $t['status'] !== 'selesai')
+            ->sortBy(fn ($t) => $t['pengajuan']['jadwal_main']?->timestamp ?? PHP_INT_MAX)
+            ->values();
 
         return response()->json([
             'success' => true,
@@ -152,8 +215,11 @@ class TurnamenController extends Controller
     public function show($id)
     {
         $turnamen = Turnamen::with([
-            'pengajuan.game',
+            'pengajuan.game.kategoris:id_kategori,nama_kategori',
             'pengajuan.kota.provinsi',
+            'pengajuan.pendanaan',
+            'pengajuan.sponsor',
+            'pengajuan.pembayaran',
             'penyelenggara',
         ])->find($id);
 
@@ -173,17 +239,8 @@ class TurnamenController extends Controller
             ], 404);
         }
 
-        // Hitung status berdasarkan jadwal_main tanpa mengubah database.
-        $waktuSekarang = now();
-        $jadwalMain = Carbon::parse($pengajuan->jadwal_main);
-
-        if ($waktuSekarang->lt($jadwalMain)) {
-            $status = 'pendaftaran';
-        } elseif ($waktuSekarang->isSameDay($jadwalMain)) {
-            $status = 'berlangsung';
-        } else {
-            $status = 'selesai';
-        }
+        // Status dihitung dengan aturan yang sama seperti list.
+        $status = $this->hitungStatus($pengajuan->jadwal_main);
 
         return response()->json([
             'success' => true,
@@ -200,22 +257,51 @@ class TurnamenController extends Controller
                     'poster' => $pengajuan->poster,
                     'tipe_turnamen' => $pengajuan->tipe_turnamen,
                     'slot' => $pengajuan->slot,
+                    'total_hadiah' => $pengajuan->total_hadiah,
                     'jadwal_pendaftaran_tutup' => $pengajuan->jadwal_pendaftaran_tutup,
                     'jadwal_main' => $pengajuan->jadwal_main,
                     'deskripsi_turnamen' => $pengajuan->deskripsi_turnamen,
                     'deskripsi_lokasi' => $pengajuan->deskripsi_lokasi,
 
+                    'pendaftaran_terbuka' => $pengajuan->jadwal_pendaftaran_tutup
+                        ? now()->lt($pengajuan->jadwal_pendaftaran_tutup)
+                        : true,
+
                     'game' => $pengajuan->game
                         ? [
                             'id_game' => $pengajuan->game->id_game,
                             'nama_game' => $pengajuan->game->nama_game,
+                            'kategoris' => $pengajuan->game->kategoris->map(fn ($k) => [
+                                'id_kategori' => $k->id_kategori,
+                                'nama_kategori' => $k->nama_kategori,
+                            ])->values(),
                         ]
                         : null,
 
                     'kota' => $pengajuan->kota,
+
+                    'pendanaan' => $pengajuan->pendanaan
+                        ? [
+                            'jenis_biaya' => $pengajuan->pendanaan->jenis_biaya,
+                            'biaya_pendaftaran' => $pengajuan->pendanaan->biaya_pendaftaran,
+                        ]
+                        : null,
+
+                    // Hanya nama sponsor, kontak sponsor tidak dikirim.
+                    'sponsor' => Collection::wrap($pengajuan->sponsor)
+                        ->pluck('nama_sponsor')
+                        ->filter()
+                        ->values(),
+
+                    'pembayaran' => $pengajuan->pembayaran
+                        ? [
+                            'metode_pembayaran' => $pengajuan->pembayaran->metode_pembayaran,
+                            'qris' => $pengajuan->pembayaran->qris,
+                            'no_rekening' => $pengajuan->pembayaran->no_rekening,
+                        ]
+                        : null,
                 ],
             ],
         ]);
     }
 }
-?>

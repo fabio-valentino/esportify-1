@@ -8,6 +8,7 @@ import {
   approveSubmission,
   rejectSubmission,
   requestRevision,
+  releaseSubmission,
 } from "../../services/adminApi";
 import "../../styles/user.css";
 
@@ -23,19 +24,43 @@ const REJECT_OPTIONS = [
   "Pengajuan melanggar ketentuan platform",
   "Lainnya",
 ];
-const STATUS_LABEL = { revisi: "Perlu Revisi", "sedang diedit": "Sedang Diedit", "sedang ditinjau": "Sedang Ditinjau" };
-const METHOD_LABEL = { qris: "QRIS", transfer: "Transfer Bank", qris_transfer: "QRIS dan Transfer Bank" };
+const STATUS_LABEL = {
+  revisi: "Perlu Revisi",
+  "sedang diedit": "Sedang Diedit",
+  "sedang ditinjau": "Sedang Ditinjau",
+};
+const METHOD_LABEL = {
+  qris: "QRIS",
+  transfer: "Transfer Bank",
+  qris_transfer: "QRIS dan Transfer Bank",
+};
 
-const MONTHS = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+const MONTHS = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
 const longDate = (v) => {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v ?? ""));
   return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : v || "-";
 };
 const rupiah = (v) =>
-  v === null || v === undefined || v === "" ? "-" : `Rp. ${Number(v).toLocaleString("id-ID")}`;
+  v === null || v === undefined || v === ""
+    ? "-"
+    : `Rp. ${Number(v).toLocaleString("id-ID")}`;
 
 const errorText = (err) => {
-  if (err.status === 403) return err.message || "Kamu tidak punya izin untuk pengajuan ini.";
+  if (err.status === 403)
+    return err.message || "Kamu tidak punya izin untuk pengajuan ini.";
   return err.message;
 };
 
@@ -52,15 +77,21 @@ function Field({ label, children }) {
 function FileRow({ name, url, note }) {
   return (
     <div className="t-file-row">
-      <span className="t-file-icon"><Icon name="file-image" size={26} /></span>
-      <span className="t-file-name" title={name}>{name || "-"}</span>
+      <span className="t-file-icon">
+        <Icon name="file-image" size={26} />
+      </span>
+      <span className="t-file-name" title={name}>
+        {name || "-"}
+      </span>
       <div className="t-file-actions">
         <button
           type="button"
           className="t-pill"
           disabled={!url}
           title={url ? "Buka di tab baru" : note}
-          onClick={() => url && window.open(url, "_blank", "noopener,noreferrer")}
+          onClick={() =>
+            url && window.open(url, "_blank", "noopener,noreferrer")
+          }
         >
           Lihat
         </button>
@@ -79,6 +110,7 @@ function AdminSubmissionDetail() {
   const [approving, setApproving] = useState(false);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
+  const [leaving, setLeaving] = useState(false);
 
   // Membuka halaman ini memanggil endpoint yang mengubah status menjadi "Sedang ditinjau"
   useEffect(() => {
@@ -88,8 +120,29 @@ function AdminSubmissionDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Dipakai setelah keputusan (setujui/tolak/revisi): TIDAK memanggil release
   const back = () => navigate("/admin/pengajuan");
-  const reviewing = String(data?.status ?? "").toLowerCase() === "sedang ditinjau";
+
+  // Dipakai tombol Kembali: lepaskan pengajuan kalau masih "Sedang ditinjau"
+  const handleBack = async () => {
+    if (leaving) return;
+    if (!reviewing) {
+      back();
+      return;
+    }
+    setLeaving(true);
+    setMessage("");
+    try {
+      await releaseSubmission(id);
+      back();
+    } catch (err) {
+      setMessage(errorText(err) || "Gagal mengembalikan status pengajuan.");
+      setLeaving(false);
+    }
+  };
+
+  const reviewing =
+    String(data?.status ?? "").toLowerCase() === "sedang ditinjau";
 
   const handleApprove = async () => {
     setWorking(true);
@@ -107,9 +160,15 @@ function AdminSubmissionDetail() {
   const statusKey = String(data?.status ?? "").toLowerCase();
 
   return (
-    <>
-      <button type="button" className="d-back" onClick={back}>
-        <Icon name="chevron-left" size={26} /> Kembali
+    <div className="d-page">
+      <button
+        type="button"
+        className="d-back"
+        onClick={handleBack}
+        disabled={leaving}
+      >
+        <Icon name="chevron-left" size={26} />{" "}
+        {leaving ? "Mengembalikan..." : "Kembali"}
       </button>
       <h1 className="admin-title">Detail Pengajuan Turnamen</h1>
 
@@ -120,7 +179,9 @@ function AdminSubmissionDetail() {
         <div className="d-wrap">
           <section className="d-card">
             <p className="d-label">Status Pengajuan saat ini</p>
-            <div className="d-box">{STATUS_LABEL[statusKey] ?? data.status}</div>
+            <div className="d-box">
+              {STATUS_LABEL[statusKey] ?? data.status}
+            </div>
             <p className="d-label">Tanggal Diajukan</p>
             <div className="d-box">{longDate(data.createdAt)}</div>
           </section>
@@ -128,7 +189,11 @@ function AdminSubmissionDetail() {
           <section className="d-card d-center">
             <p className="d-label">Poster Turnamen</p>
             {data.posterUrl ? (
-              <img className="d-poster" src={data.posterUrl} alt={`Poster ${data.name}`} />
+              <img
+                className="d-poster"
+                src={data.posterUrl}
+                alt={`Poster ${data.name}`}
+              />
             ) : (
               <p className="admin-message">Poster tidak tersedia.</p>
             )}
@@ -137,13 +202,19 @@ function AdminSubmissionDetail() {
           <Field label="Nama Turnamen">{data.name}</Field>
           <Field label="Nama Lengkap">{data.organizer}</Field>
           <Field label="Game">{data.game}</Field>
-          <Field label="Tipe">{data.type === "offline" ? "Offline" : "Online"}</Field>
+          <Field label="Tipe">
+            {data.type === "offline" ? "Offline" : "Online"}
+          </Field>
 
           {data.type === "offline" && (
             <section className="d-card">
               <p className="d-label">Lokasi</p>
-              <p className="d-row"><span>Provinsi</span> <b>{data.province || "-"}</b></p>
-              <p className="d-row"><span>Kota</span> <b>{data.city || "-"}</b></p>
+              <p className="d-row">
+                <span>Provinsi</span> <b>{data.province || "-"}</b>
+              </p>
+              <p className="d-row">
+                <span>Kota</span> <b>{data.city || "-"}</b>
+              </p>
               <div className="d-value">{data.address || "-"}</div>
             </section>
           )}
@@ -162,7 +233,9 @@ function AdminSubmissionDetail() {
 
           <section className="d-card">
             <p className="d-label">Sumber Pendanaan</p>
-            <div className="d-value">{data.funding.length ? data.funding.join(", ") : "-"}</div>
+            <div className="d-value">
+              {data.funding.length ? data.funding.join(", ") : "-"}
+            </div>
             {data.sponsors.map((s, i) => (
               <div key={i}>
                 <p className="d-label">Nama Sponsor</p>
@@ -177,17 +250,27 @@ function AdminSubmissionDetail() {
 
           <section className="d-card">
             <p className="d-label">Biaya Pendaftaran</p>
-            <div className="d-value">{data.feeType === "berbayar" ? "Berbayar" : "Gratis"}</div>
+            <div className="d-value">
+              {data.feeType === "berbayar" ? "Berbayar" : "Gratis"}
+            </div>
 
             {data.feeType === "berbayar" && (
               <>
                 <p className="d-label">Nominal Pendaftaran</p>
                 <div className="d-value">{rupiah(data.fee)}</div>
                 <p className="d-label">Metode Pembayaran</p>
-                <div className="d-value">{METHOD_LABEL[data.paymentMethod] ?? data.paymentMethod ?? "-"}</div>
+                <div className="d-value">
+                  {METHOD_LABEL[data.paymentMethod] ??
+                    data.paymentMethod ??
+                    "-"}
+                </div>
 
                 {["qris", "qris_transfer"].includes(data.paymentMethod) && (
-                  <FileRow name={data.qrisName} url={data.qrisUrl} note="File QRIS tidak tersedia" />
+                  <FileRow
+                    name={data.qrisName}
+                    url={data.qrisUrl}
+                    note="File QRIS tidak tersedia"
+                  />
                 )}
                 {["transfer", "qris_transfer"].includes(data.paymentMethod) && (
                   <>
@@ -202,24 +285,42 @@ function AdminSubmissionDetail() {
           <section className="d-card">
             <p className="d-label">KTP</p>
             {/* KTP privat: belum ada endpoint untuk melihatnya, jadi Lihat dinonaktifkan */}
-            <FileRow name={data.ktpName} url={data.ktpUrl} note="File KTP tidak tersedia" />
+            <FileRow
+              name={data.ktpName}
+              url={data.ktpUrl}
+              note="File KTP tidak tersedia"
+            />
           </section>
 
           {message && <p className="admin-message error">{message}</p>}
 
           <div className="d-actions">
-            <button className="d-btn reject" disabled={!reviewing} onClick={() => setModal("reject")}>
+            <button
+              className="d-btn reject"
+              disabled={!reviewing}
+              onClick={() => setModal("reject")}
+            >
               Tolak Pengajuan
             </button>
-            <button className="d-btn revision" disabled={!reviewing} onClick={() => setModal("revision")}>
+            <button
+              className="d-btn revision"
+              disabled={!reviewing}
+              onClick={() => setModal("revision")}
+            >
               Revisi Pengajuan
             </button>
-            <button className="d-btn approve" disabled={!reviewing} onClick={() => setApproving(true)}>
+            <button
+              className="d-btn approve"
+              disabled={!reviewing}
+              onClick={() => setApproving(true)}
+            >
               Setujui Pengajuan
             </button>
           </div>
           {!reviewing && (
-            <p className="admin-message">Keputusan hanya bisa diberikan saat status "Sedang Ditinjau".</p>
+            <p className="admin-message">
+              Keputusan hanya bisa diberikan saat status "Sedang Ditinjau".
+            </p>
           )}
         </div>
       )}
@@ -254,8 +355,8 @@ function AdminSubmissionDetail() {
 
       {approving && (
         <ConfirmDialog
-          tone="warning"
-          icon="alert"
+          tone="success"
+          icon="check-circle"
           title="Setujui Pengajuan?"
           confirmLabel="Setujui"
           loading={working}
@@ -265,7 +366,7 @@ function AdminSubmissionDetail() {
           <p>Turnamen akan dibuat dari pengajuan ini.</p>
         </ConfirmDialog>
       )}
-    </>
+    </div>
   );
 }
 

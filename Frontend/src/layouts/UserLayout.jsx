@@ -15,9 +15,24 @@ function UserLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const closeSidebar = () => setSidebarOpen(false);
 
+  // const handleLogout = async () => {
+  //   try {
+  //     await signOut();
+  //   } catch (err) {
+  //     console.error("Logout backend gagal:", err);
+  //   } finally {
+  //     window.location.replace("/");
+  //   }
+  // };
+
   const handleLogout = async () => {
-    await signOut();
-    navigate("/login", { replace: true });
+    // Pindah dulu ke landing supaya ProtectedRoute tidak sempat melempar ke /login
+    navigate("/", { replace: true });
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Logout backend gagal:", err);
+    }
   };
 
   const [profile, setProfile] = useState(null);

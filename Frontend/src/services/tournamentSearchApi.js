@@ -1,11 +1,14 @@
-import { API_BASE_URL, USE_TOURNAMENT_MOCK } from "../config/env";
-import { ApiError, apiRequest } from "./httpClient";
+import { API_BASE_URL } from "../config/env";
+import { apiRequest } from "./httpClient";
+// CHANGED: filter jadwal dipindah ke utils
+import { matchesSchedule } from "../utils/searchSchedule";
 
-// Service khusus halaman Cari Turnamen. Sengaja terpisah dari tournamentApi.js.
-
-const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
+// Service halaman Cari Turnamen.
+// Data sumber: GET /turnamen.
+// Search, filter, dan pagination dilakukan di frontend.
 
 let API_ORIGIN = "";
+
 try {
   API_ORIGIN = API_BASE_URL ? new URL(API_BASE_URL).origin : "";
 } catch {
@@ -14,11 +17,16 @@ try {
 
 export const PER_PAGE = 6;
 
-// DATA CONTOH: false = daftar kosong (yang tampil state "tidak ditemukan").
-// Ubah ke true untuk melihat kartu, filter, dan paginasi bekerja.
-const SHOW_SAMPLE_DATA = false;
+const TZ = "Asia/Jakarta";
+const CACHE_MS = 60_000;
 
-/* ---------------- Opsi filter (nilai yang dikirim ke URL/API) ---------------- */
+export const SUPPORTED_FILTERS = {
+  kategori: true,
+  biaya: true,
+  lokasi: true,
+};
+
+/* ---------------- Opsi filter ---------------- */
 
 export const TYPE_OPTIONS = [
   { value: "", label: "Semua" },
@@ -32,324 +40,409 @@ export const FEE_OPTIONS = [
   { value: "berbayar", label: "Berbayar" },
 ];
 
-// ASSUMPTION: pilihan jadwal belum ada di desain selain "Semua waktu". Nilai = jumlah hari ke depan.
-export const SCHEDULE_OPTIONS = [
-  { value: "", label: "Semua waktu" },
-  { value: "7", label: "7 hari ke depan" },
-  { value: "30", label: "30 hari ke depan" },
-  { value: "90", label: "3 bulan ke depan" },
-];
+// CHANGED: opsi jadwal sekarang dari utils (Hari ini, 7 hari, Pilih tanggal)
+export { SCHEDULE_OPTIONS } from "../utils/searchSchedule";
 
-/* ---------------- Formatter tampilan ---------------- */
+/* ---------------- Tanggal & formatter ---------------- */
 
-export const formatRupiah = (n) =>
-  Number(n) > 0 ? `Rp${Number(n).toLocaleString("id-ID")}` : "Rp0";
+const parseDate = (value) => {
+  if (!value) return null;
 
-export const formatFee = (n) => (Number(n) > 0 ? formatRupiah(n) : "Gratis");
+  let text = String(value)
+    .trim()
+    .replace(/(\.\d{3})\d+/, "$1");
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+    text += "T00:00:00+07:00";
+  } else if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$/.test(text)) {
+    text = `${text.replace(" ", "T")}+07:00`;
+  }
+
+  const date = new Date(text);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
 
 export const formatDate = (value) => {
-  const text = String(value ?? "");
-  const d = /^\d{4}-\d{2}-\d{2}$/.test(text)
-    ? new Date(`${text}T00:00:00`)
-    : value
-      ? new Date(value)
-      : null;
-  if (!d || Number.isNaN(d.getTime())) return "Jadwal menyusul";
+  const date = parseDate(value);
+
+  if (!date) return "Jadwal menyusul";
+
   return new Intl.DateTimeFormat("id-ID", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(d);
+    timeZone: TZ,
+  }).format(date);
 };
 
-/* ---------------- Helper & mapper ---------------- */
+export const formatRupiah = (value) =>
+  Number(value) > 0 ? `Rp${Number(value).toLocaleString("id-ID")}` : "Rp0";
 
-const notReady = (name) =>
-  new ApiError(`Endpoint belum disepakati dengan backend (${name}).`);
+export const formatFee = (value) =>
+  Number(value) > 0 ? formatRupiah(value) : "Gratis";
 
-const toList = (res) => {
-  if (Array.isArray(res)) return res;
-  if (Array.isArray(res?.data)) return res.data;
-  if (Array.isArray(res?.data?.data)) return res.data.data;
-  return [];
-};
+/* ---------------- Helper data ---------------- */
 
 const toMediaUrl = (value) => {
   if (!value) return null;
-  if (/^(https?:|data:|blob:)/.test(value)) return value;
-  return `${API_ORIGIN}/storage/${String(value).replace(/^\/?(storage\/)?/, "")}`;
+
+  if (/^(https?:|data:|blob:)/i.test(value)) {
+    return value;
+  }
+
+  return `${API_ORIGIN}/storage/${String(value).replace(
+    /^\/?(storage\/)?/,
+    "",
+  )}`;
 };
 
-const normalizeType = (v) => {
-  const s = String(v ?? "").toLowerCase();
-  if (s.includes("offline")) return "Offline";
-  if (s.includes("online")) return "Online";
+const normalizeType = (value) => {
+  const type = String(value ?? "").toLowerCase();
+
+  if (type.includes("offline")) return "Offline";
+  if (type.includes("online")) return "Online";
+
   return "";
 };
 
-// ASSUMPTION: nama field belum dikonfirmasi backend (mengikuti tebakan di landingApi.js)
-const mapTournament = (d) => ({
-  id: d.id_turnamen ?? d.id,
-  name: d.nama_turnamen ?? d.nama ?? d.name ?? "",
-  poster: toMediaUrl(d.poster),
-  game: d.game?.nama_game ?? d.game?.nama ?? d.nama_game ?? d.game_name ?? "",
-  type: normalizeType(d.tipe ?? d.type),
-  date:
-    d.hari_pertandingan ?? d.tanggal_pertandingan ?? d.tanggal_mulai ?? null,
-  prize: Number(d.total_hadiah ?? 0),
-  fee: Number(d.nominal_pendaftaran ?? d.biaya_pendaftaran ?? 0),
-  slotFilled: Number(d.peserta_terdaftar ?? d.slot_terisi ?? 0),
-  slotTotal: Number(d.slot ?? d.total_slot ?? 0),
-});
+// Mendukung response berbentuk array langsung atau { data: [...] }.
+const toList = (response) => {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
 
-/* ---------------- DATA CONTOH (hanya saat USE_TOURNAMENT_MOCK) ---------------- */
-
-const mockCategories = [
-  { id: "1", name: "MOBA" },
-  { id: "2", name: "Battle Royale" },
-  { id: "3", name: "FPS" },
-];
-
-const mockGames = [
-  { id: "1", name: "Mobile Legends", categoryIds: ["1"] },
-  { id: "2", name: "PUBG Mobile", categoryIds: ["2"] },
-  { id: "3", name: "Valorant", categoryIds: ["3"] },
-  { id: "4", name: "Free Fire", categoryIds: ["2"] },
-  { id: "5", name: "Honor of Kings", categoryIds: ["1"] },
-];
-
-const mockLocations = {
-  "Jawa Timur": ["Surabaya", "Gresik", "Malang"],
-  "Jawa Barat": ["Bandung", "Bekasi", "Bogor"],
-  "DKI Jakarta": ["Jakarta Pusat", "Jakarta Selatan"],
+  return [];
 };
 
-const mockTournaments = [
-  {
-    id: 1,
-    name: "Gresik Youth MLBB Cup 2026",
-    gameId: "1",
-    type: "Offline",
-    province: "Jawa Timur",
-    city: "Gresik",
-    date: "2026-11-18",
-    prize: 5000000,
-    fee: 0,
-    slotFilled: 28,
-    slotTotal: 32,
-  },
-  {
-    id: 2,
-    name: "Piala Pelajar Gresik S4",
-    gameId: "1",
-    type: "Offline",
-    province: "Jawa Timur",
-    city: "Gresik",
-    date: "2026-11-22",
-    prize: 3500000,
-    fee: 0,
-    slotFilled: 16,
-    slotTotal: 16,
-  },
-  {
-    id: 3,
-    name: "FREEFIRE TURNAMEN Oneday Cup",
-    gameId: "4",
-    type: "Online",
-    province: "",
-    city: "",
-    date: "2026-11-14",
-    prize: 200000,
-    fee: 10000,
-    slotFilled: 10,
-    slotTotal: 12,
-  },
-  {
-    id: 4,
-    name: "HOK TURNAMEN Bekasi Series",
-    gameId: "5",
-    type: "Offline",
-    province: "Jawa Barat",
-    city: "Bekasi",
-    date: "2026-11-15",
-    prize: 10000000,
-    fee: 0,
-    slotFilled: 24,
-    slotTotal: 64,
-  },
-  {
-    id: 5,
-    name: "PUBGM East Java Battleground",
-    gameId: "2",
-    type: "Offline",
-    province: "Jawa Timur",
-    city: "Surabaya",
-    date: "2026-11-25",
-    prize: 8000000,
-    fee: 25000,
-    slotFilled: 14,
-    slotTotal: 20,
-  },
-  {
-    id: 6,
-    name: "MLBB Surabaya Championship",
-    gameId: "1",
-    type: "Offline",
-    province: "Jawa Timur",
-    city: "Surabaya",
-    date: "2026-12-03",
-    prize: 15000000,
-    fee: 35000,
-    slotFilled: 28,
-    slotTotal: 32,
-  },
-  {
-    id: 7,
-    name: "Valorant Jakarta Open",
-    gameId: "3",
-    type: "Online",
-    province: "",
-    city: "",
-    date: "2026-12-10",
-    prize: 20000000,
-    fee: 50000,
-    slotFilled: 40,
-    slotTotal: 64,
-  },
-  {
-    id: 8,
-    name: "Bupati Cup Gresik 2026",
-    gameId: "1",
-    type: "Offline",
-    province: "Jawa Timur",
-    city: "Gresik",
-    date: "2026-11-29",
-    prize: 10000000,
-    fee: 0,
-    slotFilled: 45,
-    slotTotal: 64,
-  },
-];
+/* ---------------- Mapper kategori ---------------- */
 
-const matchesMock = (t, c) => {
-  const game = mockGames.find((g) => g.id === t.gameId);
-  // Kata kunci mencocokkan nama turnamen ATAU nama game
-  if (c.q) {
-    const q = c.q.toLowerCase();
-    const inName = t.name.toLowerCase().includes(q);
-    const inGame = (game?.name ?? "").toLowerCase().includes(q);
-    if (!inName && !inGame) return false;
+// Menyamakan format kategori dari Laravel dengan format frontend.
+const mapCategory = (category) => ({
+  id: String(category?.id_kategori ?? category?.id ?? ""),
+  name: String(category?.nama_kategori ?? category?.name ?? ""),
+});
+
+// Mengambil kategori dari relasi game.
+// Mendukung key "kategoris", "kategori", atau "categories".
+const getGameCategories = (game) => {
+  if (!game) return [];
+
+  const categories = game.kategoris ?? game.kategori ?? game.categories ?? [];
+
+  if (!Array.isArray(categories)) return [];
+
+  return categories
+    .map(mapCategory)
+    .filter((category) => category.id && category.name);
+};
+
+/* ---------------- Mapper turnamen ---------------- */
+
+const feeOf = (funding) => {
+  if (!funding) return null;
+
+  if (String(funding.jenis_biaya ?? "").toLowerCase() === "gratis") {
+    return 0;
   }
-  if (c.kategori && !game?.categoryIds.includes(c.kategori)) return false;
-  if (c.tipe && t.type.toLowerCase() !== c.tipe) return false;
-  if (c.biaya === "gratis" && t.fee > 0) return false;
-  if (c.biaya === "berbayar" && !(t.fee > 0)) return false;
-  if (c.provinsi && t.province !== c.provinsi) return false;
-  if (c.kota && t.city !== c.kota) return false;
-  if (c.jadwal) {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + Number(c.jadwal));
-    const when = new Date(`${t.date}T00:00:00`);
-    if (when < start || when > end) return false;
+
+  const amount = Number(funding.biaya_pendaftaran);
+
+  return Number.isFinite(amount) && amount > 0 ? amount : null;
+};
+
+const mapTournament = (data) => {
+  const submission = data.pengajuan ?? {};
+
+  const city = submission.kota ?? null;
+  const province = city?.provinsi ?? null;
+
+  const cityName = city?.nama_kota ?? "";
+  const provinceName = province?.nama_provinsi ?? "";
+
+  const prize =
+    submission.total_hadiah != null ? Number(submission.total_hadiah) : null;
+
+  const game = submission.game ?? {};
+
+  return {
+    id: data.id_turnamen ?? data.id ?? null,
+    status: String(data.status ?? "").toLowerCase(),
+
+    registrationOpen:
+      data.pendaftaran_terbuka ?? submission.pendaftaran_terbuka ?? null,
+
+    name: submission.nama_turnamen ?? "",
+    organizer: submission.nama_penyelenggara ?? "",
+    poster: toMediaUrl(submission.poster),
+
+    game: game.nama_game ?? "",
+    gameId: String(game.id_game ?? ""),
+
+    // Data kategori berasal dari relasi games -> kategori_game -> kategori.
+    categories: getGameCategories(game),
+
+    type: normalizeType(submission.tipe_turnamen),
+
+    date: submission.jadwal_main ?? null,
+    registrationClose: submission.jadwal_pendaftaran_tutup ?? null,
+
+    cityId: city ? String(city.id_kota ?? "") : "",
+
+    cityName,
+
+    provinceId: String(city?.id_provinsi ?? province?.id_provinsi ?? ""),
+
+    provinceName,
+
+    location: [cityName, provinceName].filter(Boolean).join(", "),
+
+    slotTotal: Number(submission.slot ?? 0),
+    slotFilled: null,
+
+    prize: Number.isFinite(prize) ? prize : null,
+    fee: feeOf(submission.pendanaan),
+  };
+};
+
+/* ---------------- Ambil data + cache ---------------- */
+
+let cache = null;
+
+function loadAll() {
+  if (cache && Date.now() - cache.at < CACHE_MS) {
+    return cache.promise;
   }
+
+  const promise = apiRequest("/turnamen").then((response) =>
+    toList(response)
+      .map(mapTournament)
+      .filter(
+        (tournament) =>
+          tournament.status !== "selesai" && tournament.id != null,
+      ),
+  );
+
+  cache = {
+    at: Date.now(),
+    promise,
+  };
+
+  // Jika request gagal, izinkan pemanggilan ulang.
+  promise.catch(() => {
+    if (cache?.promise === promise) {
+      cache = null;
+    }
+  });
+
+  return promise;
+}
+
+// Opsional: panggil setelah data turnamen berubah agar cache diperbarui.
+export function clearTournamentCache() {
+  cache = null;
+}
+
+/* ---------------- Filter frontend ---------------- */
+
+const matches = (tournament, criteria = {}) => {
+  const query = String(criteria.q ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (query) {
+    const matchesName = tournament.name.toLowerCase().includes(query);
+
+    const matchesGame = tournament.game.toLowerCase().includes(query);
+
+    if (!matchesName && !matchesGame) {
+      return false;
+    }
+  }
+
+  // Filter berdasarkan ID kategori yang terhubung ke game.
+  if (criteria.kategori) {
+    const categoryExists = tournament.categories.some(
+      (category) => category.id === String(criteria.kategori),
+    );
+
+    if (!categoryExists) return false;
+  }
+
+  if (
+    criteria.tipe &&
+    tournament.type.toLowerCase() !== String(criteria.tipe).toLowerCase()
+  ) {
+    return false;
+  }
+
+  if (criteria.biaya === "gratis" && tournament.fee !== 0) {
+    return false;
+  }
+
+  if (criteria.biaya === "berbayar" && !(tournament.fee > 0)) {
+    return false;
+  }
+
+  // CHANGED: provinsi dan kota hanya berlaku untuk tipe Offline
+  if (String(criteria.tipe ?? "").toLowerCase() === "offline") {
+    if (
+      criteria.provinsi &&
+      tournament.provinceId !== String(criteria.provinsi)
+    ) {
+      return false;
+    }
+
+    if (criteria.kota && tournament.cityId !== String(criteria.kota)) {
+      return false;
+    }
+  }
+
+  // CHANGED: jadwal (hari ini / 7 hari / rentang tanggal) di zona WIB
+  if (!matchesSchedule(tournament.date, criteria)) {
+    return false;
+  }
+
   return true;
 };
 
-const mockToItem = (t) => ({
-  id: t.id,
-  name: t.name,
-  poster: null,
-  game: mockGames.find((g) => g.id === t.gameId)?.name ?? "",
-  type: t.type,
-  date: t.date,
-  prize: t.prize,
-  fee: t.fee,
-  slotFilled: t.slotFilled,
-  slotTotal: t.slotTotal,
-});
+// criteria: { q, kategori, tipe, biaya, jadwal, dari, sampai, provinsi, kota, page }
+export async function searchTournaments(criteria = {}) {
+  const all = (await loadAll()).filter((tournament) =>
+    matches(tournament, criteria),
+  );
 
-/* ---------------- API ---------------- */
+  const requestedPage = Math.max(1, Number(criteria.page) || 1);
 
-// criteria: { q, kategori, tipe, biaya, jadwal, provinsi, kota, page }
-// return: { items, total, page, perPage, totalPages }
-export async function searchTournaments(criteria) {
-  if (USE_TOURNAMENT_MOCK) {
-    await wait(350);
-    const source = SHOW_SAMPLE_DATA ? mockTournaments : [];
-    const all = source.filter((t) => matchesMock(t, criteria));
-    const start = (criteria.page - 1) * PER_PAGE;
-    return {
-      items: all.slice(start, start + PER_PAGE).map(mockToItem),
-      total: all.length,
-      page: criteria.page,
-      perPage: PER_PAGE,
-      totalPages: Math.max(1, Math.ceil(all.length / PER_PAGE)),
-    };
-  }
+  const totalPages = Math.max(1, Math.ceil(all.length / PER_PAGE));
 
-  // ASSUMPTION: endpoint dan nama parameter BELUM ada di kontrak backend (api.php belum punya route turnamen).
-  // Jangan dipakai sebelum disepakati:
-  // GET /tournaments?q=&category_id=&type=&fee=&within_days=&province=&city=&page=&per_page=
-  // "q" diharapkan mencocokkan nama turnamen DAN nama game.
-  const query = new URLSearchParams();
-  if (criteria.q) query.set("q", criteria.q);
-  if (criteria.kategori) query.set("category_id", criteria.kategori);
-  if (criteria.tipe) query.set("type", criteria.tipe);
-  if (criteria.biaya) query.set("fee", criteria.biaya);
-  if (criteria.jadwal) query.set("within_days", criteria.jadwal);
-  if (criteria.provinsi) query.set("province", criteria.provinsi);
-  if (criteria.kota) query.set("city", criteria.kota);
-  query.set("page", String(criteria.page));
-  query.set("per_page", String(PER_PAGE));
-
-  const res = await apiRequest(`/tournaments?${query.toString()}`);
-
-  // ASSUMPTION: format paginasi Laravel, baik { data, meta } maupun { data: { data, total, ... } }
-  const box = Array.isArray(res?.data) || !res?.data ? res : res.data;
-  const list = Array.isArray(res)
-    ? res
-    : Array.isArray(box?.data)
-      ? box.data
-      : [];
-  const meta = box?.meta ?? box ?? {};
-  const total = Number(meta.total ?? list.length);
-  const perPage = Number(meta.per_page ?? PER_PAGE);
+  const page = Math.min(requestedPage, totalPages);
+  const start = (page - 1) * PER_PAGE;
 
   return {
-    items: list.map(mapTournament),
-    total,
-    page: Number(meta.current_page ?? criteria.page),
-    perPage,
-    totalPages: Number(
-      meta.last_page ?? Math.max(1, Math.ceil(total / perPage)),
-    ),
+    items: all.slice(start, start + PER_PAGE),
+    total: all.length,
+    page,
+    perPage: PER_PAGE,
+    totalPages,
   };
 }
 
-// Pilihan filter Kategori Game. Id selalu string supaya cocok dengan nilai di URL.
+/* ---------------- Opsi kategori game ---------------- */
+
+// Prioritas:
+// 1. Ambil semua kategori dari GET /kategori.
+// 2. Jika gagal/kosong, gunakan kategori dari game pada GET /turnamen.
 export async function getSearchCategories() {
-  if (USE_TOURNAMENT_MOCK) {
-    await wait(150);
-    return mockCategories.map((c) => ({ ...c }));
+  try {
+    const response = await apiRequest("/kategori");
+
+    const categories = toList(response)
+      .map(mapCategory)
+      .filter((category) => category.id && category.name);
+
+    if (categories.length > 0) {
+      return [
+        ...new Map(
+          categories.map((category) => [category.id, category]),
+        ).values(),
+      ].sort((a, b) => a.name.localeCompare(b.name, "id"));
+    }
+  } catch (error) {
+    // CHANGED: teks warning disesuaikan dengan endpoint yang dipanggil
+    console.warn(
+      "Gagal mengambil /kategori; memakai kategori dari turnamen.",
+      error,
+    );
   }
-  // ASSUMPTION: GET /categories yang bisa diakses user biasa. Belum ada di api.php;
-  // yang ada baru /admin/categories (butuh role admin + permission lihat_data_kategori).
-  const res = await apiRequest("/categories");
-  return toList(res).map((c) => ({
-    id: String(c.id_kategori ?? c.id),
-    name: c.nama_kategori ?? c.nama ?? c.name ?? "",
-  }));
+
+  const unique = new Map();
+
+  (await loadAll()).forEach((tournament) => {
+    tournament.categories.forEach((category) => {
+      unique.set(category.id, category);
+    });
+  });
+
+  return [...unique.values()].sort((a, b) =>
+    a.name.localeCompare(b.name, "id"),
+  );
 }
+/* ---------------- Untuk landing page ---------------- */
+
+// Turnamen yang pendaftarannya sedang dibuka, hadiah terbesar di atas.
+// Sort stabil: hadiah sama -> urutan dari backend tetap.
+export async function getFeaturedTournaments(limit = 3) {
+  const open = (await loadAll()).filter(
+    (tournament) =>
+      tournament.status === "pendaftaran" &&
+      tournament.registrationOpen !== false,
+  );
+
+  return [...open]
+    .sort((a, b) => (b.prize ?? -1) - (a.prize ?? -1))
+    .slice(0, limit);
+}
+
+/* ---------------- Opsi lokasi ---------------- */
 
 export async function getSearchProvinces() {
-  if (USE_TOURNAMENT_MOCK) return Object.keys(mockLocations);
-  throw notReady("daftar provinsi");
+  const response = await apiRequest("/provinsi");
+
+  return toList(response)
+    .map((province) => ({
+      id: String(province.id_provinsi ?? ""),
+      name: province.nama_provinsi ?? "",
+    }))
+    .filter((province) => province.id && province.name);
 }
 
-export async function getSearchCities(province) {
-  if (USE_TOURNAMENT_MOCK) return [...(mockLocations[province] ?? [])];
-  throw notReady("daftar kota");
+export async function getSearchCities(provinceId) {
+  if (!provinceId) return [];
+
+  const response = await apiRequest(
+    `/provinsi/${encodeURIComponent(provinceId)}/kota`,
+  );
+
+  return toList(response)
+    .map((city) => ({
+      id: String(city.id_kota ?? ""),
+      name: city.nama_kota ?? "",
+    }))
+    .filter((city) => city.id && city.name);
+}
+
+/* ---------------- NEW: detail turnamen (wajib login) ---------------- */
+
+// Belum dipakai halaman mana pun (menunggu desain Detail Turnamen).
+// Bentuk response mengikuti kontrak: GET /turnamen/{id} -> data (objek).
+// Melempar ApiError; status 401 harus ditangani pemanggil (hapus token, ke /login).
+export async function getTournamentDetail(id) {
+  const response = await apiRequest(`/turnamen/${encodeURIComponent(id)}`);
+  const data = response?.data ?? response;
+
+  const submission = data?.pengajuan ?? {};
+  const payment = submission.pembayaran ?? null;
+  const method = String(payment?.metode_pembayaran ?? "").toLowerCase();
+
+  return {
+    ...mapTournament(data),
+    description: submission.deskripsi_turnamen ?? "",
+    locationDetail: submission.deskripsi_lokasi ?? "",
+    // Array nama sponsor, bisa kosong. Kontak sponsor tidak dikirim backend.
+    sponsors: Array.isArray(submission.sponsor)
+      ? submission.sponsor.filter(Boolean)
+      : [],
+    // null untuk turnamen gratis. qris / qris_transfer -> QRIS,
+    // transfer / qris_transfer -> Transfer Bank (no_rekening).
+    payment: payment
+      ? {
+          method,
+          showQris: method.includes("qris"),
+          showTransfer: method.includes("transfer"),
+          qris: toMediaUrl(payment.qris),
+          accountNumber: payment.no_rekening ?? "",
+        }
+      : null,
+  };
 }
