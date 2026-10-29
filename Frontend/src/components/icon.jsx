@@ -49,6 +49,7 @@ import {
   Monitor,
   Zap,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -106,6 +107,7 @@ const icons = {
   monitor: Monitor,
   zap: Zap,
   clock: Clock,
+  "arrow-left": ArrowLeft,
 };
 
 function Icon({ name, size = 16 }) {

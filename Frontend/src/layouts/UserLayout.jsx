@@ -57,9 +57,19 @@ function UserLayout() {
   if (loading) {
     return (
       <div className="admin">
-        <main className="admin-main">
-          <p className="admin-message">Memuat...</p>
-        </main>
+        <header className="admin-topbar">
+          <div className="admin-topbar-left">
+            <span className="logo">
+              <img src={logo} alt="ESPORTIFY" className="logo-img" />
+              ESPORTIFY
+            </span>
+          </div>
+        </header>
+        <div className="admin-body">
+          <main className="admin-main">
+            <p className="admin-message">Memuat...</p>
+          </main>
+        </div>
       </div>
     );
   }
