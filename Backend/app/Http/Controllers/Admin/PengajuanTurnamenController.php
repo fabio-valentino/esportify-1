@@ -34,9 +34,15 @@ class PengajuanTurnamenController extends Controller
             });
         }
 
-        $pengajuan = $query
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            $pengajuan = $query
+             ->orderByRaw("
+            CASE
+                WHEN status = 'Menunggu Verifikasi' THEN 1
+                ELSE 2
+            END ASC
+             ")
+                ->orderBy('created_at', 'desc')
+                ->paginate(15);
 
         return response()->json([
             'message' => 'Daftar pengajuan turnamen berhasil diambil.',
