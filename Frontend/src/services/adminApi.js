@@ -696,3 +696,8 @@ export const requestRevision = (id, alasan) =>
     method: "POST",
     body: { alasan_admin: alasan },
   });
+
+// POST /api/admin/pengajuan-turnamen/{id}/release (tanpa body)
+// Mengembalikan status "Sedang ditinjau" -> "Menunggu Verifikasi" saat admin keluar tanpa keputusan.
+export const releaseSubmission = (id) =>
+  apiRequest(`/admin/pengajuan-turnamen/${id}/release`, { method: "POST" });

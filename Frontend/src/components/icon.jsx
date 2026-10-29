@@ -40,6 +40,7 @@ import {
   Info,
   FileImage,
   Hourglass,
+  Undo2,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -88,6 +89,7 @@ const icons = {
   info: Info,
   "file-image": FileImage,
   hourglass: Hourglass,
+  undo: Undo2,
 };
 
 function Icon({ name, size = 16 }) {

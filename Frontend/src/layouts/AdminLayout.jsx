@@ -41,7 +41,19 @@ function AdminShell() {
 
   const locked = !loading && priority.length > 0;
 
+  // const handleLogout = async () => {
+  //   try {
+  //     await signOut();
+  //   } catch (err) {
+  //     console.error("Logout backend gagal:", err);
+  //   } finally {
+  //     window.location.replace("/");
+  //   }
+  // };
+
   const handleLogout = async () => {
+    // Popup prioritas harus muncul lagi di sesi login berikutnya
+    sessionStorage.removeItem(POPUP_KEY);
     try {
       await signOut();
     } catch (err) {

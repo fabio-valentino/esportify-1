@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "../icon";
 
-const extOf = (name = "") => (name.split(".").pop() || "").toUpperCase();
-
-// onChange(file | null). Validasi tipe dan ukuran dilakukan di sini.
-
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const extOf = (name = "") =>
+  (name.split(".").pop() || "").toUpperCase().slice(0, 4);
 
+// file = File baru. existing = { name, url } file lama dari backend (mode edit), url boleh null.
 function UploadButton({
   label = "Upload",
   hint,
@@ -14,25 +13,25 @@ function UploadButton({
   allowedTypes = IMAGE_TYPES,
   maxMB,
   file,
+  existing,
   onChange,
   onError,
 }) {
   const ref = useRef(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [blobUrl, setBlobUrl] = useState(null);
   const [open, setOpen] = useState(false);
 
-  // URL pratinjau hanya dibuat saat dibuka, dan selalu dilepas lagi
+  // URL pratinjau file baru hanya dibuat saat dibuka, dan selalu dilepas lagi
   useEffect(() => {
     if (!open || !file) return undefined;
     const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+    setBlobUrl(url);
     return () => {
       URL.revokeObjectURL(url);
-      setPreviewUrl(null);
+      setBlobUrl(null);
     };
   }, [open, file]);
 
-  // Tutup dengan Escape
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => e.key === "Escape" && setOpen(false);
@@ -43,15 +42,9 @@ function UploadButton({
   const handleFile = (e) => {
     const picked = e.target.files[0];
     e.target.value = "";
+    if (!picked) return;
     if (!allowedTypes.includes(picked.type)) {
       onError("Format file tidak didukung.");
-      return;
-    }
-
-    if (!picked) return;
-
-    if (!picked.type.startsWith("image/")) {
-      onError("File harus berupa gambar (JPG atau PNG).");
       return;
     }
     if (picked.size > maxMB * 1024 * 1024) {
@@ -62,28 +55,46 @@ function UploadButton({
     onChange(picked);
   };
 
+  const name = file ? file.name : existing?.name;
+  const hasFile = Boolean(file || existing);
+  const src = file ? blobUrl : existing?.url;
+  const canView = Boolean(file || existing?.url);
+  const isPdf = file?.type === "application/pdf";
+
   return (
     <div className="t-upload">
-      {file ? (
+      {hasFile ? (
         <div className="t-file-row">
           <span className="t-file-icon">
             <Icon name="file-image" size={26} />
-            <b>{extOf(file.name)}</b>
+            <b>{extOf(name)}</b>
           </span>
-          <span className="t-file-name" title={file.name}>
-            {file.name}
+          <span className="t-file-name" title={name}>
+            {name}
           </span>
           <div className="t-file-actions">
-            <button
-              type="button"
-              className="t-pill danger"
-              onClick={() => onChange(null)}
-            >
-              <Icon name="trash" size={14} /> Hapus
-            </button>
+            {existing ? (
+              <button
+                type="button"
+                className="t-pill"
+                onClick={() => ref.current.click()}
+              >
+                <Icon name="upload" size={14} /> Ganti
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="t-pill danger"
+                onClick={() => onChange(null)}
+              >
+                <Icon name="trash" size={14} /> Hapus
+              </button>
+            )}
             <button
               type="button"
               className="t-pill"
+              disabled={!canView}
+              title={canView ? "Lihat" : "File ini bersifat privat"}
               onClick={() => setOpen(true)}
             >
               Lihat
@@ -109,7 +120,7 @@ function UploadButton({
         onChange={handleFile}
       />
 
-      {open && (
+      {open && canView && (
         <div className="t-preview-backdrop" onMouseDown={() => setOpen(false)}>
           <div
             className="t-preview"
@@ -119,7 +130,7 @@ function UploadButton({
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="t-preview-head">
-              <span title={file?.name}>{file?.name}</span>
+              <span title={name}>{name}</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -128,17 +139,14 @@ function UploadButton({
                 <Icon name="x" size={20} />
               </button>
             </div>
-            {previewUrl && file?.type === "application/pdf" ? (
+            {src && isPdf && (
               <iframe
                 title="Pratinjau PDF"
-                src={previewUrl}
+                src={src}
                 className="t-preview-pdf"
               />
-            ) : (
-              previewUrl && (
-                <img src={previewUrl} alt={`Pratinjau ${file?.name}`} />
-              )
             )}
+            {src && !isPdf && <img src={src} alt={`Pratinjau ${name}`} />}
           </div>
         </div>
       )}

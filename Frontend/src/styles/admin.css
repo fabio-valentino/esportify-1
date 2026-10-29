@@ -1405,9 +1405,16 @@ p.admin-message {
   font-weight: 600;
   cursor: pointer;
 }
+
+.d-back:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .d-back:hover {
   color: #6aa3ff;
 }
+
 .d-wrap {
   display: flex;
   flex-direction: column;
