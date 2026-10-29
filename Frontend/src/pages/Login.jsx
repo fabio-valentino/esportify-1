@@ -91,7 +91,7 @@ function Login() {
           className="login-back"
           onClick={() => navigate("/")}
         >
-          <Icon name="chevron-left" size={14} />
+          <Icon name="x" size={14} />
           <span>Batal</span>
         </button>
       </div>

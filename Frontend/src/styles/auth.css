@@ -225,35 +225,29 @@
 }
 
 /* Tombol Batal halaman Login */
-.login-page .login-back {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-
-  width: auto;
-  margin: 0 0 32px -8px;
-  padding: 6px 8px;
-
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-
-  color: #94a3b8;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.5;
-
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+.login-page {
+  display: flex;
+  justify-content: flex-end; /* pindah ke kanan */
+  margin-bottom: 24px;
 }
 
-.login-page .login-back:hover {
-  color: #ffffff;
-  background: rgba(148, 163, 184, 0.08);
+.login-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #2c3a52;
+  border-radius: 6px;
+  background: #121826;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.login-back:hover {
+  background: #1f2535;
+  color: var(--white);
 }
 
 .login-page .login-back:focus-visible {
@@ -263,20 +257,19 @@
 
 /* Tombol Batal Register */
 .register-page .register-back {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 6px;
 
-  width: auto;
-  margin: 0 0 32px -8px;
-  padding: 6px 8px;
+  width: fit-content;
+  margin: 0 0 24px auto; /* auto di kiri = dorong ke kanan */
+  padding: 6px 10px;
 
-  border: none;
+  border: 1px solid #2c3a52;
   border-radius: 6px;
-  background: transparent;
+  background: #121826;
 
-  color: #94a3b8;
+  color: var(--text);
   font-family: inherit;
   font-size: 12px;
   font-weight: 400;
@@ -290,14 +283,13 @@
 
 .register-page .register-back:hover {
   color: #ffffff;
-  background: rgba(148, 163, 184, 0.08);
+  background: #1f2535;
 }
 
 .register-page .register-back:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
-
 /* ========== TOMBOL BUAT AKUN FULL WIDTH ========== */
 
 .register-page .auth-form-actions {
@@ -394,7 +386,7 @@
 
 @media (max-width: 400px) {
   .register-page .register-back {
-    margin-bottom: 26px;
+    margin-bottom: 20px;
   }
 
   .register-page .auth-form-actions .auth-submit {
@@ -404,40 +396,4 @@
   .register-page .auth-switch {
     margin-top: 28px;
   }
-}
-
-/* Posisi tombol Batal di halaman Register */
-.register-page .register-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  margin-top: 0;
-  margin-bottom: 32px;
-  margin-left: -8px;
-
-  padding: 6px 8px;
-  border: none;
-  border-radius: 6px;
-
-  background: transparent;
-  color: #94a3b8;
-
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.5;
-
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.register-page .register-back:hover {
-  color: #ffffff;
-  background: rgba(148, 163, 184, 0.08);
-}
-
-.register-page .register-back:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
 }
