@@ -11,6 +11,11 @@ import {
   releaseSubmission,
 } from "../../services/adminApi";
 import "../../styles/user.css";
+import { fetchKtpObjectUrl } from "../../services/ktpApi";
+import FilePreview from "../../components/tournament/FilePreview";
+import useKtpPreview from "../../hooks/useKtpPreview";
+
+const ktp = useKtpPreview(id, "admin");
 
 const REVISION_OPTIONS = [
   "Informasi turnamen belum lengkap",
@@ -74,7 +79,7 @@ function Field({ label, children }) {
 }
 
 // Baris file. url kosong = tidak bisa dilihat (mis. KTP yang privat).
-function FileRow({ name, url, note }) {
+function FileRow({ name, url, note, onView }) {
   return (
     <div className="t-file-row">
       <span className="t-file-icon">
@@ -88,10 +93,8 @@ function FileRow({ name, url, note }) {
           type="button"
           className="t-pill"
           disabled={!url}
-          title={url ? "Buka di tab baru" : note}
-          onClick={() =>
-            url && window.open(url, "_blank", "noopener,noreferrer")
-          }
+          title={url ? "Lihat file" : note}
+          onClick={() => url && onView({ url, name })}
         >
           Lihat
         </button>
@@ -99,6 +102,8 @@ function FileRow({ name, url, note }) {
     </div>
   );
 }
+
+const isPdf = (file) => /\.pdf($|\?)/i.test(file.name || file.url || "");
 
 function AdminSubmissionDetail() {
   const { id } = useParams();
@@ -111,6 +116,7 @@ function AdminSubmissionDetail() {
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [leaving, setLeaving] = useState(false);
+  const [preview, setPreview] = useState(null); // { url, name }
 
   // Membuka halaman ini memanggil endpoint yang mengubah status menjadi "Sedang ditinjau"
   useEffect(() => {
@@ -270,6 +276,7 @@ function AdminSubmissionDetail() {
                     name={data.qrisName}
                     url={data.qrisUrl}
                     note="File QRIS tidak tersedia"
+                    onView={setPreview}
                   />
                 )}
                 {["transfer", "qris_transfer"].includes(data.paymentMethod) && (
@@ -284,11 +291,11 @@ function AdminSubmissionDetail() {
 
           <section className="d-card">
             <p className="d-label">KTP</p>
-            {/* KTP privat: belum ada endpoint untuk melihatnya, jadi Lihat dinonaktifkan */}
             <FileRow
               name={data.ktpName}
               url={data.ktpUrl}
               note="File KTP tidak tersedia"
+              onView={setPreview}
             />
           </section>
 

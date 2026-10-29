@@ -2119,9 +2119,15 @@
   background: var(--blue-hover);
 }
 
-.guest-locked-item {
+.admin-nav-item.guest-locked-item {
+  color: var(--muted);
+  font-family: inherit; /* ganti "font: inherit" */
   cursor: pointer;
-  font: inherit;
+}
+
+/* opsional: sedikit lebih terang saat di-hover */
+.admin-nav-item.guest-locked-item:hover {
+  color: var(--text);
 }
 
 .guest-locked-item span {
@@ -2144,8 +2150,6 @@
 .sidebar-logout.guest-back:hover {
   color: var(--white);
 }
-
-
 
 .guest-gate-modal {
   color: var(--white);

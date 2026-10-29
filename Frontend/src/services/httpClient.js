@@ -58,3 +58,45 @@ export async function apiRequest(path, { method = "GET", body } = {}) {
   }
   throw new ApiError(data?.message || "Permintaan gagal.", response.status);
 }
+
+// Untuk file (gambar/PDF) yang butuh token. Mengembalikan Blob.
+export async function apiBlob(path, accept = "image/*") {
+  const token = getToken();
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        Accept: accept,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  } catch {
+    throw new ApiError("Tidak dapat terhubung ke server. Coba lagi nanti.");
+  }
+
+  if (response.ok) return response.blob();
+
+  // Error dari Laravel tetap berbentuk JSON
+  const data = await response.json().catch(() => null);
+
+  if (response.status === 401) {
+    throw new ApiError(data?.message || "Tidak terautentikasi.", 401);
+  }
+  if (response.status === 403) {
+    throw new ApiError(
+      data?.message || "Kamu tidak punya izin melihat KTP ini.",
+      403,
+    );
+  }
+  if (response.status === 404) {
+    throw new ApiError("File KTP tidak ditemukan.", 404);
+  }
+  if (response.status >= 500) {
+    throw new ApiError(
+      "Terjadi kesalahan pada server. Coba lagi nanti.",
+      response.status,
+    );
+  }
+  throw new ApiError(data?.message || "Permintaan gagal.", response.status);
+}
