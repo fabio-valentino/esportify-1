@@ -4,50 +4,64 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reset cache permission Spatie
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // Daftar permission Esportify
         $permissions = [
+            // Dashboard
             'lihat_dashboard',
 
-            // Permission Kelola User
+            // Modul 1: Manajemen User
             'lihat_data_user',
             'tambah_data_user',
             'ubah_data_user',
             'hapus_data_user',
 
-            // Permission Kelola Role & Permission
+            // Modul 1: Manajemen Role dan Permission
             'kelola_role',
             'kelola_permission',
-            'atur_permission_role',
             'atur_role_user',
+            'atur_permission_role',
             'atur_permission_user',
 
-            // Permission Kelola Turnamen
-            'kelola_turnamen',
+            // Modul 1: Profil Player
+            'lihat_profil',
+            'ubah_profil',
+            'ubah_password',
 
-            // Permission Kelola Game
+            // Modul 2: Game
             'lihat_data_game',
             'tambah_data_game',
             'ubah_data_game',
             'hapus_data_game',
 
-            // Permission Kelola Kategori
+            // Modul 2: Kategori
             'lihat_data_kategori',
             'tambah_data_kategori',
             'ubah_data_kategori',
             'hapus_data_kategori',
+
+            // Modul 2: Player dan Publikasi Turnamen
+            'lihat_turnamen',
+            'lihat_detail_turnamen',
+            'ajukan_turnamen',
+            'lihat_pengajuan_turnamen',
+            'ubah_pengajuan_turnamen',
+            'ajukan_ulang_turnamen',
+            'ubah_turnamen',
+
+            // Modul 2: Moderasi Pengajuan oleh Admin
+            'lihat_semua_pengajuan_turnamen',
+            'setujui_pengajuan_turnamen',
+            'tolak_pengajuan_turnamen',
+            'berikan_revisi_pengajuan_turnamen',
         ];
 
-        // Membuat permission jika belum tersedia
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
                 'name' => $permission,
@@ -55,17 +69,7 @@ class PermissionSeeder extends Seeder
             ]);
         }
 
-        // Berikan permission pengaturan user permission kepada admin
-        $adminRole = Role::where('name', 'admin')
-            ->where('guard_name', 'web')
-            ->first();
-
-        if ($adminRole) {
-            $adminRole->givePermissionTo('atur_permission_user');
-        }
-
-        // Reset cache setelah perubahan
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
 ?>
