@@ -1,10 +1,10 @@
+/Frontend/src/pages/admin/AdminSubmissionDetail.jsx
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Icon from "../../components/icon";
 import DecisionModal from "../../components/admin/DecisionModal";
 import ConfirmDialog from "../../components/admin/ConfirmDialog";
-import FilePreview from "../../components/tournament/FilePreview";
-import useKtpPreview from "../../hooks/useKtpPreview";
 import {
   getAdminSubmissionDetail,
   approveSubmission,
@@ -13,6 +13,7 @@ import {
   releaseSubmission,
 } from "../../services/adminApi";
 import "../../styles/user.css";
+import useKtpPreview from "../../hooks/useKtpPreview";
 
 const REVISION_OPTIONS = [
   "Informasi turnamen belum lengkap",
@@ -75,8 +76,8 @@ function Field({ label, children }) {
   );
 }
 
-// Baris file. url kosong = tidak bisa dilihat.
-function FileRow({ name, url, note, onView, loading }) {
+// Baris file. disabled = file tidak bisa dilihat. onOpen dipanggil saat tombol Lihat ditekan.
+function FileRow({ name, note, onOpen, disabled, loading }) {
   return (
     <div className="t-file-row">
       <span className="t-file-icon">
@@ -89,9 +90,9 @@ function FileRow({ name, url, note, onView, loading }) {
         <button
           type="button"
           className="t-pill"
-          disabled={!url || loading}
-          title={url ? "Lihat file" : note}
-          onClick={() => url && onView({ url, name })}
+          disabled={disabled || loading}
+          title={disabled ? note : "Lihat file"}
+          onClick={onOpen}
         >
           {loading ? "Memuat..." : "Lihat"}
         </button>
@@ -100,10 +101,119 @@ function FileRow({ name, url, note, onView, loading }) {
   );
 }
 
+const isPdf = (file) => /\.pdf($|\?)/i.test(file.name || file.url || "");
+
+// Modal pratinjau sederhana. file: { url, name }. url bisa blob: (KTP privat) atau URL biasa.
+const overlayStyle = {
+  position: "fixed",
+  inset: 0,
+  zIndex: 300,
+  display: "grid",
+  placeItems: "center",
+  padding: 16,
+  background: "rgba(5, 8, 14, 0.8)",
+};
+const boxStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "min(900px, 100%)",
+  maxHeight: "90vh",
+  padding: 16,
+  border: "1px solid #243049",
+  borderRadius: 12,
+  background: "#121826",
+  color: "#f1f5f9",
+};
+const barStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  marginBottom: 12,
+};
+const closeBtnStyle = {
+  height: 34,
+  padding: "0 14px",
+  border: "1px solid #243049",
+  borderRadius: 8,
+  background: "#182033",
+  color: "#f1f5f9",
+  cursor: "pointer",
+};
+
+function ViewerModal({ file, onClose }) {
+  const [broken, setBroken] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Pratinjau ${file.name}`}
+      style={overlayStyle}
+      onClick={onClose}
+    >
+      <div style={boxStyle} onClick={(e) => e.stopPropagation()}>
+        <div style={barStyle}>
+          <b>{file.name}</b>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <a
+              href={file.url}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "#60a5fa", fontSize: 14 }}
+            >
+              Buka di tab baru
+            </a>
+            <button type="button" style={closeBtnStyle} onClick={onClose}>
+              Tutup
+            </button>
+          </div>
+        </div>
+
+        {isPdf(file) ? (
+          <iframe
+            src={file.url}
+            title={file.name}
+            style={{
+              width: "100%",
+              height: "70vh",
+              border: 0,
+              borderRadius: 8,
+            }}
+          />
+        ) : broken ? (
+          <p style={{ color: "#94a3b8" }}>
+            Pratinjau tidak tersedia. Coba "Buka di tab baru".
+          </p>
+        ) : (
+          <img
+            src={file.url}
+            alt={file.name}
+            onError={() => setBroken(true)}
+            style={{
+              maxWidth: "100%",
+              maxHeight: "75vh",
+              objectFit: "contain",
+              margin: "0 auto",
+              borderRadius: 8,
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AdminSubmissionDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const ktp = useKtpPreview(id, "admin");
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -112,7 +222,7 @@ function AdminSubmissionDetail() {
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [leaving, setLeaving] = useState(false);
-  const [preview, setPreview] = useState(null); // QRIS: { url, name }
+  const [preview, setPreview] = useState(null); // { url, name } untuk file publik (QRIS)
 
   // Membuka halaman ini memanggil endpoint yang mengubah status menjadi "Sedang ditinjau"
   useEffect(() => {
@@ -124,9 +234,6 @@ function AdminSubmissionDetail() {
 
   // Dipakai setelah keputusan (setujui/tolak/revisi): TIDAK memanggil release
   const back = () => navigate("/admin/pengajuan");
-
-  const reviewing =
-    String(data?.status ?? "").toLowerCase() === "sedang ditinjau";
 
   // Dipakai tombol Kembali: lepaskan pengajuan kalau masih "Sedang ditinjau"
   const handleBack = async () => {
@@ -146,6 +253,9 @@ function AdminSubmissionDetail() {
     }
   };
 
+  const reviewing =
+    String(data?.status ?? "").toLowerCase() === "sedang ditinjau";
+
   const handleApprove = async () => {
     setWorking(true);
     try {
@@ -160,6 +270,13 @@ function AdminSubmissionDetail() {
   };
 
   const statusKey = String(data?.status ?? "").toLowerCase();
+
+  // Yang sedang dilihat: KTP (blob dari backend, privat) atau file publik (QRIS)
+  const viewing = ktp.preview ?? preview;
+  const closeViewer = () => {
+    ktp.close();
+    setPreview(null);
+  };
 
   return (
     <div className="d-page">
@@ -270,9 +387,14 @@ function AdminSubmissionDetail() {
                 {["qris", "qris_transfer"].includes(data.paymentMethod) && (
                   <FileRow
                     name={data.qrisName}
-                    url={data.qrisUrl}
                     note="File QRIS tidak tersedia"
-                    onView={setPreview}
+                    disabled={!data.qrisUrl}
+                    onOpen={() =>
+                      setPreview({
+                        url: data.qrisUrl,
+                        name: data.qrisName || "QRIS",
+                      })
+                    }
                   />
                 )}
                 {["transfer", "qris_transfer"].includes(data.paymentMethod) && (
@@ -287,12 +409,12 @@ function AdminSubmissionDetail() {
 
           <section className="d-card">
             <p className="d-label">KTP</p>
+            {/* KTP privat: diambil lewat endpoint /admin/pengajuan-turnamen/{id}/ktp dengan token */}
             <FileRow
-              name={data.ktpName || "KTP"}
-              url={true}
+              name={data.ktpName}
               note="File KTP tidak tersedia"
               loading={ktp.loading}
-              onView={ktp.open}
+              onOpen={ktp.open}
             />
             {ktp.error && <p className="admin-message error">{ktp.error}</p>}
           </section>
@@ -329,6 +451,8 @@ function AdminSubmissionDetail() {
           )}
         </div>
       )}
+
+      {viewing && <ViewerModal file={viewing} onClose={closeViewer} />}
 
       {modal === "revision" && (
         <DecisionModal
@@ -370,11 +494,6 @@ function AdminSubmissionDetail() {
         >
           <p>Turnamen akan dibuat dari pengajuan ini.</p>
         </ConfirmDialog>
-      )}
-
-      {ktp.preview && <FilePreview file={ktp.preview} onClose={ktp.close} />}
-      {preview && (
-        <FilePreview file={preview} onClose={() => setPreview(null)} />
       )}
     </div>
   );
