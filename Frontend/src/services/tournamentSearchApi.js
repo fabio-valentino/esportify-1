@@ -110,7 +110,14 @@ const normalizeType = (value) => {
 // Mendukung response berbentuk array langsung atau { data: [...] }.
 const toList = (response) => {
   if (Array.isArray(response)) return response;
-  if (Array.isArray(response?.data)) return response.data;
+
+  if (Array.isArray(response?.data)) {
+    return response.data;
+  }
+
+  if (Array.isArray(response?.data?.data)) {
+    return response.data.data;
+  }
 
   return [];
 };

@@ -2082,5 +2082,133 @@
   .pr-row .pr-btn {
     width: 100%;
   }
+}
 
+/* ===== Guest navigation ===== */
+
+.guest-topbar-login,
+.guest-topbar-register {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.guest-topbar-login {
+  color: var(--white);
+  border: 1px solid #30394b;
+  background: transparent;
+}
+
+.guest-topbar-login:hover {
+  background: #1f2535;
+}
+
+.guest-topbar-register {
+  color: #fff;
+  background: var(--blue);
+}
+
+.guest-topbar-register:hover {
+  background: var(--blue-hover);
+}
+
+.guest-locked-item {
+  cursor: pointer;
+  font: inherit;
+}
+
+.guest-locked-item span {
+  flex: 1;
+}
+
+.guest-locked-item .icon:last-child {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.guest-sidebar-auth {
+  margin-top: auto;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guest-sidebar-auth a {
+  text-decoration: none;
+}
+
+.guest-register-link {
+  justify-content: center;
+  background: var(--blue);
+  color: #fff;
+}
+
+.guest-register-link:hover {
+  background: var(--blue-hover);
+}
+
+.guest-gate-modal {
+  color: var(--white);
+}
+
+.guest-gate-description {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.guest-gate-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.guest-gate-secondary {
+  border: 1px solid #30394b;
+  color: var(--white);
+}
+
+.guest-gate-primary {
+  background: var(--blue);
+  color: #fff;
+}
+
+.guest-gate-primary:hover {
+  background: var(--blue-hover);
+}
+.guest-back-landing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 14px 20px;
+  padding: 12px 10px;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  color: #e5e7eb;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.guest-back-landing:hover {
+  background: #252d3c;
+  color: #ffffff;
 }

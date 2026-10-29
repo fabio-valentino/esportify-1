@@ -20,12 +20,12 @@ import "../styles/landing.css";
    Selama null: tombol "Jelajahi" menggulir ke section, link "Lihat Semua" disembunyikan,
    dan setelah login Guest dikembalikan ke halaman beranda user. */
 const PATHS = {
-  tournamentsAll: null, // contoh: "/tournaments"
+  tournamentsAll: "/turnamen/cari",
   communitiesAll: null, // contoh: "/communities"
   organize: null, // contoh: "/tournaments/create"
   // Isi saat route detail sudah ada di App.jsx. Selama null, setelah login user
   // dibawa ke beranda (bukan ke halaman kosong).
-  tournamentDetail: null, // contoh: (id) => `/tournaments/${id}`
+  tournamentDetail: (id) => `/turnamen/cari/${id}`,
   communityDetail: null, // contoh: (id) => `/communities/${id}`
 };
 
