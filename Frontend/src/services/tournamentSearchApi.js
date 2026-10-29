@@ -15,7 +15,7 @@ try {
   API_ORIGIN = "";
 }
 
-export const PER_PAGE = 6;
+export const PER_PAGE = 8;
 
 const TZ = "Asia/Jakarta";
 const CACHE_MS = 60_000;
