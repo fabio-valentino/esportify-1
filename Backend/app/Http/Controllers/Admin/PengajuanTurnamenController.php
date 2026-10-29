@@ -35,7 +35,7 @@ class PengajuanTurnamenController extends Controller
         }
 
         $pengajuan = $query
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate(15);
 
         return response()->json([
