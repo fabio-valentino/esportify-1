@@ -2133,27 +2133,19 @@
   color: var(--muted);
 }
 
-.guest-sidebar-auth {
-  margin-top: auto;
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* Tautan kembali (guest) memakai posisi dasar sidebar yang sama dengan tombol Keluar */
+.sidebar-logout.guest-back {
+  font-size: 14px;
+  font-weight: 500;
+}
+.sidebar-logout.guest-back .icon {
+  color: var(--text);
+}
+.sidebar-logout.guest-back:hover {
+  color: var(--white);
 }
 
-.guest-sidebar-auth a {
-  text-decoration: none;
-}
 
-.guest-register-link {
-  justify-content: center;
-  background: var(--blue);
-  color: #fff;
-}
-
-.guest-register-link:hover {
-  background: var(--blue-hover);
-}
 
 .guest-gate-modal {
   color: var(--white);
@@ -2189,26 +2181,4 @@
 
 .guest-gate-primary:hover {
   background: var(--blue-hover);
-}
-.guest-back-landing {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 16px 14px 20px;
-  padding: 12px 10px;
-  border: 1px solid #374151;
-  border-radius: 8px;
-  color: #e5e7eb;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-.guest-back-landing:hover {
-  background: #252d3c;
-  color: #ffffff;
 }
