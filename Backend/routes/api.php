@@ -192,6 +192,10 @@ Route::middleware('auth:sanctum')->group(function () {
                 PengajuanTurnamenController::class,
                 'show'
             ]);
+            Route::get('/pengajuan-turnamen/{id}/ktp', [
+                PengajuanTurnamenController::class,
+                'lihatKtp'
+            ]);
 
         });
 
@@ -253,6 +257,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         'show'
     ])->middleware('permission:lihat_semua_pengajuan_turnamen');
 
+    // Melihat file KTP pengajuan
+    Route::get('/pengajuan-turnamen/{id}/ktp', [
+        AdminPengajuanTurnamenController::class,
+        'lihatKtp'
+    ])->middleware('permission:lihat_semua_pengajuan_turnamen');
+
     // Menyetujui pengajuan
     Route::post('/pengajuan-turnamen/{id}/approve', [
         AdminPengajuanTurnamenController::class,
@@ -270,6 +280,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         AdminPengajuanTurnamenController::class,
         'requestRevision'
     ])->middleware('permission:berikan_revisi_pengajuan_turnamen');
+
+    // Mengembalikan pengajuan ke antrean verifikasi
+    Route::post('/pengajuan-turnamen/{id}/release', [
+        AdminPengajuanTurnamenController::class,
+        'release'
+    ])->middleware('permission:lihat_semua_pengajuan_turnamen');
 
 
 

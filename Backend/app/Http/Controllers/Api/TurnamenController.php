@@ -114,7 +114,7 @@ class TurnamenController extends Controller
                 ];
             })
             ->filter(fn ($t) => $t['status'] !== 'selesai')
-            ->sortBy(fn ($t) => $t['pengajuan']['jadwal_main']?->timestamp ?? PHP_INT_MAX)
+            ->sortByDesc(fn ($t) => $t['pengajuan']['jadwal_main']?->timestamp ?? PHP_INT_MAX)
             ->values();
 
         return response()->json([

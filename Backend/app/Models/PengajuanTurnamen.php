@@ -35,6 +35,7 @@ class PengajuanTurnamen extends Model
         'status',
         'alasan_admin',
         'revisi_diminta_pada',
+        'diajukan_ulang_pada',
     ];
 
     protected function casts(): array
@@ -43,6 +44,7 @@ class PengajuanTurnamen extends Model
             'jadwal_pendaftaran_tutup' => 'datetime',
             'jadwal_main' => 'datetime',
             'revisi_diminta_pada' => 'datetime',
+            'diajukan_ulang_pada' => 'datetime',
             'total_hadiah' => 'decimal:2',
             'setuju_pertanggungjawaban' => 'boolean',
         ];

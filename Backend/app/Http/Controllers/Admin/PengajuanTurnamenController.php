@@ -8,6 +8,7 @@ use App\Models\Penyelenggara;
 use App\Models\Turnamen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PengajuanTurnamenController extends Controller
 {
@@ -33,9 +34,16 @@ class PengajuanTurnamenController extends Controller
                     ->orWhere('nama_penyelenggara', 'like', "%{$search}%");
             });
         }
-
         $pengajuan = $query
-            ->orderBy('created_at', 'desc')
+            ->orderByRaw("
+                CASE
+                    WHEN status = 'Menunggu Verifikasi' THEN 1
+                    ELSE 2
+                END ASC
+            ")
+            ->orderByRaw(
+                'COALESCE(diajukan_ulang_pada, created_at) DESC'
+            )
             ->paginate(15);
 
         return response()->json([
@@ -98,6 +106,80 @@ class PengajuanTurnamenController extends Controller
             'data' => $pengajuan,
         ]);
     }
+
+    public function lihatKtp(Request $request, $id)
+    {
+        $admin = $request->user()->admin;
+
+        if (!$admin) {
+            return response()->json([
+                'message' => 'Profil admin tidak ditemukan.'
+            ], 403);
+        }
+
+        $pengajuan = PengajuanTurnamen::findOrFail($id);
+
+        $path = $pengajuan->ktp;
+
+        if (!$path || !Storage::disk('local')->exists($path)) {
+            return response()->json([
+                'message' => 'File KTP tidak ditemukan.'
+            ], 404);
+        }
+
+       return response()->file(
+            Storage::disk('local')->path($path),
+            [
+                'Content-Type' => Storage::disk('local')->mimeType($path),
+            ]
+        );
+    }
+
+    
+    /**
+     * Mengembalikan pengajuan ke antrean verifikasi
+     * ketika Admin keluar dari halaman detail tanpa keputusan.
+     */
+    public function release(Request $request, $id)
+    {
+        $admin = $request->user()->admin;
+
+        if (!$admin) {
+            return response()->json([
+                'message' => 'Profil admin tidak ditemukan.',
+            ], 403);
+        }
+
+        $pengajuan = DB::transaction(function () use ($id, $admin) {
+            $pengajuan = PengajuanTurnamen::where(
+                'id_pengajuan',
+                $id
+            )->lockForUpdate()->firstOrFail();
+
+            if (
+                $pengajuan->status !== 'Sedang ditinjau' ||
+                $pengajuan->id_admin !== $admin->id_admin
+            ) {
+                abort(
+                    409,
+                    'Pengajuan tidak sedang ditinjau oleh Admin ini.'
+                );
+            }
+
+            $pengajuan->update([
+                'status' => 'Menunggu Verifikasi',
+                'id_admin' => null,
+            ]);
+
+            return $pengajuan;
+        });
+
+        return response()->json([
+            'message' => 'Pengajuan berhasil dikembalikan ke antrean verifikasi.',
+            'data' => $pengajuan->fresh(),
+        ]);
+    }
+
 
     /**
      * Menyetujui pengajuan dan membuat data penyelenggara

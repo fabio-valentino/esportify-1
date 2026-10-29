@@ -150,11 +150,12 @@
 }
 
 /* ---------- Search bar ---------- */
+/* CHANGED: jarak bawah 16 -> 20 */
 .ct-search {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .ct-search .ct-btn {
   height: 44px;
@@ -227,8 +228,9 @@
 }
 
 /* ---------- Panel filter ---------- */
+/* CHANGED: jarak bawah 28 -> 24 */
 .ct-panel {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   padding: 24px;
   border: 1px solid var(--ct-line);
   border-radius: 14px;
@@ -345,32 +347,36 @@
 }
 
 /* ---------- Daftar & kartu ---------- */
+/* CHANGED: judul 22 -> 20, jarak bawah 20 -> 16 */
 .ct-list-title {
-  margin-bottom: 20px;
-  font-size: 22px;
+  margin-bottom: 16px;
+  font-size: 20px;
   font-weight: 700;
   scroll-margin-top: 88px;
 }
+/* CHANGED: 4 kolom, jarak antar kartu 24 -> 16 */
 .ct-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
+/* CHANGED: padding 16 -> 12, jarak isi 14 -> 10 */
 .ct-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   min-width: 0;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--ct-line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--ct-card);
 }
+/* CHANGED: poster 4:5 (tinggi) -> 8:7 (hampir persegi) */
 .ct-poster {
   position: relative;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 8 / 7;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--ct-elev);
 }
 .ct-poster-img {
@@ -387,23 +393,29 @@
   background: linear-gradient(145deg, #1a2540, #151a33 55%, #231a44);
   color: rgba(96, 165, 250, 0.25);
 }
+/* CHANGED: ikon cadangan lebih kecil */
+.ct-poster-fb .icon {
+  width: 48px;
+  height: 48px;
+}
+/* CHANGED: tag lebih kecil dan lebih dekat ke tepi */
 .ct-tag {
   position: absolute;
-  padding: 3px 10px;
-  border-radius: 8px;
-  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 600;
   background: rgba(11, 15, 23, 0.82);
   backdrop-filter: blur(6px);
 }
 .ct-tag-game {
-  top: 12px;
-  left: 12px;
+  top: 10px;
+  left: 10px;
   color: var(--ct-tx);
 }
 .ct-tag-type {
-  right: 12px;
-  bottom: 12px;
+  right: 10px;
+  bottom: 10px;
   border: 1px solid var(--ct-line);
   color: var(--ct-tx2);
 }
@@ -413,11 +425,8 @@
 }
 /* Label status: "Pendaftaran ditutup" (kuning) / "Sedang berlangsung" (hijau) */
 .ct-tag-status {
-  top: 12px;
-  right: 12px;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 12px;
+  top: 10px;
+  right: 10px;
   color: #fbbf24;
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.4);
@@ -427,34 +436,38 @@
   background: rgba(34, 197, 94, 0.15);
   border-color: rgba(34, 197, 94, 0.4);
 }
+/* CHANGED: teks 13 -> 12, jarak ikon 8 -> 6 */
 .ct-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 6px;
+  font-size: 12px;
   color: var(--ct-tx2);
 }
+
+/* CHANGED: judul 16 -> 14 */
 .ct-title {
   overflow: hidden;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* CHANGED: label 12 -> 11, nilai 14 -> 13 */
 .ct-stats {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 .ct-stats span,
 .ct-slot span {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ct-tx3);
 }
 .ct-stats b,
 .ct-slot b {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
 .ct-prize {
@@ -469,12 +482,12 @@
   align-items: baseline;
 }
 .ct-slot span {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ct-tx2);
 }
 .ct-bar {
   height: 6px;
-  margin-top: 8px;
+  margin-top: 6px;
   overflow: hidden;
   border-radius: 999px;
   background: var(--ct-elev);
@@ -485,10 +498,19 @@
   border-radius: 999px;
   background: var(--ct-pri);
 }
+/* CHANGED: tombol di kartu lebih pendek dan selalu menempel di dasar kartu */
+.ct-card .ct-btn {
+  height: 36px;
+  font-size: 13px;
+}
+.ct-card .ct-btn-block {
+  margin-top: auto;
+}
 
 /* ---------- Skeleton & state ---------- */
+/* CHANGED: tinggi skeleton 520 -> 380 */
 .ct-skel {
-  min-height: 520px;
+  min-height: 380px;
   background: linear-gradient(
     100deg,
     var(--ct-card) 30%,
@@ -581,7 +603,13 @@
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1100px) {
+/* CHANGED: 4 kolom (desktop) -> 3 -> 2 -> 1 */
+@media (max-width: 1280px) {
+  .ct-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 960px) {
   .ct-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -592,7 +620,7 @@
     grid-template-columns: 1fr;
   }
 }
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   .ct-grid {
     grid-template-columns: 1fr;
   }
