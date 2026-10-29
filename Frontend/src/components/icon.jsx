@@ -48,6 +48,7 @@ import {
   UserPlus,
   Monitor,
   Zap,
+  Clock,
 } from "lucide-react";
 
 // Untuk menambah ikon: import di atas, lalu tambah satu baris di objek icons.
@@ -104,6 +105,7 @@ const icons = {
   "user-plus": UserPlus,
   monitor: Monitor,
   zap: Zap,
+  clock: Clock,
 };
 
 function Icon({ name, size = 16 }) {

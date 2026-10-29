@@ -160,7 +160,7 @@ function AdminSubmissionDetail() {
   const statusKey = String(data?.status ?? "").toLowerCase();
 
   return (
-    <>
+    <div className="d-page">
       <button
         type="button"
         className="d-back"
@@ -355,8 +355,8 @@ function AdminSubmissionDetail() {
 
       {approving && (
         <ConfirmDialog
-          tone="warning"
-          icon="alert"
+          tone="success"
+          icon="check-circle"
           title="Setujui Pengajuan?"
           confirmLabel="Setujui"
           loading={working}
@@ -366,7 +366,7 @@ function AdminSubmissionDetail() {
           <p>Turnamen akan dibuat dari pengajuan ini.</p>
         </ConfirmDialog>
       )}
-    </>
+    </div>
   );
 }
 
