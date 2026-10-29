@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { apiRequest } from "../../services/httpClient";
+import Icon from "../../components/icon";
+import TournamentInfo from "../../components/tournament/TournamentInfo";
+import { getTournamentDetail } from "../../services/tournamentApi";
 
-// Sementara: tampilan mentah untuk memastikan alur dan akses benar.
 function TournamentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,10 +19,9 @@ function TournamentDetail() {
   useEffect(() => {
     let off = false;
     setState({ status: "loading", data: null, message: "" });
-    apiRequest(`/turnamen/${id}`)
-      .then((res) => {
-        if (!off)
-          setState({ status: "ok", data: res?.data ?? res, message: "" });
+    getTournamentDetail(id)
+      .then((data) => {
+        if (!off) setState({ status: "ok", data, message: "" });
       })
       .catch((err) => {
         if (off) return;
@@ -45,24 +45,30 @@ function TournamentDetail() {
   }, [id, here, navigate]);
 
   return (
-    <div className="ct-page">
-      <button
-        type="button"
-        className="ct-btn ct-btn-s"
-        onClick={() => navigate(-1)}
-      >
-        Kembali
+    <>
+      <button type="button" className="d-back" onClick={() => navigate(-1)}>
+        <Icon name="chevron-left" size={26} /> Kembali
       </button>
       <h1 className="admin-title">Detail Turnamen</h1>
 
-      {state.status === "loading" && <p>Memuat...</p>}
-      {state.status === "error" && <p role="alert">{state.message}</p>}
-      {state.status === "ok" && (
-        <pre style={{ overflow: "auto" }}>
-          {JSON.stringify(state.data, null, 2)}
-        </pre>
+      {state.status === "loading" && <p className="admin-message">Memuat...</p>}
+      {state.status === "error" && (
+        <p className="admin-message error" role="alert">
+          {state.message}
+        </p>
       )}
-    </div>
+      {state.status === "ok" && (
+        <TournamentInfo
+          d={state.data}
+          action={
+            // Belum ada fungsi pendaftaran
+            <button type="button" className="td-register">
+              <Icon name="user-plus" size={18} /> Daftar Sekarang
+            </button>
+          }
+        />
+      )}
+    </>
   );
 }
 

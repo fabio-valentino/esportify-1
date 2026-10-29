@@ -7,7 +7,12 @@ const navClass = ({ isActive }) =>
 
 // Cari Turnamen dan Turnamen Saya belum punya halaman: link-nya disiapkan saja
 const tournamentItems = [
-  { label: "Cari Turnamen", to: "/turnamen/cari", icon: "search" },
+  {
+    label: "Cari Turnamen",
+    to: "/turnamen/cari",
+    icon: "search",
+    also: ["/turnamen/cari/"],
+  },
   { label: "Turnamen Saya", to: "/turnamen/saya", icon: "ticket" },
   {
     label: "Kelola Turnamen",
@@ -17,6 +22,7 @@ const tournamentItems = [
       "/turnamen/buat",
       "/turnamen/status-pengajuan",
       "/turnamen/pengajuan",
+      "/turnamen/detail",
     ],
   },
 ];

@@ -45,7 +45,7 @@ function ManagedTournamentCard({ tournament: t }) {
         <Link to={`/turnamen/${t.id}/kelola`} className="t-btn-primary">
           <Icon name="manage" size={18} /> Kelola Turnamen
         </Link>
-        <Link to={`/turnamen/${t.id}`} className="t-btn-outline">
+        <Link to={`/turnamen/detail/${t.id}`} className="t-btn-outline">
           Detail
         </Link>
       </div>
