@@ -1,10 +1,8 @@
-
 <?php
 
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Laravel\Sanctum\Http\Middleware\AuthenticateSession;
-use Laravel\Sanctum\Sanctum;
 
 return [
 
@@ -12,10 +10,6 @@ return [
     |--------------------------------------------------------------------------
     | Stateful Domains
     |--------------------------------------------------------------------------
-    |
-    | Requests from these domains will receive stateful API authentication.
-    | Include the React development server and Laravel local host.
-    |
     */
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', implode(',', [
@@ -65,4 +59,3 @@ return [
     ],
 
 ];
-?>

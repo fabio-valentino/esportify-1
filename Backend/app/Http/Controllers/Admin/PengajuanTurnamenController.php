@@ -117,7 +117,20 @@ class PengajuanTurnamenController extends Controller
             ], 403);
         }
 
-        $pengajuan = PengajuanTurnamen::findOrFail($id);
+        $pengajuan = PengajuanTurnamen::where(
+            'id_pengajuan',
+            $id
+        )->firstOrFail();
+
+        // Pastikan pengajuan sedang ditinjau oleh admin yang login.
+        if (
+            $pengajuan->status !== 'Sedang ditinjau' ||
+            $pengajuan->id_admin !== $admin->id_admin
+        ) {
+            return response()->json([
+                'message' => 'Kamu tidak memiliki akses untuk melihat KTP pengajuan ini.'
+            ], 403);
+        }
 
         $path = $pengajuan->ktp;
 
@@ -127,10 +140,12 @@ class PengajuanTurnamenController extends Controller
             ], 404);
         }
 
-       return response()->file(
+        return response()->file(
             Storage::disk('local')->path($path),
             [
                 'Content-Type' => Storage::disk('local')->mimeType($path),
+                'Cache-Control' => 'private, no-store',
+                'X-Content-Type-Options' => 'nosniff',
             ]
         );
     }

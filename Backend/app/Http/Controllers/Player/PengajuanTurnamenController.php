@@ -91,6 +91,8 @@ class PengajuanTurnamenController extends Controller
         ]);
     }
 
+   
+
     public function lihatKtp(Request $request, $id)
     {
         $player = $request->user()->player;
@@ -120,12 +122,6 @@ class PengajuanTurnamenController extends Controller
                 'success' => false,
                 'message' => 'File KTP tidak ditemukan.'
             ], 404);
-        }
-
-        // Bersihkan output buffer agar tidak ada karakter tambahan
-        // sebelum byte pertama file KTP.
-        while (ob_get_level() > 0) {
-            ob_clean();
         }
 
         return response()->file(
