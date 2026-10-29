@@ -13,7 +13,11 @@ const tournamentItems = [
     label: "Kelola Turnamen",
     to: "/turnamen/kelola",
     icon: "manage",
-    also: ["/turnamen/buat", "/turnamen/status-pengajuan"],
+    also: [
+      "/turnamen/buat",
+      "/turnamen/status-pengajuan",
+      "/turnamen/pengajuan",
+    ],
   },
 ];
 

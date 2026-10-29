@@ -202,7 +202,25 @@ function AdminGames() {
                   <td>
                     <span className="game-avatar">
                       {g.avatar ? (
-                        <img src={g.avatar} alt={g.name} />
+                        <img
+                          src={
+                            g.avatar.startsWith("http://localhost/storage/")
+                              ? g.avatar.replace(
+                                  "http://localhost/storage/",
+                                  "http://127.0.0.1:8000/storage/",
+                                )
+                              : g.avatar.startsWith("http")
+                                ? g.avatar
+                                : `http://127.0.0.1:8000/storage/${g.avatar.replace(/^\/+/, "").replace(/^storage\//, "")}`
+                          }
+                          alt={g.name}
+                          onError={(e) => {
+                            console.error(
+                              "Gambar game gagal dimuat:",
+                              e.currentTarget.src,
+                            );
+                          }}
+                        />
                       ) : (
                         g.name.charAt(0).toUpperCase()
                       )}

@@ -1,30 +1,64 @@
 import {
   API_BASE_URL,
   USE_LANDING_MOCK,
-  USE_LANDING_GAME_MOCK, // FIX: flag terpisah untuk game
+  USE_LANDING_GAME_MOCK,
 } from "../config/env";
 import { apiRequest } from "./httpClient";
 
-// Satu-satunya tempat yang perlu disentuh saat data asli sudah jadi:
-// 1) ubah VITE_USE_LANDING_MOCK=false di .env (turnamen & komunitas)
-//    dan/atau VITE_USE_LANDING_GAME_MOCK=false (game)
-// 2) sesuaikan ENDPOINT dan nama field di mapper (semua bertanda ASSUMPTION)
+// Pengaturan data landing page:
+// 1. USE_LANDING_MOCK mengatur mock turnamen dan komunitas.
+// 2. USE_LANDING_GAME_MOCK mengatur mock game.
+// 3. Endpoint dan mapper disesuaikan jika format backend berubah.
 
 const wait = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const API_ORIGIN = API_BASE_URL ? new URL(API_BASE_URL).origin : "";
 
-// FIX: sama seperti adminApi.js, aman untuk path "games/x.png" maupun "storage/games/x.png"
+/* ---------------- URL gambar ---------------- */
+
+// Mendukung:
+// games/x.png
+// storage/games/x.png
+// /storage/games/x.png
+// https://domain.com/storage/games/x.png
+// data: dan blob:
 const toMediaUrl = (value) => {
   if (!value) return null;
-  if (/^(https?:|data:|blob:)/.test(value)) return value;
-  return `${API_ORIGIN}/storage/${String(value).replace(/^\/?(storage\/)?/, "")}`;
+
+  const path = String(value).trim();
+
+  if (!path) return null;
+
+  // URL lengkap atau sumber gambar khusus.
+  if (/^(https?:|data:|blob:)/i.test(path)) {
+    return path;
+  }
+
+  // Hindari menambahkan /storage dua kali.
+  const cleanPath = path.replace(/^\/+/, "").replace(/^storage\/+/i, "");
+
+  return API_ORIGIN
+    ? `${API_ORIGIN}/storage/${cleanPath}`
+    : `/storage/${cleanPath}`;
 };
 
-// Respons bisa array langsung, { data: [...] }, atau paginasi Laravel { data: { data: [...] } }
+/* ---------------- Normalisasi respons API ---------------- */
+
+// Mendukung respons:
+// [...]
+// { data: [...] }
+// { data: { data: [...] } }
 const toList = (res) => {
   if (Array.isArray(res)) return res;
-  if (Array.isArray(res?.data)) return res.data;
-  if (Array.isArray(res?.data?.data)) return res.data.data;
+
+  if (Array.isArray(res?.data)) {
+    return res.data;
+  }
+
+  if (Array.isArray(res?.data?.data)) {
+    return res.data.data;
+  }
+
   return [];
 };
 
@@ -37,7 +71,11 @@ export const formatFee = (n) => (Number(n) > 0 ? formatRupiah(n) : "Gratis");
 
 export const formatDate = (value) => {
   const d = value ? new Date(value) : null;
-  if (!d || Number.isNaN(d.getTime())) return "Jadwal menyusul";
+
+  if (!d || Number.isNaN(d.getTime())) {
+    return "Jadwal menyusul";
+  }
+
   return new Intl.DateTimeFormat("id-ID", {
     weekday: "long",
     day: "numeric",
@@ -48,13 +86,16 @@ export const formatDate = (value) => {
 
 const normalizeType = (v) => {
   const s = String(v ?? "").toLowerCase();
+
   if (s.includes("offline")) return "Offline";
   if (s.includes("online")) return "Online";
+
   return "";
 };
 
-/* ---------------- Mapper (ASSUMPTION: nama field belum dikonfirmasi) ---------------- */
+/* ---------------- Mapper data API ---------------- */
 
+// ASSUMPTION: nama field mengikuti struktur respons backend.
 const mapTournament = (d) => ({
   id: d.id_turnamen ?? d.id,
   name: d.nama_turnamen ?? d.nama ?? d.name ?? "",
@@ -78,17 +119,17 @@ const mapCommunity = (d) => ({
   members: Number(d.jumlah_anggota ?? d.anggota_count ?? d.members_count ?? 0),
 });
 
-// FIX: mengikuti format admin (id_game, nama_game, avatar_url) + filter game nonaktif.
-// ASSUMPTION: response publik mengikuti format /admin/games; nilai status nonaktif = "nonaktif".
+// Game tidak difilter berdasarkan status aktif/nonaktif.
+// Frontend mengikuti data yang dikirim endpoint backend.
 const mapGame = (d) => ({
   id: d.id_game ?? d.id,
   name: d.nama_game ?? d.nama ?? d.name ?? "",
-  icon: d.avatar_url ?? toMediaUrl(d.avatar ?? d.icon),
-  active: String(d.status ?? "aktif").toLowerCase() !== "nonaktif",
+  icon: toMediaUrl(d.avatar_url ?? d.avatar ?? d.icon),
 });
 
-/* ---------------- Data contoh (hanya saat flag mock aktif) ----------------
-   DATA CONTOH untuk development. Jangan tampilkan sebagai statistik nyata. */
+/* ---------------- Data mock ---------------- */
+
+// Data contoh untuk development, bukan statistik nyata.
 
 const mockTournaments = [
   {
@@ -166,40 +207,43 @@ const mockGames = [
   { id: 4, name: "Free Fire MAX", icon: null },
 ];
 
-/* ---------------- API ---------------- */
+/* ---------------- Endpoint API ---------------- */
 
-// ASSUMPTION: GET /tournaments?sort=latest&limit=3 (publik, tanpa token)
+// ASSUMPTION: endpoint publik turnamen.
 export async function getLatestTournaments(limit = 3) {
   if (USE_LANDING_MOCK) {
     await wait();
     return mockTournaments.slice(0, limit);
   }
+
   const res = await apiRequest(`/tournaments?sort=latest&limit=${limit}`);
+
   return toList(res).slice(0, limit).map(mapTournament);
 }
 
-// ASSUMPTION: GET /communities?sort=members&limit=3 (publik, urut anggota terbanyak)
+// ASSUMPTION: endpoint publik komunitas.
 export async function getTopCommunities(limit = 3) {
   if (USE_LANDING_MOCK) {
     await wait();
     return mockCommunities.slice(0, limit);
   }
+
   const res = await apiRequest(`/communities?sort=members&limit=${limit}`);
+
   return toList(res).slice(0, limit).map(mapCommunity);
 }
 
-// ASSUMPTION: GET /games = route PUBLIK BARU (belum ada di api.php; yang ada baru
-// /admin/games yang butuh login admin). Backend perlu: tanpa auth, hanya game aktif,
-// diurutkan dari yang paling banyak dipakai. Kalau nama route-nya beda, ubah di sini saja.
-const GAMES_ENDPOINT = "/games";
+// Endpoint publik game.
+// Backend menentukan data dan urutannya.
+const GAMES_ENDPOINT = "/public/games";
 
 export async function getSupportedGames() {
   if (USE_LANDING_GAME_MOCK) {
     await wait();
     return mockGames;
   }
+
   const res = await apiRequest(GAMES_ENDPOINT);
-  return toList(res)
-    .map(mapGame)
-    .filter((g) => g.active); // urutan populer tetap dari backend
+
+  return toList(res).map(mapGame);
 }

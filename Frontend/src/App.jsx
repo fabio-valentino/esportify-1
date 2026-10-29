@@ -19,6 +19,7 @@ import SubmissionStatus from "./pages/tournament/SubmissionStatus";
 import SearchTournaments from "./pages/search/SearchTournaments";
 import AdminSubmissions from "./pages/admin/AdminSubmissions";
 import AdminSubmissionDetail from "./pages/admin/AdminSubmissionDetail";
+import SubmissionDetail from "./pages/tournament/SubmissionDetail";
 
 function App() {
   return (
@@ -32,6 +33,10 @@ function App() {
         <Route element={<ProtectedRoute userOnly />}>
           <Route element={<UserLayout />}>
             <Route path="/home" element={<UserHome />} />
+            <Route
+              path="/turnamen/pengajuan/:id"
+              element={<SubmissionDetail />}
+            />
             <Route path="/turnamen/cari" element={<SearchTournaments />} />
             <Route path="/turnamen/buat" element={<CreateTournament />} />
             <Route path="/turnamen/kelola" element={<ManageTournaments />} />
