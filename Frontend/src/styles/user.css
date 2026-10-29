@@ -998,3 +998,85 @@
     position: static;
   }
 }
+/* =====================================================================
+   AVATAR PREVIEW (lightbox 4:3) + perbaikan hint
+   ===================================================================== */
+
+.pr-avatar-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: zoom-in;
+}
+.pr-avatar-btn:focus-visible {
+  outline: 2px solid var(--pr-pri-s);
+  outline-offset: 4px;
+}
+
+/* hint kedua tidak perlu garis & jarak besar lagi */
+.pr-hint + .pr-hint {
+  margin-top: 8px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.pr-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 6, 14, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.pr-lightbox-box {
+  position: relative;
+  width: min(560px, 100%);
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--pr-bg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.pr-lightbox-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* dipangkas ke 4:3, tidak gepeng */
+  display: block;
+}
+
+.pr-lightbox-ph {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 96px;
+  font-weight: 700;
+  color: #93bbff;
+  background: #1e3a6e;
+}
+
+.pr-lightbox-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+.pr-lightbox-x:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+.pr-lightbox-x:focus-visible {
+  outline: 2px solid var(--pr-pri-s);
+  outline-offset: 2px;
+}
