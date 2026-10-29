@@ -12,19 +12,51 @@ import Profile from "./pages/Profile";
 import AdminProfile from "./pages/admin/AdminProfile";
 import AdminGames from "./pages/admin/AdminGames";
 import AdminRoles from "./pages/admin/AdminRoles";
+import Landing from "./pages/Landing";
+import CreateTournament from "./pages/tournament/CreateTournament";
+import ManageTournaments from "./pages/tournament/ManageTournaments";
+import SubmissionStatus from "./pages/tournament/SubmissionStatus";
+import SearchTournaments from "./pages/search/SearchTournaments";
+import AdminSubmissions from "./pages/admin/AdminSubmissions";
+import AdminSubmissionDetail from "./pages/admin/AdminSubmissionDetail";
+import SubmissionDetail from "./pages/tournament/SubmissionDetail";
+import TournamentDetail from "./pages/tournament/TournamentDetail";
+import ManagedTournamentDetail from "./pages/tournament/ManagedTournamentDetail";
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+
+        {/* Publik: guest boleh melihat daftar turnamen.
+            Klik "Lihat Detail" akan diarahkan ke login oleh ProtectedRoute. */}
+        <Route element={<UserLayout />}>
+          <Route path="/turnamen/cari" element={<SearchTournaments />} />
+        </Route>
 
         {/* Khusus user biasa: admin diarahkan ke /admin */}
         <Route element={<ProtectedRoute userOnly />}>
           <Route element={<UserLayout />}>
             <Route path="/home" element={<UserHome />} />
+            <Route
+              path="/turnamen/pengajuan/:id"
+              element={<SubmissionDetail />}
+            />
+
+            <Route
+              path="/turnamen/detail/:id"
+              element={<ManagedTournamentDetail />}
+            />
+            <Route path="/turnamen/cari/:id" element={<TournamentDetail />} />
+            <Route path="/turnamen/buat" element={<CreateTournament />} />
+            <Route path="/turnamen/kelola" element={<ManageTournaments />} />
+            <Route
+              path="/turnamen/status-pengajuan"
+              element={<SubmissionStatus />}
+            />
           </Route>
         </Route>
 
@@ -44,6 +76,8 @@ function App() {
             <Route path="permissions" element={<AdminPermissions />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="games" element={<AdminGames />} />
+            <Route path="pengajuan" element={<AdminSubmissions />} />
+            <Route path="pengajuan/:id" element={<AdminSubmissionDetail />} />
           </Route>
         </Route>
       </Routes>

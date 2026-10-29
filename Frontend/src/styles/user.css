@@ -284,7 +284,802 @@
   border-top: 1px solid #9ca3af;
 }
 
+/* ===== Kelola Turnamen ===== */
+
+.t-section-title {
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: var(--white);
+}
+
+.t-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.t-filter {
+  padding: 6px 22px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: none;
+  color: var(--white);
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.t-filter:hover {
+  background: #1f2535;
+}
+.t-filter.active {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.t-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.t-card {
+  padding: 22px 24px;
+  border: 1px solid #2c3a52;
+  border-radius: 12px;
+  background: #151b27;
+}
+.t-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #243044;
+}
+.t-card-head h3 {
+  font-size: 22px;
+  color: var(--white);
+}
+.t-card-head p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.t-status {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 16px;
+  color: var(--white);
+}
+.t-status i {
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+.t-status.berlangsung i {
+  background: #facc15;
+}
+.t-status.selesai i {
+  background: #94a3b8;
+}
+
+.t-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0;
+  text-align: center;
+}
+.t-stats dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+.t-stats dd {
+  font-size: 18px;
+  color: var(--white);
+}
+
+.t-card-actions {
+  display: flex;
+  gap: 8px;
+}
+.t-btn-primary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 40px;
+  border-radius: 4px;
+  background: #3b5998;
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 600;
+}
+.t-btn-primary:hover {
+  background: #4668ad;
+}
+.t-btn-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 118px;
+  height: 40px;
+  border: 1px solid #3a4558;
+  border-radius: 4px;
+  color: var(--white);
+  font-size: 18px;
+}
+.t-btn-outline:hover {
+  background: #1f2535;
+}
+
+/* ===== Form Buat Turnamen ===== */
+.t-form {
+  max-width: 820px;
+  margin: 0 auto;
+}
+.t-back-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+}
+
+.t-back-title button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #94a3b8;
+  font: inherit;
+  cursor: pointer;
+}
+.t-back-title button:hover {
+  color: var(--white);
+}
+.t-back-title button:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.t-form-section {
+  margin-bottom: 14px;
+  padding: 18px 22px;
+  border-radius: 10px;
+  background: #181d29;
+  border: 1px solid transparent;
+}
+.t-form-section.has-error {
+  border-color: #f87171;
+}
+.t-form-section h2 {
+  margin-bottom: 14px;
+  font-size: 18px;
+  color: var(--white);
+}
+.t-form-section h3 {
+  margin: 18px 0 8px;
+  font-size: 16px;
+  color: var(--white);
+}
+.t-label {
+  display: block;
+  margin: 12px 0 4px;
+  font-size: 15px;
+  color: var(--white);
+}
+.t-field-error {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #f87171;
+}
+
+/* Input bergaris bawah */
+.t-line {
+  width: 100%;
+  max-width: 100%;
+  padding: 6px 2px;
+  border: none;
+  border-bottom: 1px solid #9ca3af;
+  outline: none;
+  background: none;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.t-line:focus {
+  border-bottom-color: var(--blue);
+}
+.t-line.has-error {
+  border-bottom-color: #f87171;
+}
+.t-line::placeholder {
+  color: var(--muted);
+}
+.t-line[type="date"] {
+  color-scheme: dark;
+}
+
+.t-box {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  resize: vertical;
+  background: transparent;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.t-box:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+.t-box.has-error {
+  border-color: #f87171;
+}
+.t-box::placeholder {
+  color: var(--muted);
+}
+
+.t-dropdown {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 38px;
+  margin-top: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  background: #181d29;
+  color: var(--white);
+  font-size: 15px;
+  font-family: inherit;
+}
+.t-dropdown.has-error {
+  border-color: #f87171;
+}
+.t-dropdown:disabled {
+  opacity: 0.6;
+}
+
+.t-radio,
+.t-agree {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  color: var(--white);
+  font-size: 15px;
+  cursor: pointer;
+}
+.t-radio input,
+.t-agree input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--blue);
+}
+.t-agree {
+  margin: 22px 4px 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.t-agree.has-error {
+  color: #f87171;
+}
+
+.t-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--white);
+}
+.t-money {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--white);
+}
+.t-money .t-line {
+  max-width: 100%;
+}
+
+/* ===== Area unggah ===== */
+.t-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 6px 0;
+}
+.t-upload-btn {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 22px;
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #6aa3ff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.t-upload-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+.t-upload-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Baris file: ikon, nama, Upload, Lihat */
+.t-file-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border: 1px solid #3a4558;
+  border-radius: 10px;
+  background: #181d29;
+}
+.t-file-icon {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #4f6bed;
+  flex-shrink: 0;
+}
+.t-file-icon b {
+  margin-top: -4px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+.t-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--white);
+  font-size: 16px;
+}
+.t-file-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.t-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 18px;
+  border: 1px solid var(--white);
+  border-radius: 999px;
+  background: none;
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.t-pill .icon {
+  color: #6aa3ff;
+}
+.t-pill:hover {
+  background: #1f2535;
+}
+
+.t-pill.danger {
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+.t-pill.danger .icon {
+  color: #f87171;
+}
+.t-pill.danger:hover {
+  background: #451a1a;
+}
+
+/* Pratinjau */
+.t-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+}
+.t-preview {
+  display: flex;
+  flex-direction: column;
+  max-width: 720px;
+  max-height: 90vh;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  background: #181d29;
+}
+.t-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: var(--white);
+  font-size: 14px;
+}
+.t-preview-head span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.t-preview-head button {
+  display: flex;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.t-preview-head button:hover {
+  color: var(--white);
+}
+.t-preview img {
+  max-width: 100%;
+  max-height: calc(90vh - 80px);
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.t-upload-frame {
+  margin-top: 12px;
+  padding: 22px 0;
+  border: 1px solid #2c3a52;
+  border-radius: 8px;
+}
+
+/* Pilih game (cari dan pilih) */
+.t-select {
+  position: relative;
+  max-width: 100%;
+}
+.t-select-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--white);
+  border-radius: 8px;
+  color: var(--white);
+}
+.t-select-box input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--white);
+  font-size: 14px;
+  font-family: inherit;
+}
+.t-select-box input::placeholder {
+  color: var(--muted);
+}
+.t-select-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 4px;
+  border: 1px solid #3a4558;
+  border-radius: 8px;
+  background: #1c2230;
+}
+.t-select-list li {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--white);
+  cursor: pointer;
+}
+.t-select-list li:hover {
+  background: #293449;
+}
+.t-select-list li.empty {
+  color: var(--muted);
+  cursor: default;
+}
+
+.t-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 14px 0 40px;
+}
+.t-submit {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #16a34a;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.t-submit:hover {
+  background: #15803d;
+}
+.t-submit:disabled {
+  background: #1f2937;
+  color: #6b7280;
+  cursor: not-allowed;
+  opacity: 1;
+}
+.t-submit:disabled:hover {
+  background: #1f2937;
+}
+
+/* ===== Status Pengajuan ===== */
+/* ===== Tab Kelola Turnamen: segmented ===== */
+.t-tabs {
+  display: flex;
+  width: fit-content;
+  margin: 0 auto 28px;
+  padding: 4px;
+  gap: 2px;
+  border: 1px solid #1f2a3d;
+  border-radius: 10px;
+  background: #0f1524;
+}
+.t-tab {
+  padding: 8px 16px;
+  border-radius: 7px;
+  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 500;
+}
+.t-tab:hover {
+  color: var(--white);
+}
+.t-tab.active {
+  background: #3b82f6;
+  color: var(--white);
+  font-weight: 600;
+}
+
+/* ===== Status Pengajuan ===== */
+.s-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 20px;
+}
+.s-title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #1a2438;
+  color: #6aa3ff;
+}
+
+.s-table-wrap {
+  overflow-x: auto;
+}
+.s-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  color: var(--white);
+}
+.s-table th {
+  padding: 14px 20px;
+  background: #0f1524;
+  color: #8b95a7;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.s-table td {
+  padding: 16px 20px;
+  border-top: 1px solid #1f2a3d;
+  font-size: 15px;
+  color: #94a3b8;
+}
+.s-table td:first-child {
+  color: var(--white);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.s-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 12px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.s-badge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.s-badge.gray {
+  color: #cbd5e1;
+  border-color: #475569;
+  background: rgba(71, 85, 105, 0.3);
+}
+.s-badge.cyan {
+  color: #38bdf8;
+  border-color: #0c4a6e;
+  background: rgba(14, 116, 144, 0.25);
+}
+.s-badge.yellow {
+  color: #fbbf24;
+  border-color: #78350f;
+  background: rgba(146, 64, 14, 0.3);
+}
+.s-badge.green {
+  color: #22c55e;
+  border-color: #14532d;
+  background: rgba(22, 101, 52, 0.3);
+}
+.s-badge.red {
+  color: #ef4444;
+  border-color: #7f1d1d;
+  background: rgba(127, 29, 29, 0.35);
+}
+.s-badge.blue {
+  color: #93bbff;
+  border-color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.2);
+}
+
+.s-badge.purple {
+  color: #a78bfa;
+  border-color: #4c1d95;
+  background: rgba(109, 40, 217, 0.2);
+}
+
+.s-detail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border: 1px solid #243044;
+  border-radius: 8px;
+  background: #121a2b;
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+}
+.s-detail-btn:hover {
+  background: #1c2740;
+}
+
+/* ===== Detail pengajuan (player) ===== */
+.d-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.d-box.note {
+  min-height: 70px;
+  text-align: left;
+  font-weight: 400;
+  color: var(--text);
+  white-space: pre-line;
+}
+.d-box.expired {
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+.t-preview-pdf {
+  width: 100%;
+  height: calc(90vh - 80px);
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.t-edit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 4px 0 8px;
+}
+.t-edit-btn,
+.t-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.t-edit-btn:hover,
+.t-cancel:hover {
+  background: #334155;
+  color: var(--white);
+}
+.t-edit-btn.revision {
+  border-color: #92400e;
+  background: rgba(217, 119, 6, 0.15);
+  color: #fbbf24;
+}
+.t-edit-btn.revision:hover {
+  background: rgba(217, 119, 6, 0.3);
+}
+.t-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .t-tab {
+    font-size: 15px;
+  }
+  .t-stats {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .t-card-actions {
+    flex-direction: column;
+  }
+  .t-form-section {
+    padding: 16px;
+  }
+  .t-submit {
+    width: 100%;
+  }
+
+  .t-file-row {
+    flex-wrap: wrap;
+  }
+  .t-file-actions {
+    width: 100%;
+  }
+}
+
 @media (max-width: 800px) {
   .profile-layout {
     grid-template-columns: 1fr;
@@ -347,7 +1142,7 @@
   border-radius: 8px;
   background: none;
   color: var(--pr-tx2);
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -758,6 +1553,14 @@
   display: none;
 }
 
+.t-preview-pdf {
+  width: 100%;
+  height: calc(90vh - 80px);
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
   .pr-grid {
@@ -957,14 +1760,6 @@
   color: var(--pr-tx3);
 }
 
-@media (max-width: 520px) {
-  .pr-row {
-    flex-wrap: wrap;
-  }
-  .pr-row .pr-btn {
-    width: 100%;
-  }
-}
 /* =====================================================================
    PENGGANTI profile-redesign-align.css yang lama.
    Hapus blok align lama di user.css, lalu tempel ini di PALING BAWAH.
@@ -990,6 +1785,204 @@
 
 .pr-side > .pr-hint {
   align-self: auto;
+}
+
+/* ===== Detail Turnamen ===== */
+.td-top {
+  display: grid;
+  grid-template-columns: minmax(240px, 315px) 1fr;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.td-poster {
+  align-self: start;
+  overflow: hidden;
+  border: 1px solid #243044;
+  border-radius: 12px;
+  background: #121826;
+}
+.td-poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.td-poster .admin-message {
+  padding: 24px;
+  text-align: center;
+}
+
+.td-summary {
+  padding: 22px 24px;
+  border: 1px solid #243044;
+  border-radius: 14px;
+  background: #111827;
+}
+.td-summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.td-game {
+  padding: 3px 12px;
+  border: 1px solid #2c3a52;
+  border-radius: 999px;
+  background: #1a2336;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+.td-title {
+  margin: 14px 0 18px;
+  font-size: 26px;
+  color: var(--white);
+}
+.td-summary .t-status {
+  font-size: 12px;
+}
+.td-summary .t-status i {
+  width: 8px;
+  height: 8px;
+  margin-top: 3px;
+}
+
+.td-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #243044;
+}
+.td-grid small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.td-grid b {
+  font-size: 16px;
+  color: var(--white);
+}
+.td-money b {
+  font-size: 26px;
+}
+.td-money b.green {
+  color: #22c55e;
+}
+.td-bar {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: #1f2937;
+  overflow: hidden;
+}
+.td-bar i {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+}
+
+.td-card {
+  margin-bottom: 14px;
+  padding: 22px 24px;
+  border: 1px solid #1f2a3d;
+  border-radius: 12px;
+  background: #131a28;
+}
+.td-card h2 {
+  margin-bottom: 14px;
+  font-size: 18px;
+  color: var(--white);
+}
+.td-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.td-item:last-child {
+  margin-bottom: 0;
+}
+.td-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #1d3a6e;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.15);
+  color: #6aa3ff;
+}
+.td-item-main {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+}
+.td-item-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.td-desc {
+  max-height: 150px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #94a3b8;
+  white-space: pre-line;
+}
+.td-desc.open {
+  max-height: none;
+}
+.td-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #6aa3ff;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.td-register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+}
+.td-register:hover {
+  background: var(--blue-hover);
+}
+
+@media (max-width: 800px) {
+  .td-top {
+    grid-template-columns: 1fr;
+  }
+  .td-poster {
+    max-width: 315px;
+  }
+  .td-title {
+    font-size: 22px;
+  }
 }
 
 /* layar kecil: satu kolom, tidak perlu nempel */
@@ -1079,4 +2072,15 @@
 .pr-lightbox-x:focus-visible {
   outline: 2px solid var(--pr-pri-s);
   outline-offset: 2px;
+}
+
+/* responsive card Akun (dari staging) */
+@media (max-width: 520px) {
+  .pr-row {
+    flex-wrap: wrap;
+  }
+  .pr-row .pr-btn {
+    width: 100%;
+  }
+
 }

@@ -248,8 +248,8 @@ function Profile() {
     <div className="pr-page">
       <button type="button" className="pr-back" onClick={() => navigate(-1)}>
         <svg
-          width="18"
-          height="18"
+          width="25"
+          height="25"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

@@ -18,3 +18,16 @@ export const SKIP_AUTH =
 
 // Khusus Kelola Game. Ubah ke false setelah semua endpoint game selesai.
 export const USE_GAME_MOCK = import.meta.env.VITE_USE_GAME_MOCK !== "false";
+
+// Khusus landing page (turnamen & komunitas). Ubah ke false setelah endpoint landing selesai.
+export const USE_LANDING_MOCK =
+  import.meta.env.VITE_USE_LANDING_MOCK !== "false";
+// Khusus daftar game di landing. Ubah ke false setelah route game publik dari backend jadi.
+export const USE_LANDING_GAME_MOCK =
+  import.meta.env.VITE_USE_LANDING_GAME_MOCK !== "false";
+
+export const USE_TOURNAMENT_MOCK =
+  import.meta.env.VITE_USE_TOURNAMENT_MOCK !== "false";
+
+export const PRIORITY_AFTER_MINUTES =
+  Number(import.meta.env.VITE_PRIORITY_MINUTES) || 4320;

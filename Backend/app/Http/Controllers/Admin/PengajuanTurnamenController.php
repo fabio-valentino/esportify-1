@@ -1,0 +1,262 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\PengajuanTurnamen;
+use App\Models\Penyelenggara;
+use App\Models\Turnamen;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class PengajuanTurnamenController extends Controller
+{
+    /**
+     * Menampilkan daftar pengajuan turnamen.
+     */
+    public function index(Request $request)
+    {
+        $query = PengajuanTurnamen::with([
+            'player.user',
+            'game',
+        ]);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_turnamen', 'like', "%{$search}%")
+                    ->orWhere('nama_penyelenggara', 'like', "%{$search}%");
+            });
+        }
+
+        $pengajuan = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return response()->json([
+            'message' => 'Daftar pengajuan turnamen berhasil diambil.',
+            'data' => $pengajuan,
+        ]);
+    }
+
+    /**
+     * Menampilkan detail pengajuan.
+     * Status Menunggu Verifikasi berubah menjadi Sedang ditinjau.
+     */
+    public function show(Request $request, $id)
+    {
+        $admin = $request->user()->admin;
+
+        if (!$admin) {
+            return response()->json([
+                'message' => 'Profil admin tidak ditemukan.',
+            ], 403);
+        }
+
+        $pengajuan = DB::transaction(function () use ($id, $admin) {
+            $pengajuan = PengajuanTurnamen::where(
+                'id_pengajuan',
+                $id
+            )->lockForUpdate()->firstOrFail();
+
+            if ($pengajuan->status === 'Sedang diedit') {
+                abort(
+                    409,
+                    'Pengajuan sedang diedit oleh player dan belum dapat ditinjau.'
+                );
+            }
+
+            if ($pengajuan->status === 'Menunggu Verifikasi') {
+                $pengajuan->update([
+                    'status' => 'Sedang ditinjau',
+                    'id_admin' => $admin->id_admin,
+                ]);
+            }
+
+            return $pengajuan;
+        });
+
+        $pengajuan->load([
+            'player.user',
+            'game',
+            'sumberPendanaan',
+            'pendanaan',
+            'pembayaran',
+            'sponsor',
+        ]);
+
+        // Jangan mengirimkan path KTP melalui response detail.
+        $pengajuan->makeHidden(['ktp']);
+
+        return response()->json([
+            'message' => 'Detail pengajuan berhasil diambil.',
+            'data' => $pengajuan,
+        ]);
+    }
+
+    /**
+     * Menyetujui pengajuan dan membuat data penyelenggara
+     * serta turnamen.
+     */
+    public function approve(Request $request, $id)
+    {
+        $admin = $request->user()->admin;
+
+        if (!$admin) {
+            return response()->json([
+                'message' => 'Profil admin tidak ditemukan.',
+            ], 403);
+        }
+
+        $pengajuan = DB::transaction(function () use ($id, $admin) {
+            $pengajuan = PengajuanTurnamen::where(
+                'id_pengajuan',
+                $id
+            )->lockForUpdate()->firstOrFail();
+
+            if ($pengajuan->status !== 'Sedang ditinjau') {
+                abort(
+                    409,
+                    'Pengajuan harus berstatus Sedang ditinjau untuk disetujui.'
+                );
+            }
+
+            if ($pengajuan->turnamen()->exists()) {
+                abort(
+                    409,
+                    'Turnamen untuk pengajuan ini sudah dibuat.'
+                );
+            }
+
+            $penyelenggara = Penyelenggara::create([
+                'id_player' => $pengajuan->id_player,
+            ]);
+
+            Turnamen::create([
+                'id_pengajuan' => $pengajuan->id_pengajuan,
+                'id_penyelenggara' => $penyelenggara->id_penyelenggara,
+                'status' => 'pendaftaran',
+            ]);
+
+            $pengajuan->update([
+                'status' => 'Disetujui',
+                'id_admin' => $admin->id_admin,
+                'alasan_admin' => null,
+                'revisi_diminta_pada' => null,
+            ]);
+
+            return $pengajuan;
+        });
+
+        return response()->json([
+            'message' => 'Pengajuan berhasil disetujui dan turnamen berhasil dibuat.',
+            'data' => $pengajuan->fresh(),
+        ]);
+    }
+
+    /**
+     * Menolak pengajuan turnamen.
+     */
+    public function reject(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'alasan_admin' => ['required', 'string'],
+        ]);
+
+        $admin = $request->user()->admin;
+
+        if (!$admin) {
+            return response()->json([
+                'message' => 'Profil admin tidak ditemukan.',
+            ], 403);
+        }
+
+        $pengajuan = DB::transaction(function () use (
+            $id,
+            $admin,
+            $validated
+        ) {
+            $pengajuan = PengajuanTurnamen::where(
+                'id_pengajuan',
+                $id
+            )->lockForUpdate()->firstOrFail();
+
+            if ($pengajuan->status !== 'Sedang ditinjau') {
+                abort(
+                    409,
+                    'Hanya pengajuan berstatus Sedang ditinjau yang dapat ditolak.'
+                );
+            }
+
+            $pengajuan->update([
+                'status' => 'Ditolak',
+                'id_admin' => $admin->id_admin,
+                'alasan_admin' => $validated['alasan_admin'],
+                'revisi_diminta_pada' => null,
+            ]);
+
+            return $pengajuan;
+        });
+
+        return response()->json([
+            'message' => 'Pengajuan berhasil ditolak.',
+            'data' => $pengajuan->fresh(),
+        ]);
+    }
+
+    /**
+     * Meminta player melakukan revisi pengajuan.
+     */
+    public function requestRevision(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'alasan_admin' => ['required', 'string'],
+        ]);
+
+        $admin = $request->user()->admin;
+
+        if (!$admin) {
+            return response()->json([
+                'message' => 'Profil admin tidak ditemukan.',
+            ], 403);
+        }
+
+        $pengajuan = DB::transaction(function () use (
+            $id,
+            $admin,
+            $validated
+        ) {
+            $pengajuan = PengajuanTurnamen::where(
+                'id_pengajuan',
+                $id
+            )->lockForUpdate()->firstOrFail();
+
+            if ($pengajuan->status !== 'Sedang ditinjau') {
+                abort(
+                    409,
+                    'Hanya pengajuan berstatus Sedang ditinjau yang dapat diminta revisi.'
+                );
+            }
+
+            $pengajuan->update([
+                'status' => 'Revisi',
+                'id_admin' => $admin->id_admin,
+                'alasan_admin' => $validated['alasan_admin'],
+                'revisi_diminta_pada' => now(),
+            ]);
+
+            return $pengajuan;
+        });
+
+        return response()->json([
+            'message' => 'Pengajuan berhasil dikembalikan untuk revisi.',
+            'data' => $pengajuan->fresh(),
+        ]);
+    }
+}
+?>
