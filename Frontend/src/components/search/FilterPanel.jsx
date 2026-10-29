@@ -36,6 +36,9 @@ function FilterPanel({
   provinces,
   cities,
 }) {
+  // Provinsi dan kota hanya relevan untuk turnamen offline
+  const offline = values.tipe === "offline";
+
   return (
     <section
       id="ct-filter-panel"
@@ -107,34 +110,67 @@ function FilterPanel({
           ))}
         </SelectField>
 
-        <SelectField
-          id="ct-provinsi"
-          label="Provinsi"
-          value={values.provinsi}
-          onChange={(v) => onChange("provinsi", v)}
-        >
-          <option value="">Semua provinsi</option>
-          {provinces.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </SelectField>
+        {offline && (
+          <>
+            <SelectField
+              id="ct-provinsi"
+              label="Provinsi"
+              value={values.provinsi}
+              onChange={(v) => onChange("provinsi", v)}
+            >
+              <option value="">Semua provinsi</option>
+              {provinces.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </SelectField>
 
-        <SelectField
-          id="ct-kota"
-          label="Kota"
-          value={values.kota}
-          disabled={!values.provinsi}
-          onChange={(v) => onChange("kota", v)}
-        >
-          <option value="">Semua kota</option>
-          {cities.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </SelectField>
+            <SelectField
+              id="ct-kota"
+              label="Kota"
+              value={values.kota}
+              disabled={!values.provinsi}
+              onChange={(v) => onChange("kota", v)}
+            >
+              <option value="">Semua kota</option>
+              {cities.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </SelectField>
+          </>
+        )}
+
+        {values.jadwal === "custom" && (
+          <div className="ct-dates">
+            <div className="ct-field">
+              <label className="ct-label" htmlFor="ct-dari">
+                Dari tanggal
+              </label>
+              <input
+                id="ct-dari"
+                type="date"
+                className="ct-input"
+                value={values.dari}
+                onChange={(e) => onChange("dari", e.target.value)}
+              />
+            </div>
+            <div className="ct-field">
+              <label className="ct-label" htmlFor="ct-sampai">
+                Sampai tanggal
+              </label>
+              <input
+                id="ct-sampai"
+                type="date"
+                className="ct-input"
+                value={values.sampai}
+                onChange={(e) => onChange("sampai", e.target.value)}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="ct-panel-foot">

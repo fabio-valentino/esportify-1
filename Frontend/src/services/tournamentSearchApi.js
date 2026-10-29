@@ -1,5 +1,7 @@
 import { API_BASE_URL } from "../config/env";
 import { apiRequest } from "./httpClient";
+// CHANGED: filter jadwal dipindah ke utils
+import { matchesSchedule } from "../utils/searchSchedule";
 
 // Service halaman Cari Turnamen.
 // Data sumber: GET /turnamen.
@@ -16,7 +18,6 @@ try {
 export const PER_PAGE = 6;
 
 const TZ = "Asia/Jakarta";
-const DAY_MS = 86_400_000;
 const CACHE_MS = 60_000;
 
 export const SUPPORTED_FILTERS = {
@@ -39,12 +40,8 @@ export const FEE_OPTIONS = [
   { value: "berbayar", label: "Berbayar" },
 ];
 
-export const SCHEDULE_OPTIONS = [
-  { value: "", label: "Semua waktu" },
-  { value: "7", label: "7 hari ke depan" },
-  { value: "30", label: "30 hari ke depan" },
-  { value: "90", label: "3 bulan ke depan" },
-];
+// CHANGED: opsi jadwal sekarang dari utils (Hari ini, 7 hari, Pilih tanggal)
+export { SCHEDULE_OPTIONS } from "../utils/searchSchedule";
 
 /* ---------------- Tanggal & formatter ---------------- */
 
@@ -65,13 +62,6 @@ const parseDate = (value) => {
 
   return Number.isNaN(date.getTime()) ? null : date;
 };
-
-const startOfTodayWIB = () =>
-  parseDate(
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: TZ,
-    }).format(new Date()),
-  );
 
 export const formatDate = (value) => {
   const date = parseDate(value);
@@ -294,39 +284,29 @@ const matches = (tournament, criteria = {}) => {
     return false;
   }
 
-  if (
-    criteria.provinsi &&
-    tournament.provinceId !== String(criteria.provinsi)
-  ) {
-    return false;
-  }
-
-  if (criteria.kota && tournament.cityId !== String(criteria.kota)) {
-    return false;
-  }
-
-  if (criteria.jadwal) {
-    const date = parseDate(tournament.date);
-
-    if (!date) return false;
-
-    const start = startOfTodayWIB();
-
-    if (!start) return false;
-
-    const endExclusive = new Date(
-      start.getTime() + (Number(criteria.jadwal) + 1) * DAY_MS,
-    );
-
-    if (date < start || date >= endExclusive) {
+  // CHANGED: provinsi dan kota hanya berlaku untuk tipe Offline
+  if (String(criteria.tipe ?? "").toLowerCase() === "offline") {
+    if (
+      criteria.provinsi &&
+      tournament.provinceId !== String(criteria.provinsi)
+    ) {
       return false;
     }
+
+    if (criteria.kota && tournament.cityId !== String(criteria.kota)) {
+      return false;
+    }
+  }
+
+  // CHANGED: jadwal (hari ini / 7 hari / rentang tanggal) di zona WIB
+  if (!matchesSchedule(tournament.date, criteria)) {
+    return false;
   }
 
   return true;
 };
 
-// criteria: { q, kategori, tipe, biaya, jadwal, provinsi, kota, page }
+// criteria: { q, kategori, tipe, biaya, jadwal, dari, sampai, provinsi, kota, page }
 export async function searchTournaments(criteria = {}) {
   const all = (await loadAll()).filter((tournament) =>
     matches(tournament, criteria),
@@ -369,8 +349,9 @@ export async function getSearchCategories() {
       ].sort((a, b) => a.name.localeCompare(b.name, "id"));
     }
   } catch (error) {
+    // CHANGED: teks warning disesuaikan dengan endpoint yang dipanggil
     console.warn(
-      "Gagal mengambil /public/kategori; memakai kategori dari turnamen.",
+      "Gagal mengambil /kategori; memakai kategori dari turnamen.",
       error,
     );
   }
@@ -414,4 +395,39 @@ export async function getSearchCities(provinceId) {
       name: city.nama_kota ?? "",
     }))
     .filter((city) => city.id && city.name);
+}
+
+/* ---------------- NEW: detail turnamen (wajib login) ---------------- */
+
+// Belum dipakai halaman mana pun (menunggu desain Detail Turnamen).
+// Bentuk response mengikuti kontrak: GET /turnamen/{id} -> data (objek).
+// Melempar ApiError; status 401 harus ditangani pemanggil (hapus token, ke /login).
+export async function getTournamentDetail(id) {
+  const response = await apiRequest(`/turnamen/${encodeURIComponent(id)}`);
+  const data = response?.data ?? response;
+
+  const submission = data?.pengajuan ?? {};
+  const payment = submission.pembayaran ?? null;
+  const method = String(payment?.metode_pembayaran ?? "").toLowerCase();
+
+  return {
+    ...mapTournament(data),
+    description: submission.deskripsi_turnamen ?? "",
+    locationDetail: submission.deskripsi_lokasi ?? "",
+    // Array nama sponsor, bisa kosong. Kontak sponsor tidak dikirim backend.
+    sponsors: Array.isArray(submission.sponsor)
+      ? submission.sponsor.filter(Boolean)
+      : [],
+    // null untuk turnamen gratis. qris / qris_transfer -> QRIS,
+    // transfer / qris_transfer -> Transfer Bank (no_rekening).
+    payment: payment
+      ? {
+          method,
+          showQris: method.includes("qris"),
+          showTransfer: method.includes("transfer"),
+          qris: toMediaUrl(payment.qris),
+          accountNumber: payment.no_rekening ?? "",
+        }
+      : null,
+  };
 }
