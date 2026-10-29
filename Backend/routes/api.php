@@ -40,7 +40,7 @@ use App\Http\Controllers\Api\Admin\KategoriController;
 // ==========================================
 use App\Http\Controllers\Api\LokasiController;
 use App\Http\Controllers\Api\TurnamenController;
-
+use App\Http\Controllers\Api\Player\KategoriController as PlayerKategoriController;
 
 // ==========================================
 // AUTHENTICATION
@@ -82,6 +82,11 @@ Route::get('/turnamen', [
 // Daftar game untuk Guest dan seluruh pengunjung
 Route::get('/public/games', [
     PlayerGameController::class,
+    'index'
+]);
+// Daftar kategori untuk Guest dan seluruh pengunjung
+Route::get('/kategori', [
+    PlayerKategoriController::class,
     'index'
 ]);
 
