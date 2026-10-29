@@ -21,6 +21,7 @@ import AdminSubmissions from "./pages/admin/AdminSubmissions";
 import AdminSubmissionDetail from "./pages/admin/AdminSubmissionDetail";
 import SubmissionDetail from "./pages/tournament/SubmissionDetail";
 import TournamentDetail from "./pages/tournament/TournamentDetail";
+import ManagedTournamentDetail from "./pages/tournament/ManagedTournamentDetail";
 
 function App() {
   return (
@@ -44,7 +45,12 @@ function App() {
               path="/turnamen/pengajuan/:id"
               element={<SubmissionDetail />}
             />
-            <Route path="/turnamen/detail/:id" element={<TournamentDetail />} />
+
+            <Route
+              path="/turnamen/detail/:id"
+              element={<ManagedTournamentDetail />}
+            />
+            <Route path="/turnamen/cari/:id" element={<TournamentDetail />} />
             <Route path="/turnamen/buat" element={<CreateTournament />} />
             <Route path="/turnamen/kelola" element={<ManageTournaments />} />
             <Route

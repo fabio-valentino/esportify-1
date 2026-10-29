@@ -97,7 +97,7 @@
   gap: 4px;
 }
 .admin-submenu .admin-nav-item.active {
-  background: #2b4a85;
+  background: var(--blue);
 }
 
 /* Tombol Keluar di dasar sidebar */

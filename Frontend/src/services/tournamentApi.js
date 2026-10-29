@@ -311,3 +311,38 @@ export async function updateSubmission(
 
   return apiRequest(`/pengajuan-turnamen/${id}`, { method: "POST", body: f });
 }
+
+// GET /api/turnamen/{id} (wajib login). Id = id_turnamen, bukan id_pengajuan.
+// ASSUMPTION: relasi pendanaan/pembayaran/sponsor ada di dalam pengajuan.
+export async function getTournamentDetail(id) {
+  const response = await apiRequest(`/turnamen/${id}`);
+  const t = response?.data ?? response;
+  const p = t.pengajuan ?? {};
+  const fee = p.pendanaan ?? {};
+  const pay = p.pembayaran ?? {};
+
+  return {
+    id: Number(t.id_turnamen),
+    status: String(t.status ?? "")
+      .trim()
+      .toLowerCase(),
+    name: p.nama_turnamen ?? "-",
+    game: p.game?.nama_game ?? "-",
+    organizer:
+      p.nama_penyelenggara ?? t.penyelenggara?.nama_penyelenggara ?? "-",
+    posterUrl: p.poster_url ?? toMediaUrl(p.poster),
+    type: String(p.tipe_turnamen ?? "").toLowerCase(),
+    city: p.kota?.nama_kota ?? "",
+    province: p.kota?.provinsi?.nama_provinsi ?? "",
+    address: p.deskripsi_lokasi ?? "",
+    slot: p.slot ?? null,
+    closeDate: p.jadwal_pendaftaran_tutup ?? "",
+    matchDate: p.jadwal_main ?? "",
+    description: p.deskripsi_turnamen ?? "",
+    prize: p.total_hadiah ?? null,
+    feeType: String(fee.jenis_biaya ?? "").toLowerCase(),
+    fee: fee.biaya_pendaftaran ?? null,
+    sponsors: (p.sponsor ?? []).map((s) => s.nama_sponsor).filter(Boolean),
+    paymentMethod: String(pay.metode_pembayaran ?? "").toLowerCase(),
+  };
+}
