@@ -91,6 +91,7 @@ Route::get('/kategori', [
 ]);
 
 
+
 // ==========================================
 // AUTHENTICATED USER & PLAYER
 // ==========================================
@@ -98,14 +99,9 @@ Route::get('/kategori', [
 Route::middleware('auth:sanctum')->group(function () {
 
     // ==========================================
-    // TURNAMEN
+    // AUTHENTICATED USER
+    // Bisa diakses Admin dan Player
     // ==========================================
-
-    // Daftar turnamen yang dikelola oleh Player login
-    Route::get('/turnamen-kelolaan', [
-        TurnamenController::class,
-        'kelolaan'
-    ]);
 
     // Detail turnamen untuk pengguna yang sudah login
     Route::get('/turnamen/{id}', [
@@ -113,11 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
         'show'
     ]);
 
-
-    // ==========================================
-    // AUTHENTICATED USER
-    // ==========================================
-
+    // Informasi akun pengguna yang sedang login
     Route::get('/user', function (Request $request) {
         $user = $request->user();
 
@@ -134,49 +126,103 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // ==========================================
-    // PLAYER PROFILE
+    // PLAYER ROUTES
+    // Hanya bisa diakses oleh Role Player
     // ==========================================
 
-    Route::get('/profile', [ProfileController::class, 'show']);
-    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::middleware('role:player')->group(function () {
+
+        // ==========================================
+        // TURNAMEN KELOLAAN PLAYER
+        // ==========================================
+
+        Route::get('/turnamen-kelolaan', [
+            TurnamenController::class,
+            'kelolaan'
+        ]);
 
 
-    // ==========================================
-    // GAME PLAYER
-    // ==========================================
+        // ==========================================
+        // PLAYER PROFILE
+        // ==========================================
 
-    Route::get('/games', [PlayerGameController::class, 'index']);
-    Route::get('/games/{id}', [PlayerGameController::class, 'show']);
+        Route::get('/profile', [
+            ProfileController::class,
+            'show'
+        ]);
+
+        Route::put('/profile', [
+            ProfileController::class,
+            'update'
+        ]);
 
 
-    // ==========================================
-    // PENGAJUAN TURNAMEN PLAYER
-    // ==========================================
+        // ==========================================
+        // GAME PLAYER
+        // ==========================================
 
-    Route::get('/pengajuan-turnamen', [
-        PengajuanTurnamenController::class,
-        'index'
-    ]);
+        Route::middleware('permission:lihat_data_game')->group(function () {
 
-    Route::post('/pengajuan-turnamen', [
-        PengajuanTurnamenController::class,
-        'store'
-    ]);
+            Route::get('/games', [
+                PlayerGameController::class,
+                'index'
+            ]);
 
-    Route::get('/pengajuan-turnamen/{id}', [
-        PengajuanTurnamenController::class,
-        'show'
-    ]);
+            Route::get('/games/{id}', [
+                PlayerGameController::class,
+                'show'
+            ]);
 
-    Route::post('/pengajuan-turnamen/{id}/start-edit', [
-        PengajuanTurnamenController::class,
-        'startEdit'
-    ]);
+        });
 
-    Route::put('/pengajuan-turnamen/{id}', [
-        PengajuanTurnamenController::class,
-        'update'
-    ]);
+
+        // ==========================================
+        // PENGAJUAN TURNAMEN PLAYER
+        // ==========================================
+
+        // Melihat pengajuan milik sendiri
+        Route::middleware('permission:lihat_pengajuan_turnamen')->group(function () {
+
+            Route::get('/pengajuan-turnamen', [
+                PengajuanTurnamenController::class,
+                'index'
+            ]);
+
+            Route::get('/pengajuan-turnamen/{id}', [
+                PengajuanTurnamenController::class,
+                'show'
+            ]);
+
+        });
+
+
+        // Mengajukan turnamen baru
+        Route::middleware('permission:ajukan_turnamen')->group(function () {
+
+            Route::post('/pengajuan-turnamen', [
+                PengajuanTurnamenController::class,
+                'store'
+            ]);
+
+        });
+
+
+        // Mengubah pengajuan ketika mendapatkan kesempatan revisi
+        Route::middleware('permission:ubah_pengajuan_turnamen')->group(function () {
+
+            Route::post('/pengajuan-turnamen/{id}/start-edit', [
+                PengajuanTurnamenController::class,
+                'startEdit'
+            ]);
+
+            Route::put('/pengajuan-turnamen/{id}', [
+                PengajuanTurnamenController::class,
+                'update'
+            ]);
+
+        });
+
+    });
 
 });
 
@@ -189,35 +235,42 @@ Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin')
     ->group(function () {
 
-        // ==========================================
-        // KELOLA PENGAJUAN TURNAMEN
-        // TETAP BISA DIAKSES MESKIPUN TENGGAT HABIS
-        // ==========================================
+       
+    // ==========================================
+    // KELOLA PENGAJUAN TURNAMEN
+    // TETAP BISA DIAKSES MESKIPUN TENGGAT HABIS
+    // ==========================================
 
-        Route::get('/pengajuan-turnamen', [
-            AdminPengajuanTurnamenController::class,
-            'index'
-        ])->middleware('permission:kelola_turnamen');
+    // Melihat seluruh pengajuan
+    Route::get('/pengajuan-turnamen', [
+        AdminPengajuanTurnamenController::class,
+        'index'
+    ])->middleware('permission:lihat_semua_pengajuan_turnamen');
 
-        Route::get('/pengajuan-turnamen/{id}', [
-            AdminPengajuanTurnamenController::class,
-            'show'
-        ])->middleware('permission:kelola_turnamen');
+    // Melihat detail pengajuan
+    Route::get('/pengajuan-turnamen/{id}', [
+        AdminPengajuanTurnamenController::class,
+        'show'
+    ])->middleware('permission:lihat_semua_pengajuan_turnamen');
 
-        Route::post('/pengajuan-turnamen/{id}/approve', [
-            AdminPengajuanTurnamenController::class,
-            'approve'
-        ])->middleware('permission:kelola_turnamen');
+    // Menyetujui pengajuan
+    Route::post('/pengajuan-turnamen/{id}/approve', [
+        AdminPengajuanTurnamenController::class,
+        'approve'
+    ])->middleware('permission:setujui_pengajuan_turnamen');
 
-        Route::post('/pengajuan-turnamen/{id}/reject', [
-            AdminPengajuanTurnamenController::class,
-            'reject'
-        ])->middleware('permission:kelola_turnamen');
+    // Menolak pengajuan
+    Route::post('/pengajuan-turnamen/{id}/reject', [
+        AdminPengajuanTurnamenController::class,
+        'reject'
+    ])->middleware('permission:tolak_pengajuan_turnamen');
 
-        Route::post('/pengajuan-turnamen/{id}/revision', [
-            AdminPengajuanTurnamenController::class,
-            'requestRevision'
-        ])->middleware('permission:kelola_turnamen');
+    // Memberikan revisi
+    Route::post('/pengajuan-turnamen/{id}/revision', [
+        AdminPengajuanTurnamenController::class,
+        'requestRevision'
+    ])->middleware('permission:berikan_revisi_pengajuan_turnamen');
+
 
 
         // ==========================================
