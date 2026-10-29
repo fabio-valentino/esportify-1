@@ -5,7 +5,7 @@ function UserHome() {
 
   return (
     <h1 className="admin-title">
-      Hallo, {profile.username}! Selamat datang kembali di Esportify.
+      Hallo, {profile?.username ?? " "}! Selamat datang kembali di Esportify.
     </h1>
   );
 }
