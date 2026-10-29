@@ -14,7 +14,13 @@ function ProtectedRoute({ adminOnly = false, userOnly = false }) {
 
   if (loading) return <p className="placeholder">Memuat...</p>;
   if (!user)
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: `${location.pathname}${location.search}` }}
+      />
+    );
 
   const admin = isAdmin(user);
   if (adminOnly && !admin) return <Navigate to="/home" replace />;

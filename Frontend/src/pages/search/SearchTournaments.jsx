@@ -18,8 +18,7 @@ import "../../styles/search.css";
 
 // ASSUMPTION: halaman detail turnamen belum ada (menunggu desain). Isi saat route-nya jadi,
 // contoh: (id) => `/turnamen/${id}`. Selama null, tombol "Lihat Detail" nonaktif.
-const DETAIL_PATH = null;
-
+const DETAIL_PATH = (id) => `/turnamen/detail/${id}`;
 // CHANGED: ditambah dari dan sampai (rentang tanggal kustom)
 const FILTER_KEYS = [
   "kategori",
