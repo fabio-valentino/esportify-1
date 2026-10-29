@@ -1,4 +1,7 @@
-import FileRow from "./FileRow";
+import { useState } from "react";
+import Icon from "../icon";
+import FilePreview from "./FilePreview";
+import useKtpPreview from "../../hooks/useKtpPreview";
 import { longDate, rupiah } from "../../utils/date";
 
 const METHOD_LABEL = {
@@ -21,8 +24,36 @@ function Field({ label, children }) {
   );
 }
 
+// Baris file: tombol Lihat membuka popup di halaman yang sama
+function ViewRow({ name, disabled, loading, note, onView }) {
+  return (
+    <div className="t-file-row">
+      <span className="t-file-icon">
+        <Icon name="file-image" size={26} />
+      </span>
+      <span className="t-file-name" title={name}>
+        {name || "-"}
+      </span>
+      <div className="t-file-actions">
+        <button
+          type="button"
+          className="t-pill"
+          disabled={disabled || loading}
+          title={disabled ? note : "Lihat file"}
+          onClick={onView}
+        >
+          {loading ? "Memuat..." : "Lihat"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // Tampilan baca isi pengajuan. d = hasil getSubmissionDetail.
 function SubmissionView({ d }) {
+  const ktp = useKtpPreview(d.id); // role default: player
+  const [qrisPreview, setQrisPreview] = useState(null);
+
   return (
     <>
       <section className="d-card d-center">
@@ -99,10 +130,13 @@ function SubmissionView({ d }) {
               {METHOD_LABEL[d.paymentMethod] ?? "-"}
             </div>
             {["qris", "qris_transfer"].includes(d.paymentMethod) && (
-              <FileRow
+              <ViewRow
                 name={d.qrisName || "QRIS"}
-                url={d.qrisUrl}
+                disabled={!d.qrisUrl}
                 note="File QRIS tidak tersedia"
+                onView={() =>
+                  setQrisPreview({ url: d.qrisUrl, name: d.qrisName || "QRIS" })
+                }
               />
             )}
             {["transfer", "qris_transfer"].includes(d.paymentMethod) && (
@@ -117,13 +151,14 @@ function SubmissionView({ d }) {
 
       <section className="d-card">
         <p className="d-label">KTP</p>
-        {/* KTP disembunyikan backend dari response player */}
-        <FileRow
-          name="KTP sudah diunggah"
-          url={null}
-          note="KTP bersifat privat dan tidak ditampilkan"
-        />
+        <ViewRow name="KTP" loading={ktp.loading} onView={ktp.open} />
+        {ktp.error && <p className="admin-message error">{ktp.error}</p>}
       </section>
+
+      {ktp.preview && <FilePreview file={ktp.preview} onClose={ktp.close} />}
+      {qrisPreview && (
+        <FilePreview file={qrisPreview} onClose={() => setQrisPreview(null)} />
+      )}
     </>
   );
 }
