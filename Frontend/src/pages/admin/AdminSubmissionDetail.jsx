@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Icon from "../../components/icon";
 import DecisionModal from "../../components/admin/DecisionModal";
 import ConfirmDialog from "../../components/admin/ConfirmDialog";
+import FilePreview from "../../components/tournament/FilePreview";
+import useKtpPreview from "../../hooks/useKtpPreview";
 import {
   getAdminSubmissionDetail,
   approveSubmission,
@@ -11,11 +13,6 @@ import {
   releaseSubmission,
 } from "../../services/adminApi";
 import "../../styles/user.css";
-import { fetchKtpObjectUrl } from "../../services/ktpApi";
-import FilePreview from "../../components/tournament/FilePreview";
-import useKtpPreview from "../../hooks/useKtpPreview";
-
-const ktp = useKtpPreview(id, "admin");
 
 const REVISION_OPTIONS = [
   "Informasi turnamen belum lengkap",
@@ -78,8 +75,8 @@ function Field({ label, children }) {
   );
 }
 
-// Baris file. url kosong = tidak bisa dilihat (mis. KTP yang privat).
-function FileRow({ name, url, note, onView }) {
+// Baris file. url kosong = tidak bisa dilihat.
+function FileRow({ name, url, note, onView, loading }) {
   return (
     <div className="t-file-row">
       <span className="t-file-icon">
@@ -92,22 +89,21 @@ function FileRow({ name, url, note, onView }) {
         <button
           type="button"
           className="t-pill"
-          disabled={!url}
+          disabled={!url || loading}
           title={url ? "Lihat file" : note}
           onClick={() => url && onView({ url, name })}
         >
-          Lihat
+          {loading ? "Memuat..." : "Lihat"}
         </button>
       </div>
     </div>
   );
 }
 
-const isPdf = (file) => /\.pdf($|\?)/i.test(file.name || file.url || "");
-
 function AdminSubmissionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const ktp = useKtpPreview(id, "admin");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -116,7 +112,7 @@ function AdminSubmissionDetail() {
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [leaving, setLeaving] = useState(false);
-  const [preview, setPreview] = useState(null); // { url, name }
+  const [preview, setPreview] = useState(null); // QRIS: { url, name }
 
   // Membuka halaman ini memanggil endpoint yang mengubah status menjadi "Sedang ditinjau"
   useEffect(() => {
@@ -128,6 +124,9 @@ function AdminSubmissionDetail() {
 
   // Dipakai setelah keputusan (setujui/tolak/revisi): TIDAK memanggil release
   const back = () => navigate("/admin/pengajuan");
+
+  const reviewing =
+    String(data?.status ?? "").toLowerCase() === "sedang ditinjau";
 
   // Dipakai tombol Kembali: lepaskan pengajuan kalau masih "Sedang ditinjau"
   const handleBack = async () => {
@@ -146,9 +145,6 @@ function AdminSubmissionDetail() {
       setLeaving(false);
     }
   };
-
-  const reviewing =
-    String(data?.status ?? "").toLowerCase() === "sedang ditinjau";
 
   const handleApprove = async () => {
     setWorking(true);
@@ -292,11 +288,13 @@ function AdminSubmissionDetail() {
           <section className="d-card">
             <p className="d-label">KTP</p>
             <FileRow
-              name={data.ktpName}
-              url={data.ktpUrl}
+              name={data.ktpName || "KTP"}
+              url={true}
               note="File KTP tidak tersedia"
-              onView={setPreview}
+              loading={ktp.loading}
+              onView={ktp.open}
             />
+            {ktp.error && <p className="admin-message error">{ktp.error}</p>}
           </section>
 
           {message && <p className="admin-message error">{message}</p>}
@@ -372,6 +370,11 @@ function AdminSubmissionDetail() {
         >
           <p>Turnamen akan dibuat dari pengajuan ini.</p>
         </ConfirmDialog>
+      )}
+
+      {ktp.preview && <FilePreview file={ktp.preview} onClose={ktp.close} />}
+      {preview && (
+        <FilePreview file={preview} onClose={() => setPreview(null)} />
       )}
     </div>
   );
