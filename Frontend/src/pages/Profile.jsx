@@ -36,8 +36,8 @@ const resolveGender = (v) =>
         .toLowerCase(),
   )?.value ?? DEFAULT_GENDER;
 
-// Tiap field tetap dikirim lewat endpoint-nya masing-masing (sama seperti sebelumnya).
-// errorKey = nama key error dari backend (sama seperti yang dipakai EditableField).
+// Tiap field tetap dikirim lewat endpoint-nya masing-masing.
+// errorKey = nama key error dari backend.
 const FIELDS = [
   { key: "username", api: updateUsername, errorKey: "username" },
   { key: "bio", api: updateBio, errorKey: "bio" },
@@ -58,14 +58,36 @@ function Profile() {
   // Mode halaman: false = hanya lihat (default), true = form bisa diedit
   const [isEditing, setIsEditing] = useState(false);
 
-  // ---------- Avatar (logika sama seperti sebelumnya) ----------
-  const [uploading, setUploading] = useState(false);
+  // ---------- Avatar ----------
+  const [avatarFile, setAvatarFile] = useState(null); // file terpilih, belum di-upload
+  const [avatarPreview, setAvatarPreview] = useState(""); // blob URL untuk preview
+  const [lightbox, setLightbox] = useState(false);
   const [avatarMsg, setAvatarMsg] = useState({ text: "", type: "" });
 
-  const handleAvatar = async (e) => {
+  // Bersihkan blob URL supaya tidak bocor memori
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    };
+  }, [avatarPreview]);
+
+  // Tutup lightbox dengan tombol Escape
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e) => e.key === "Escape" && setLightbox(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox]);
+
+  const clearAvatarDraft = () => {
+    setAvatarFile(null);
+    setAvatarPreview("");
+  };
+
+  // HANYA validasi + preview, upload baru dilakukan saat klik "Simpan perubahan"
+  const handleAvatar = (e) => {
     const file = e.target.files[0];
     e.target.value = "";
-
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -77,35 +99,23 @@ function Profile() {
       return;
     }
 
-    setUploading(true);
     setAvatarMsg({ text: "", type: "" });
-    try {
-      const localUrl = await uploadAvatar(file);
-      let next = localUrl
-        ? { ...profile, avatar: localUrl }
-        : await getProfile();
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
 
-      // Browser sering menampilkan gambar lama kalau URL-nya sama (backend menimpa
-      // file / nama file sama). Tambahkan ?v=timestamp supaya dimuat ulang.
-      if (next.avatar && !/^(data:|blob:)/.test(next.avatar)) {
-        const sep = next.avatar.includes("?") ? "&" : "?";
-        next = { ...next, avatar: `${next.avatar}${sep}v=${Date.now()}` };
-      }
-      setProfile(next);
-      if (!SKIP_AUTH) await refreshUser().catch(() => {});
-      setAvatarMsg({ text: "Foto profil diperbarui.", type: "success" });
-    } catch (err) {
-      const fe = err.fields?.avatar;
-      setAvatarMsg({
-        text:
-          (Array.isArray(fe) ? fe[0] : fe) ||
-          err.message ||
-          "Gagal mengunggah foto.",
-        type: "error",
-      });
-    } finally {
-      setUploading(false);
+  // Upload sungguhan, dipanggil dari handleSave
+  const uploadAvatarNow = async () => {
+    const localUrl = await uploadAvatar(avatarFile);
+    let next = localUrl ? { ...profile, avatar: localUrl } : await getProfile();
+
+    // Browser sering menampilkan gambar lama kalau URL-nya sama. Tambahkan
+    // ?v=timestamp supaya dimuat ulang.
+    if (next.avatar && !/^(data:|blob:)/.test(next.avatar)) {
+      const sep = next.avatar.includes("?") ? "&" : "?";
+      next = { ...next, avatar: `${next.avatar}${sep}v=${Date.now()}` };
     }
+    return next;
   };
 
   // ---------- Form informasi pribadi (satu tombol simpan) ----------
@@ -128,7 +138,8 @@ function Profile() {
     key === "username" ? form.username.trim() : form[key];
 
   const changed = FIELDS.filter((f) => valueOf(f.key) !== base[f.key]);
-  const dirty = changed.length > 0;
+  // Avatar baru juga dihitung sebagai perubahan
+  const dirty = changed.length > 0 || !!avatarFile;
 
   useEffect(() => {
     if (!toast) return;
@@ -148,10 +159,12 @@ function Profile() {
     setIsEditing(true);
   };
 
-  // Klik "Batal": buang perubahan dan kembali ke mode lihat
+  // Klik "Batal": buang semua perubahan (termasuk foto terpilih)
   const handleReset = () => {
     setForm(base);
     setErrors({});
+    clearAvatarDraft();
+    setAvatarMsg({ text: "", type: "" });
     setIsEditing(false);
   };
 
@@ -159,7 +172,7 @@ function Profile() {
     e.preventDefault();
     if (!isEditing || !dirty || saving) return;
 
-    // Validasi hanya untuk field yang diubah (aturan sama seperti sebelumnya)
+    // Validasi hanya untuk field yang diubah
     const local = {};
     changed.forEach((f) => {
       const v = valueOf(f.key);
@@ -175,6 +188,9 @@ function Profile() {
     setSaving(true);
     const saved = {};
     const failed = {};
+    let avatarFailed = false;
+    let avatarSaved = false;
+    let nextProfile = profile;
 
     // Berurutan, bukan paralel, supaya perilaku ke backend tetap aman
     for (const f of changed) {
@@ -186,11 +202,32 @@ function Profile() {
         failed[f.key] = readError(err, f.errorKey);
       }
     }
+    nextProfile = { ...nextProfile, ...saved };
 
-    if (Object.keys(saved).length) {
-      setProfile({ ...profile, ...saved });
+    // Upload avatar kalau ada yang dipilih
+    if (avatarFile) {
+      try {
+        const withAvatar = await uploadAvatarNow();
+        nextProfile = { ...nextProfile, avatar: withAvatar.avatar };
+        avatarSaved = true;
+        clearAvatarDraft();
+      } catch (err) {
+        avatarFailed = true;
+        const fe = err.fields?.avatar;
+        setAvatarMsg({
+          text:
+            (Array.isArray(fe) ? fe[0] : fe) ||
+            err.message ||
+            "Gagal mengunggah foto.",
+          type: "error",
+        });
+      }
+    }
+
+    if (Object.keys(saved).length || avatarSaved) {
+      setProfile(nextProfile);
       setForm((cur) => ({ ...cur, ...saved }));
-      if (saved.username && !SKIP_AUTH) await refreshUser().catch(() => {});
+      if (!SKIP_AUTH) await refreshUser().catch(() => {});
     }
 
     setErrors(failed);
@@ -198,11 +235,14 @@ function Profile() {
 
     // Semua berhasil: kembali ke mode lihat. Kalau ada yang gagal, tetap di
     // mode edit supaya pesan error-nya terlihat.
-    if (!Object.keys(failed).length) {
+    if (!Object.keys(failed).length && !avatarFailed) {
+      setAvatarMsg({ text: "", type: "" });
       setToast("Profil berhasil diperbarui");
       setIsEditing(false);
     }
   };
+
+  const shownAvatar = avatarPreview || profile.avatar;
 
   return (
     <div className="pr-page">
@@ -230,7 +270,15 @@ function Profile() {
         {/* ===== Kolom kiri: avatar ===== */}
         <section className="pr-card pr-side">
           <div className="pr-ring">
-            <Avatar src={profile.avatar} name={profile.username} size={128} />
+            {/* Klik avatar = lihat preview besar (mode lihat maupun edit) */}
+            <button
+              type="button"
+              className="pr-avatar-btn"
+              onClick={() => setLightbox(true)}
+              aria-label="Lihat foto profil"
+            >
+              <Avatar src={shownAvatar} name={profile.username} size={128} />
+            </button>
 
             {/* Ganti foto hanya bisa saat mode edit */}
             {isEditing && (
@@ -238,7 +286,7 @@ function Profile() {
                 type="button"
                 className="pr-camera"
                 onClick={() => fileRef.current.click()}
-                disabled={uploading}
+                disabled={saving}
                 aria-label="Ganti foto profil"
               >
                 <Icon name="camera" size={18} />
@@ -256,11 +304,11 @@ function Profile() {
           <h2 className="pr-name">{profile.username}</h2>
           {profile.bio && <p className="pr-bio">{profile.bio}</p>}
 
-          {uploading && <p className="pr-msg">Mengunggah...</p>}
+          {saving && avatarFile && <p className="pr-msg">Mengunggah...</p>}
           {avatarMsg.text && (
             <p className={`pr-msg ${avatarMsg.type}`}>{avatarMsg.text}</p>
           )}
-
+          {avatarFile && <p className="pr-hint">Foto baru belum disimpan.</p>}
           {isEditing && <p className="pr-hint">Gambar maksimal 2 MB.</p>}
         </section>
 
@@ -481,6 +529,35 @@ function Profile() {
           )}
         </div>
       </div>
+
+      {/* ===== Lightbox preview avatar (4:3, dipangkas) ===== */}
+      {lightbox && (
+        <div
+          className="pr-lightbox"
+          onClick={() => setLightbox(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Preview foto profil"
+        >
+          <div className="pr-lightbox-box" onClick={(e) => e.stopPropagation()}>
+            {shownAvatar ? (
+              <img src={shownAvatar} alt={profile.username} />
+            ) : (
+              <div className="pr-lightbox-ph">
+                {profile.username?.charAt(0).toUpperCase() || "•"}
+              </div>
+            )}
+            <button
+              type="button"
+              className="pr-lightbox-x"
+              onClick={() => setLightbox(false)}
+              aria-label="Tutup"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="pr-toast" role="status">
