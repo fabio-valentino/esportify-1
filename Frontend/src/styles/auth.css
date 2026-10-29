@@ -1,4 +1,7 @@
-/* ========== Layout Login & Register ========== */
+/* ========================================
+   ESPORTIFY - AUTH LAYOUT
+======================================== */
+
 .auth {
   min-height: 100vh;
   display: grid;
@@ -37,69 +40,80 @@
   position: relative;
   z-index: 1;
 }
-
 .auth-left .logo {
   font-size: 16px;
 }
+
 .auth-intro {
   max-width: 440px;
   margin-bottom: 80px;
 }
+
 .auth-intro h1 {
   font-size: 42px;
   line-height: 1.15;
-
   color: var(--white);
   margin-bottom: 16px;
 }
+
 .auth-intro h1 span {
   background: linear-gradient(90deg, #a9c1ff, #d4c5ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
+
 .auth-intro p {
   font-size: 14px;
   color: var(--muted);
 }
 
-/* Sisi kanan: kartu form */
+/* ========== KARTU FORM ========== */
+
 .auth-right {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   padding: 32px 24px;
 }
+
 .auth-card {
   width: 100%;
   max-width: 440px;
+  min-width: 0;
   padding: 36px;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: #151a26;
 }
+
 .auth-title {
   font-size: 26px;
   color: var(--white);
-
   line-height: 1.2;
 }
+
 .auth-subtitle {
   font-size: 13px;
   color: var(--muted);
   margin: 6px 0 24px;
 }
 
-/* ========== Kolom input ========== */
+/* ========== INPUT FORM ========== */
+
 .field {
   margin-bottom: 16px;
 }
+
 .field-label-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-bottom: 6px;
 }
+
 .field-label-row label {
   font-size: 11px;
   font-weight: 600;
@@ -107,14 +121,15 @@
   text-transform: uppercase;
   color: var(--text);
 }
+
 .field-hint {
   font-size: 11px;
   color: var(--muted);
 }
+
 .field-box {
   display: flex;
   align-items: center;
-
   gap: 10px;
   padding: 0 14px;
   height: 44px;
@@ -123,40 +138,51 @@
   background: #1c2230;
   color: var(--muted);
 }
+
 .field-box:focus-within {
   border-color: var(--blue);
 }
+
 .field-box.has-error {
   border-color: #f87171;
 }
+
 .field-box input {
   flex: 1;
   min-width: 0;
+  width: 100%;
   border: none;
   outline: none;
-  background: none;
+  background: transparent;
   color: var(--white);
   font-size: 13px;
   font-family: inherit;
 }
+
 .field-box input::placeholder {
   color: #4b5563;
 }
+
 .field-right {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   color: var(--green);
 }
 
 .field-toggle {
   display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  background: none;
+  background: transparent;
   color: var(--muted);
 }
+
 .field-toggle:hover {
   color: var(--white);
 }
+
 .field-error,
 .field-ok {
   display: flex;
@@ -165,24 +191,17 @@
   margin-top: 6px;
   font-size: 11px;
 }
+
 .field-error {
   color: #f87171;
 }
+
 .field-ok {
   color: var(--green);
 }
 
-/* ========== Tombol & teks bawah ========== */
-.auth-submit {
-  margin-top: 20px;
-  padding: 13px;
-  font-size: 14px;
-}
-.auth-submit:disabled {
-  opacity: 0.7;
+/* ========== PESAN ERROR ========== */
 
-  cursor: not-allowed;
-}
 .auth-error {
   margin-top: 8px;
   padding: 10px 12px;
@@ -191,12 +210,147 @@
   color: #f87171;
   font-size: 12px;
 }
+
+/* ========== TOMBOL LOGIN / REGISTER ========== */
+
+.auth-submit {
+  margin-top: 20px;
+  padding: 13px;
+  font-size: 14px;
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Tombol Batal halaman Login */
+.login-page .login-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+
+  width: auto;
+  margin: 0 0 32px -8px;
+  padding: 6px 8px;
+
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.login-page .login-back:hover {
+  color: #ffffff;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.login-page .login-back:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* Tombol Batal Register */
+.register-page .register-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+
+  width: auto;
+  margin: 0 0 32px -8px;
+  padding: 6px 8px;
+
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.register-page .register-back:hover {
+  color: #ffffff;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.register-page .register-back:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ========== TOMBOL BUAT AKUN FULL WIDTH ========== */
+
+.register-page .auth-form-actions {
+  display: flex;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.register-page .auth-form-actions .auth-submit {
+  display: inline-flex;
+  flex: 1 1 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  margin-top: 0;
+  padding: 13px 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.register-page .auth-form-actions .auth-submit:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+.register-page .auth-form-actions .auth-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.register-page .auth-form-actions .auth-submit:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+/* ========== LINK LOGIN DI BAWAH ========== */
+
 .auth-switch {
   margin-top: 28px;
   text-align: center;
   font-size: 13px;
   color: var(--muted);
 }
+
 .auth-switch a {
   display: inline-flex;
   align-items: center;
@@ -204,11 +358,13 @@
   font-weight: 700;
   color: #a9c1ff;
 }
+
 .auth-switch a:hover {
   color: var(--white);
 }
 
-/* ========== Responsive ========== */
+/* ========== RESPONSIVE ========== */
+
 @media (max-width: 900px) {
   .auth {
     grid-template-columns: 1fr;
@@ -218,16 +374,70 @@
     padding: 28px 24px 8px;
     background: transparent;
   }
+
   .auth-intro {
     margin: 28px 0 0;
   }
+
   .auth-intro h1 {
     font-size: 30px;
   }
+
   .auth-right {
     padding: 24px 16px 40px;
   }
+
   .auth-card {
     padding: 24px;
   }
+}
+
+@media (max-width: 400px) {
+  .register-page .register-back {
+    margin-bottom: 26px;
+  }
+
+  .register-page .auth-form-actions .auth-submit {
+    min-height: 46px;
+  }
+
+  .register-page .auth-switch {
+    margin-top: 28px;
+  }
+}
+
+/* Posisi tombol Batal di halaman Register */
+.register-page .register-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 0;
+  margin-bottom: 32px;
+  margin-left: -8px;
+
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+
+  background: transparent;
+  color: #94a3b8;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.register-page .register-back:hover {
+  color: #ffffff;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.register-page .register-back:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }

@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Turnamen extends Model
+{
+    protected $table = 'turnamen';
+
+    protected $primaryKey = 'id_turnamen';
+
+    protected $fillable = [
+        'id_pengajuan',
+        'id_penyelenggara',
+        'status',
+    ];
+
+    public function pengajuan(): BelongsTo
+    {
+        return $this->belongsTo(
+            PengajuanTurnamen::class,
+            'id_pengajuan',
+            'id_pengajuan'
+        );
+    }
+
+    public function penyelenggara(): BelongsTo
+    {
+        return $this->belongsTo(
+            Penyelenggara::class,
+            'id_penyelenggara',
+            'id_penyelenggara'
+        );
+    }
+}
+?>
