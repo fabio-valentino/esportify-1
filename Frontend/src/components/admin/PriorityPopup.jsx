@@ -1,5 +1,5 @@
 import Icon from "../icon";
-import { waitingText } from "../../utils/priority";
+import { waitingSince, waitingText } from "../../utils/priority";
 
 function PriorityPopup({ items, now, onGo }) {
   const shown = items.slice(0, 5);
@@ -30,7 +30,7 @@ function PriorityPopup({ items, now, onGo }) {
               <span>
                 <i></i> {s.name} · {s.organizer}
               </span>
-              <b>{waitingText(s.createdAt, now)}</b>
+              <b>{waitingText(waitingSince(s), now)}</b>
             </li>
           ))}
           {items.length > shown.length && (

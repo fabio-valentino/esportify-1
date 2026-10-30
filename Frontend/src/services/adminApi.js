@@ -633,6 +633,9 @@ export async function getAdminSubmissions() {
       s.player?.username ??
       "-",
     createdAt: s.created_at ?? "",
+    // BARU: terakhir kali player mengajukan ulang setelah revisi (null = belum pernah).
+    // Jangan menggantikan createdAt: fungsinya beda.
+    resubmittedAt: s.diajukan_ulang_pada ?? null,
     status: s.status ?? "",
   }));
 }
@@ -651,6 +654,8 @@ export async function getAdminSubmissionDetail(id) {
     organizer: d.nama_penyelenggara ?? d.player?.user?.username ?? "-",
     status: d.status ?? "",
     createdAt: d.created_at ?? "",
+    // BARU
+    resubmittedAt: d.diajukan_ulang_pada ?? null,
     posterUrl: mediaOf(d.poster_url, d.poster),
     game: d.game?.nama_game ?? "-",
     type: String(d.tipe_turnamen ?? "").toLowerCase(),

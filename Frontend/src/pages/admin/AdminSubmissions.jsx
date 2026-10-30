@@ -4,7 +4,7 @@ import Icon from "../../components/icon";
 import Pagination from "../../components/admin/Pagination";
 import SubmissionStatusBadge from "../../components/tournament/SubmissionStatusBadge";
 import { useAdminPriority } from "../../context/AdminPriorityContext";
-import { waitingText } from "../../utils/priority";
+import { waitingSince, waitingText } from "../../utils/priority";
 import "../../styles/user.css";
 
 const PAGE_SIZE = 7;
@@ -186,7 +186,7 @@ function AdminSubmissions() {
                       </span>
                       {late && (
                         <small className="sub-wait late">
-                          {waitingText(s.createdAt, now)}
+                          {waitingText(waitingSince(s), now)}
                         </small>
                       )}
                     </td>
