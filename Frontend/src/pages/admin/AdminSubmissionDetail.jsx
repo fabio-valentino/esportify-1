@@ -1,5 +1,3 @@
-/Frontend/src/pages/admin/AdminSubmissionDetail.jsx
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Icon from "../../components/icon";
