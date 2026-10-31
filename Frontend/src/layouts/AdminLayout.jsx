@@ -39,17 +39,17 @@ function AdminShell() {
       .catch(() => {});
   }, []);
 
+  // BARU: baris ini yang hilang. Halaman admin terkunci selama ada pengajuan prioritas.
   const locked = !loading && priority.length > 0;
 
-  // const handleLogout = async () => {
-  //   try {
-  //     await signOut();
-  //   } catch (err) {
-  //     console.error("Logout backend gagal:", err);
-  //   } finally {
-  //     window.location.replace("/");
-  //   }
-  // };
+  // Kalau tidak ada lagi pengajuan prioritas, reset penanda popup supaya
+  // popup muncul lagi saat ada prioritas baru di sesi yang sama.
+  useEffect(() => {
+    if (!loading && priority.length === 0) {
+      sessionStorage.removeItem(POPUP_KEY);
+      setPopupDone(false);
+    }
+  }, [loading, priority.length]);
 
   const handleLogout = async () => {
     // Popup prioritas harus muncul lagi di sesi login berikutnya

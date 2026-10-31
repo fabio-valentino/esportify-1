@@ -8,9 +8,12 @@ import {
 } from "react";
 import { useLocation } from "react-router-dom";
 import { getAdminSubmissions } from "../services/adminApi";
-import { isPriority } from "../utils/priority";
+import { isPriority, toMs, waitingSince } from "../utils/priority";
 
 const Ctx = createContext(null);
+
+const TICK_MS = 5000; // geser jam (di browser saja)
+const REFRESH_MS = 30000; // muat ulang daftar dari server
 
 export function AdminPriorityProvider({ children }) {
   const { pathname } = useLocation();
@@ -39,18 +42,35 @@ export function AdminPriorityProvider({ children }) {
     refresh();
   }, [pathname, refresh]);
 
-  // Hitung ulang umur pengajuan tiap 30 detik
+  // Jam: supaya popup muncul tepat waktu tanpa menunggu muat ulang
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 30000);
+    const t = setInterval(() => setNow(Date.now()), TICK_MS);
     return () => clearInterval(t);
   }, []);
 
-  // Prioritas, yang paling lama menunggu di atas
+  // Daftar: berkala, dan saat tab kembali aktif
+  useEffect(() => {
+    const r = setInterval(refresh, REFRESH_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        setNow(Date.now());
+        refresh();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(r);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [refresh]);
+
+  // Prioritas, yang paling lama menunggu di atas.
+  // Acuan waktu = terakhir diajukan ulang (kalau ada), bukan tanggal pengajuan pertama.
   const priority = useMemo(
     () =>
       items
         .filter((s) => isPriority(s, now))
-        .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt)),
+        .sort((a, b) => toMs(waitingSince(a)) - toMs(waitingSince(b))),
     [items, now],
   );
 

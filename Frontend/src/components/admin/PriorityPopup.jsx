@@ -1,5 +1,9 @@
 import Icon from "../icon";
-import { waitingSince, waitingText } from "../../utils/priority";
+import {
+  priorityLimitText,
+  waitingSince,
+  waitingText,
+} from "../../utils/priority";
 
 function PriorityPopup({ items, now, onGo }) {
   const shown = items.slice(0, 5);
@@ -19,9 +23,8 @@ function PriorityPopup({ items, now, onGo }) {
           {items.length} Pengajuan Perlu Segera Diverifikasi
         </h2>
         <p className="pri-text">
-          Ada pengajuan yang belum diverifikasi lebih dari 3 hari. Tinjau
-          pengajuan terlebih dahulu sebelum melanjutkan aktivitas di Admin
-          Panel.
+          Ada pengajuan yang belum diverifikasi lebih dari {priorityLimitText()}
+          .
         </p>
 
         <ul className="pri-list">
