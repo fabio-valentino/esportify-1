@@ -92,6 +92,7 @@ class PengajuanTurnamenController extends Controller
         $pengajuan->load([
             'player.user',
             'game',
+            'kota.provinsi', // BARU: supaya Provinsi dan Kota terbaca di detail admin
             'sumberPendanaan',
             'pendanaan',
             'pembayaran',
@@ -150,7 +151,6 @@ class PengajuanTurnamenController extends Controller
         );
     }
 
-    
     /**
      * Mengembalikan pengajuan ke antrean verifikasi
      * ketika Admin keluar dari halaman detail tanpa keputusan.
@@ -194,7 +194,6 @@ class PengajuanTurnamenController extends Controller
             'data' => $pengajuan->fresh(),
         ]);
     }
-
 
     /**
      * Menyetujui pengajuan dan membuat data penyelenggara
