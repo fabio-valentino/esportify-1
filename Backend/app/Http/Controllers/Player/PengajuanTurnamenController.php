@@ -192,7 +192,8 @@ class PengajuanTurnamenController extends Controller
                 'distinct',
                 'exists:sumber_pendanaan,id_sumber',
             ],
-            'sponsor' => ['nullable', 'array', 'min:1'],
+            // SESUDAH
+            'sponsor' => ['nullable', 'array', 'min:1', 'max:20'],
             'sponsor.*.nama_sponsor' => [
                 'required',
                 'string',
@@ -567,7 +568,8 @@ class PengajuanTurnamenController extends Controller
                 'exists:sumber_pendanaan,id_sumber',
             ],
 
-            'sponsor' => ['sometimes', 'nullable', 'array'],
+            
+            'sponsor' => ['sometimes', 'nullable', 'array', 'max:20'],
             'sponsor.*.nama_sponsor' => [
                 'required_with:sponsor',
                 'string',
@@ -632,17 +634,17 @@ class PengajuanTurnamenController extends Controller
                 ->pluck('sumber_pendanaan.id_sumber')
                 ->toArray();
 
-        $sponsor = $validated['sponsor']
-            ?? $pengajuan->sponsor()
+        $sponsor = array_key_exists('sponsor', $validated)
+            ? ($validated['sponsor'] ?? [])
+            : $pengajuan->sponsor()
                 ->get()
                 ->map(fn ($item) => [
                     'nama_sponsor' => $item->nama_sponsor,
                     'kontak_sponsor' => $item->kontak_sponsor,
                 ])
                 ->toArray();
-
-        $tipeTurnamen = $validated['tipe_turnamen']
-            ?? $pengajuan->tipe_turnamen;
+                $tipeTurnamen = $validated['tipe_turnamen']
+                    ?? $pengajuan->tipe_turnamen;
 
         // Turnamen offline wajib memiliki kota. Saat berpindah dari online ke offline,
         // Player harus memilih kota; untuk online, lokasi akan dikosongkan.
