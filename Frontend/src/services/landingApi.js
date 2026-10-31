@@ -83,7 +83,7 @@ const mapCommunity = (d) => ({
 const mapGame = (d) => ({
   id: d.id_game ?? d.id,
   name: d.nama_game ?? d.nama ?? d.name ?? "",
-  icon: toMediaUrl(d.avatar_url ?? d.avatar ?? d.icon),
+  icon: toMediaUrl(d.avatar ?? d.avatar_url ?? d.icon),
 });
 
 /* ---------------- Data mock ---------------- */
