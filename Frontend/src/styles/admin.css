@@ -831,8 +831,8 @@ p.admin-message {
   color: var(--white);
 }
 .admin-warn-btn {
-  background: #facc15;
-  color: #1f2937;
+  background: #16a34a;
+  color: var(--white);
 }
 .admin-danger-btn:disabled,
 .admin-warn-btn:disabled {
