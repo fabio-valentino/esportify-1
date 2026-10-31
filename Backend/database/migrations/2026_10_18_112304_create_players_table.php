@@ -8,28 +8,31 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('players', function (Blueprint $table) {
-            $table->string('avatar', 255)->nullable()->change();
+        Schema::create('players', function (Blueprint $table) {
+            $table->bigIncrements('id_player');
+
+            $table->unsignedBigInteger('id_user')->unique();
+
+            $table->string('avatar', 255)->nullable();
+            $table->text('bio')->nullable();
 
             $table->enum('jenis_kelamin', [
                 'laki-laki',
                 'perempuan',
                 'rahasia'
-            ])->nullable()->change();
+            ])->nullable();
+
+            $table->timestamps();
+
+            $table->foreign('id_user')
+                ->references('id_user')
+                ->on('users')
+                ->cascadeOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::table('players', function (Blueprint $table) {
-            $table->string('avatar', 255)->nullable(false)->change();
-
-            $table->enum('jenis_kelamin', [
-                'laki-laki',
-                'perempuan',
-                'rahasia'
-            ])->nullable(false)->change();
-        });
+        Schema::dropIfExists('players');
     }
 };
-?>
