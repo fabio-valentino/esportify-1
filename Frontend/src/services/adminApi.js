@@ -622,8 +622,23 @@ const mediaOf = (url, path) => url ?? toMediaUrl(path);
 // GET /api/admin/pengajuan-turnamen
 // Jangan panggil GET /{id} dari sini: endpoint itu mengubah status.
 export async function getAdminSubmissions() {
-  const response = await apiRequest("/admin/pengajuan-turnamen");
-  return toList(response).map((s) => ({
+  const url = "/admin/pengajuan-turnamen";
+  const first = await apiRequest(url);
+  const rows = [...toList(first)];
+
+  // Backend memakai paginate(15): ambil semua halaman supaya pengajuan lama
+  // (ada di halaman belakang) ikut dihitung. Batas 20 halaman = 300 data.
+  const lastPage = Math.min(Number(first?.data?.last_page) || 1, 20);
+  if (lastPage > 1) {
+    const rest = await Promise.all(
+      Array.from({ length: lastPage - 1 }, (_, i) =>
+        apiRequest(`${url}?page=${i + 2}`),
+      ),
+    );
+    rest.forEach((r) => rows.push(...toList(r)));
+  }
+
+  return rows.map((s) => ({
     id: Number(s.id_pengajuan),
     name: s.nama_turnamen ?? "-",
     tag: s.game?.kategoris?.[0]?.nama_kategori ?? "",
@@ -633,8 +648,7 @@ export async function getAdminSubmissions() {
       s.player?.username ??
       "-",
     createdAt: s.created_at ?? "",
-    // BARU: terakhir kali player mengajukan ulang setelah revisi (null = belum pernah).
-    // Jangan menggantikan createdAt: fungsinya beda.
+    // Terakhir kali player mengajukan ulang setelah revisi (null = belum pernah).
     resubmittedAt: s.diajukan_ulang_pada ?? null,
     status: s.status ?? "",
   }));

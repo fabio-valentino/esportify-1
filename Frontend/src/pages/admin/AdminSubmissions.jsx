@@ -4,7 +4,11 @@ import Icon from "../../components/icon";
 import Pagination from "../../components/admin/Pagination";
 import SubmissionStatusBadge from "../../components/tournament/SubmissionStatusBadge";
 import { useAdminPriority } from "../../context/AdminPriorityContext";
-import { waitingSince, waitingText } from "../../utils/priority";
+import {
+  priorityLimitText,
+  waitingSince,
+  waitingText,
+} from "../../utils/priority";
 import "../../styles/user.css";
 
 const PAGE_SIZE = 7;
@@ -82,7 +86,8 @@ function AdminSubmissions() {
           </span>
           <div className="sub-banner-text">
             <strong>
-              {priority.length} pengajuan belum diverifikasi lebih dari 3 hari
+              {priority.length} pengajuan belum diverifikasi lebih dari{" "}
+              {priorityLimitText()}
               <span className="sub-pri-tag">HIGH PRIORITY</span>
             </strong>
             <p>
